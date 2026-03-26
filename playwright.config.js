@@ -2,9 +2,12 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
-  timeout: 30000,
-  retries: 1,
-  reporter: [['html', { open: 'never' }], ['line']],
+  timeout: 30_000,
+  retries: process.env.CI ? 2 : 1,
+  reporter: [
+    ['html', { open: 'never', outputFolder: 'playwright-report' }],
+    ['line'],
+  ],
 
   use: {
     baseURL: 'http://localhost:3000',
@@ -13,12 +16,12 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 
-  // テスト前にローカルサーバーを起動
+  // テスト開始前に src/ をローカルサーバーで配信
   webServer: {
-    command: 'npx serve . -p 3000 --no-clipboard',
+    command: 'npx serve src -p 3000 --no-clipboard',
     port: 3000,
     reuseExistingServer: !process.env.CI,
-    timeout: 30000,
+    timeout: 30_000,
   },
 
   projects: [

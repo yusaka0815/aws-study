@@ -1,58 +1,73 @@
 /**
  * app.js
  * アプリケーションメインコントローラー
+ *
+ * リファクタリング指針:
+ * - イベントリスナーは責務ごとに setupStudyListeners / setupNavigationListeners / setupSettingsListeners に分割
+ * - データ読み込みは loadExamData() として独立させテスト可能にする
+ * - appState は実行時のみ存在するミュータブルな状態オブジェクト
  */
 
 import { getNextQuestion, updateQuestionState, getStats } from './engine.js';
 import { loadState, saveState, exportBackup, importBackup, resetState } from './storage.js';
 import {
   showScreen, renderExamSelect, renderQuestion, renderResult,
-  toggleExplanation, renderStats, showToast
+  toggleExplanation, renderStats, showToast,
 } from './ui.js';
 
 // ============================================================
-// 利用可能な試験一覧
+// 定数（変更頻度が高い設定を一か所で管理）
+// 新しい試験を追加するにはここにエントリを追加するだけでよい
 // ============================================================
-const EXAM_LIST = [
-  { examCode: 'SAA', examName: 'AWS Certified Solutions Architect - Associate', file: 'data/saa.json' },
-  { examCode: 'MLA', examName: 'AWS Certified Machine Learning Engineer - Associate', file: 'data/mla.json' },
+export const EXAM_LIST = [
+  {
+    examCode: 'SAA',
+    examName: 'AWS Certified Solutions Architect - Associate',
+    file: 'data/saa.json',
+  },
+  {
+    examCode: 'MLA',
+    examName: 'AWS Certified Machine Learning Engineer - Associate',
+    file: 'data/mla.json',
+  },
 ];
 
 // ============================================================
-// アプリ状態
+// アプリ状態（実行時のみ存在するミュータブルな状態）
 // ============================================================
-let appState = {
-  userState: null,      // localStorage のデータ
-  currentExam: null,    // { examCode, examName, questions[] }
-  currentQuestion: null,
-  lastQuestionId: null,
-  answered: false,
-  questionsAnsweredToday: 0,
-  previousScreen: 'screen-select', // 設定/統計から戻る先
+const appState = {
+  userState: null,          // localStorageから読み込んだデータ
+  currentExam: null,        // { examCode, examName, questions[] }
+  currentQuestion: null,    // 現在表示中の問題
+  lastQuestionId: null,     // 直前に出題した問題ID（連続出題防止用）
+  answered: false,          // 現在の問題に回答済みか
+  previousScreen: 'screen-select', // 設定/統計から戻る際の遷移先
 };
 
 // ============================================================
-// 初期化
+// Service Worker 登録
 // ============================================================
-async function init() {
-  // Service Worker 登録
-  if ('serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('./sw.js');
-    } catch (e) {
-      console.warn('SW registration failed:', e);
-    }
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    await navigator.serviceWorker.register('./sw.js');
+  } catch (e) {
+    console.warn('SW registration failed:', e);
   }
+}
 
-  // ユーザー状態をロード
-  appState.userState = loadState();
-
-  // イベントリスナーをセット
-  setupEventListeners();
-
-  // 前回の試験があれば試験選択画面を表示、なければ選択画面へ
-  renderExamSelect(EXAM_LIST, selectExam);
-  showScreen('screen-select');
+// ============================================================
+// データ読み込み（テスト可能な独立した関数として分離）
+// ============================================================
+export async function loadExamData(examMeta) {
+  const resp = await fetch(examMeta.file);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${examMeta.file}`);
+  const data = await resp.json();
+  return {
+    examCode: data.examCode,
+    examName: data.examName,
+    questions: data.questions,
+  };
 }
 
 // ============================================================
@@ -63,25 +78,12 @@ async function selectExam(examCode) {
   if (!examMeta) return;
 
   try {
-    const resp = await fetch(examMeta.file);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-
-    appState.currentExam = {
-      examCode: data.examCode,
-      examName: data.examName,
-      questions: data.questions,
-    };
-
+    appState.currentExam = await loadExamData(examMeta);
     appState.userState.currentExam = examCode;
+    appState.lastQuestionId = null;
     saveState(appState.userState);
 
-    // ヘッダーに試験名を表示
     document.getElementById('header-exam-name').textContent = examMeta.examName;
-
-    appState.lastQuestionId = null;
-    appState.questionsAnsweredToday = 0;
-
     showNextQuestion();
     showScreen('screen-study');
   } catch (e) {
@@ -91,7 +93,7 @@ async function selectExam(examCode) {
 }
 
 // ============================================================
-// 出題ロジック
+// 出題
 // ============================================================
 function showNextQuestion() {
   const { currentExam, userState, lastQuestionId } = appState;
@@ -106,7 +108,6 @@ function showNextQuestion() {
   appState.currentQuestion = q;
   appState.answered = false;
 
-  // 解答済み数を進捗として使用
   const answeredCount = Object.values(userState.questions)
     .filter(s => s.attempts > 0).length;
 
@@ -117,102 +118,107 @@ function showNextQuestion() {
 // 回答処理
 // ============================================================
 function handleAnswer(selectedIndex) {
-  if (appState.answered) return;
-
-  const { currentQuestion, userState } = appState;
-  if (!currentQuestion) return;
+  if (appState.answered || !appState.currentQuestion) return;
 
   appState.answered = true;
-  appState.lastQuestionId = currentQuestion.id;
+  appState.lastQuestionId = appState.currentQuestion.id;
 
-  const isCorrect = currentQuestion.answers.includes(selectedIndex);
-
-  // 状態を更新
+  const isCorrect = appState.currentQuestion.answers.includes(selectedIndex);
   const now = Date.now();
-  const prevState = userState.questions[currentQuestion.id] || { attempts: 0 };
-  userState.questions[currentQuestion.id] = updateQuestionState(prevState, isCorrect, now);
-  saveState(userState);
+  const prev = appState.userState.questions[appState.currentQuestion.id] ?? { attempts: 0 };
 
-  appState.questionsAnsweredToday++;
+  appState.userState.questions[appState.currentQuestion.id] =
+    updateQuestionState(prev, isCorrect, now);
+  saveState(appState.userState);
 
-  renderResult(currentQuestion, selectedIndex, isCorrect);
+  renderResult(appState.currentQuestion, selectedIndex, isCorrect);
 }
 
 // ============================================================
-// イベントリスナー設定
+// 統計画面表示
 // ============================================================
-function setupEventListeners() {
-  // 選択肢クリック（委譲）
+function showStatsScreen() {
+  if (!appState.currentExam) {
+    showToast('先に試験を選択してください', 'error');
+    return;
+  }
+  const stats = getStats(appState.currentExam.questions, appState.userState);
+  renderStats(appState.currentExam.examCode, appState.currentExam.examName, stats);
+  showScreen('screen-stats');
+}
+
+// ============================================================
+// イベントリスナー（責務ごとに分割）
+// ============================================================
+
+/** 問題画面の学習操作（選択肢・解説・次へ） */
+function setupStudyListeners() {
   document.getElementById('choices-list').addEventListener('click', e => {
     const btn = e.target.closest('.choice-btn');
-    if (!btn || appState.answered) return;
-    handleAnswer(Number(btn.dataset.index));
+    if (btn && !appState.answered) handleAnswer(Number(btn.dataset.index));
   });
 
-  // 解説トグル
   document.getElementById('explanation-toggle').addEventListener('click', () => {
-    if (!appState.currentQuestion) return;
-    toggleExplanation(appState.currentQuestion.explanation);
+    if (appState.currentQuestion) toggleExplanation(appState.currentQuestion.explanation);
   });
 
-  // 次へボタン
   document.getElementById('next-btn').addEventListener('click', () => {
     showNextQuestion();
-    // 画面トップにスクロール
     document.getElementById('screen-study').scrollTop = 0;
     window.scrollTo(0, 0);
   });
+}
 
-  // 試験変更ボタン
+/** 画面間ナビゲーション（試験変更・統計・設定・戻る） */
+function setupNavigationListeners() {
   document.getElementById('btn-change-exam').addEventListener('click', () => {
     renderExamSelect(EXAM_LIST, selectExam);
     showScreen('screen-select');
   });
 
-  // 統計ボタン
   document.getElementById('btn-stats').addEventListener('click', () => {
     appState.previousScreen = 'screen-study';
     showStatsScreen();
   });
 
-  // 設定ボタン（学習画面から）
   document.getElementById('btn-settings').addEventListener('click', () => {
     appState.previousScreen = 'screen-study';
     showScreen('screen-settings');
   });
 
-  // 統計画面の戻るボタン
   document.getElementById('stats-back-btn').addEventListener('click', () => {
-    showScreen(appState.previousScreen || 'screen-study');
+    showScreen(appState.previousScreen ?? 'screen-study');
   });
 
-  // 設定画面の戻るボタン
   document.getElementById('settings-back-btn').addEventListener('click', () => {
-    showScreen(appState.previousScreen || 'screen-select');
+    showScreen(appState.previousScreen ?? 'screen-select');
   });
 
-  // バックアップエクスポート
+  document.getElementById('btn-settings-from-select').addEventListener('click', () => {
+    appState.previousScreen = 'screen-select';
+    showScreen('screen-settings');
+  });
+}
+
+/** 設定画面の操作（バックアップ・インポート・リセット） */
+function setupSettingsListeners() {
   document.getElementById('btn-export').addEventListener('click', () => {
     exportBackup(appState.userState);
     showToast('バックアップをダウンロードしました', 'success');
   });
 
-  // バックアップインポート
   document.getElementById('btn-import').addEventListener('click', () => {
     document.getElementById('import-file-input').click();
   });
 
-  document.getElementById('import-file-input').addEventListener('change', async (e) => {
+  document.getElementById('import-file-input').addEventListener('change', async e => {
     const file = e.target.files[0];
     if (!file) return;
-    e.target.value = ''; // リセット
-
+    e.target.value = '';
     try {
       const text = await file.text();
       const newState = importBackup(text);
-
       if (!confirm('現在の学習データをバックアップで上書きします。よろしいですか？')) return;
-
       appState.userState = newState;
       saveState(newState);
       showToast('インポートが完了しました', 'success');
@@ -221,36 +227,24 @@ function setupEventListeners() {
     }
   });
 
-  // データリセット
   document.getElementById('btn-reset').addEventListener('click', () => {
     if (!confirm('全ての学習履歴を削除します。この操作は取り消せません。\n本当にリセットしますか？')) return;
     appState.userState = resetState();
     showToast('学習データをリセットしました', 'success');
   });
-
-  // 試験選択画面の設定ボタン
-  document.getElementById('btn-settings-from-select').addEventListener('click', () => {
-    appState.previousScreen = 'screen-select';
-    showScreen('screen-settings');
-  });
 }
 
 // ============================================================
-// 統計画面
+// 初期化
 // ============================================================
-function showStatsScreen() {
-  const { currentExam, userState } = appState;
-  if (!currentExam) {
-    showToast('先に試験を選択してください', 'error');
-    return;
-  }
-
-  const stats = getStats(currentExam.questions, userState);
-  renderStats(currentExam.examCode, currentExam.examName, stats);
-  showScreen('screen-stats');
+async function init() {
+  await registerServiceWorker();
+  appState.userState = loadState();
+  setupStudyListeners();
+  setupNavigationListeners();
+  setupSettingsListeners();
+  renderExamSelect(EXAM_LIST, selectExam);
+  showScreen('screen-select');
 }
 
-// ============================================================
-// 起動
-// ============================================================
 init();

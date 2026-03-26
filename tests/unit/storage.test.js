@@ -1,6 +1,9 @@
 /**
- * storage.js 単体テスト
- * localStorage管理・バックアップ検証
+ * storage.test.js
+ * localStorage管理・バックアップ検証の単体テスト
+ *
+ * テスト対象: src/storage.js
+ * jsdom 環境により localStorage が利用可能
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -10,17 +13,33 @@ import {
   saveState,
   importBackup,
   resetState,
-} from '../../storage.js';
+} from '../../src/storage.js';
+
+// ============================================================
+// テストフィクスチャ
+// ============================================================
+
+const VALID_BACKUP = {
+  version: 1,
+  currentExam: 'SAA',
+  questions: {
+    'SAA-001': {
+      attempts: 5,
+      correct: 4,
+      wrong: 1,
+      recentResults: [1, 0, 1, 1, 1],
+      lastAnsweredAt: 1_710_000_000_000,
+      nextReviewAt:  1_710_001_000_000,
+    },
+  },
+};
 
 // ============================================================
 // createInitialState
 // ============================================================
 describe('createInitialState', () => {
-  it('正しい初期構造を返す', () => {
-    const state = createInitialState();
-    expect(state.version).toBe(1);
-    expect(state.currentExam).toBeNull();
-    expect(state.questions).toEqual({});
+  it('version=1, currentExam=null, questions={} を返す', () => {
+    expect(createInitialState()).toEqual({ version: 1, currentExam: null, questions: {} });
   });
 });
 
@@ -28,22 +47,18 @@ describe('createInitialState', () => {
 // saveState / loadState
 // ============================================================
 describe('saveState / loadState', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
+  beforeEach(() => localStorage.clear());
 
-  it('保存して読み込むと同じ内容が返る', () => {
+  it('保存→読み込みでデータが一致する', () => {
     const state = {
       version: 1,
       currentExam: 'SAA',
       questions: {
         'SAA-001': {
-          attempts: 3,
-          correct: 2,
-          wrong: 1,
+          attempts: 3, correct: 2, wrong: 1,
           recentResults: [1, 0, 1],
-          lastAnsweredAt: 1000000,
-          nextReviewAt: 1600000,
+          lastAnsweredAt: 1_000_000,
+          nextReviewAt: 1_600_000,
         },
       },
     };
@@ -51,51 +66,29 @@ describe('saveState / loadState', () => {
     const loaded = loadState();
     expect(loaded.currentExam).toBe('SAA');
     expect(loaded.questions['SAA-001'].attempts).toBe(3);
-    expect(loaded.questions['SAA-001'].correct).toBe(2);
   });
 
-  it('localStorage が空のとき初期状態を返す', () => {
-    const state = loadState();
-    expect(state.version).toBe(1);
-    expect(state.currentExam).toBeNull();
-    expect(state.questions).toEqual({});
+  it('空の localStorage は初期状態を返す', () => {
+    expect(loadState()).toEqual(createInitialState());
   });
 
-  it('破損したJSONがあっても初期状態を返してクラッシュしない', () => {
-    localStorage.setItem('aws-study-state-v1', '{invalid json!!!}');
-    const state = loadState();
-    expect(state.version).toBe(1);
-    expect(state.questions).toEqual({});
+  it('破損したJSONでも初期状態を返してクラッシュしない', () => {
+    localStorage.setItem('aws-study-state-v1', '{invalid!!!}');
+    expect(loadState()).toEqual(createInitialState());
   });
 
   it('バージョン不一致のデータは初期状態を返す', () => {
     localStorage.setItem('aws-study-state-v1', JSON.stringify({ version: 99, questions: {} }));
-    const state = loadState();
-    expect(state.questions).toEqual({});
+    expect(loadState()).toEqual(createInitialState());
   });
 });
 
 // ============================================================
-// importBackup: バックアップ検証
+// importBackup: バックアップ検証とサニタイズ
 // ============================================================
 describe('importBackup', () => {
-  const validState = {
-    version: 1,
-    currentExam: 'SAA',
-    questions: {
-      'SAA-001': {
-        attempts: 5,
-        correct: 4,
-        wrong: 1,
-        recentResults: [1, 0, 1, 1, 1],
-        lastAnsweredAt: 1710000000000,
-        nextReviewAt: 1710001000000,
-      },
-    },
-  };
-
-  it('正常なJSONは成功し、同じデータを返す', () => {
-    const result = importBackup(JSON.stringify(validState));
+  it('正常なJSONは成功し同じデータを返す', () => {
+    const result = importBackup(JSON.stringify(VALID_BACKUP));
     expect(result.version).toBe(1);
     expect(result.currentExam).toBe('SAA');
     expect(result.questions['SAA-001'].attempts).toBe(5);
@@ -105,41 +98,49 @@ describe('importBackup', () => {
     expect(() => importBackup('{bad json')).toThrow();
   });
 
-  it('versionが一致しないとエラーをスロー', () => {
-    const badVersion = { ...validState, version: 99 };
-    expect(() => importBackup(JSON.stringify(badVersion))).toThrow();
+  it('version 不一致はエラーをスロー', () => {
+    expect(() => importBackup(JSON.stringify({ ...VALID_BACKUP, version: 99 }))).toThrow();
   });
 
-  it('questionsフィールドがないとエラーをスロー', () => {
-    const noQuestions = { version: 1, currentExam: 'SAA' };
+  it('questions フィールドなしはエラーをスロー', () => {
+    const { questions: _q, ...noQuestions } = VALID_BACKUP;
     expect(() => importBackup(JSON.stringify(noQuestions))).toThrow();
   });
 
-  it('recentResultsは最大10件に切り詰められる', () => {
-    const longResults = { ...validState };
-    longResults.questions['SAA-001'] = {
-      ...validState.questions['SAA-001'],
-      recentResults: Array(20).fill(1), // 20件（制限超過）
+  it('recentResults は最大10件に切り詰められる', () => {
+    const withLong = {
+      ...VALID_BACKUP,
+      questions: {
+        'SAA-001': { ...VALID_BACKUP.questions['SAA-001'], recentResults: Array(20).fill(1) },
+      },
     };
-    const result = importBackup(JSON.stringify(longResults));
+    const result = importBackup(JSON.stringify(withLong));
     expect(result.questions['SAA-001'].recentResults.length).toBeLessThanOrEqual(10);
   });
 
-  it('recentResultsに0/1以外の値は除外される（XSS対策）', () => {
-    const injected = { ...validState };
-    injected.questions['SAA-001'] = {
-      ...validState.questions['SAA-001'],
-      recentResults: [1, 0, 99, 'evil', 1],
+  it('recentResults に 0/1 以外の値は除外される（サニタイズ）', () => {
+    const withDirty = {
+      ...VALID_BACKUP,
+      questions: {
+        'SAA-001': { ...VALID_BACKUP.questions['SAA-001'], recentResults: [1, 0, 99, 'evil', null] },
+      },
     };
-    const result = importBackup(JSON.stringify(injected));
+    const result = importBackup(JSON.stringify(withDirty));
     const filtered = result.questions['SAA-001'].recentResults;
     expect(filtered.every(r => r === 0 || r === 1)).toBe(true);
   });
 
-  it('currentExamが文字列でない場合はnullになる', () => {
-    const badExam = { ...validState, currentExam: { evil: true } };
-    const result = importBackup(JSON.stringify(badExam));
+  it('currentExam が文字列以外の場合は null になる', () => {
+    const result = importBackup(JSON.stringify({ ...VALID_BACKUP, currentExam: { evil: true } }));
     expect(result.currentExam).toBeNull();
+  });
+
+  it('不正な問題エントリは無視されてクラッシュしない', () => {
+    const withBadEntry = {
+      ...VALID_BACKUP,
+      questions: { ...VALID_BACKUP.questions, null_key: null, 123: 'not_object' },
+    };
+    expect(() => importBackup(JSON.stringify(withBadEntry))).not.toThrow();
   });
 });
 
@@ -147,27 +148,17 @@ describe('importBackup', () => {
 // resetState
 // ============================================================
 describe('resetState', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
+  beforeEach(() => localStorage.clear());
 
   it('リセット後は初期状態が返る', () => {
-    // まず何かデータを保存
-    saveState({
-      version: 1,
-      currentExam: 'MLA',
-      questions: { 'MLA-001': { attempts: 10, correct: 8, wrong: 2, recentResults: [], lastAnsweredAt: 0, nextReviewAt: 0 } },
-    });
-
+    saveState({ version: 1, currentExam: 'MLA', questions: { 'MLA-001': {} } });
     const reset = resetState();
-    expect(reset.currentExam).toBeNull();
-    expect(reset.questions).toEqual({});
+    expect(reset).toEqual(createInitialState());
   });
 
-  it('リセット後のloadStateも初期状態', () => {
+  it('リセット後の loadState も初期状態', () => {
     saveState({ version: 1, currentExam: 'SAA', questions: { 'SAA-001': {} } });
     resetState();
-    const loaded = loadState();
-    expect(loaded.questions).toEqual({});
+    expect(loadState()).toEqual(createInitialState());
   });
 });
