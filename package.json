@@ -1,0 +1,19 @@
+{
+  "name": "aws-study",
+  "version": "1.0.0",
+  "description": "AWS認定試験対策PWAアプリ",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:all": "vitest run && playwright test",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "serve": "^14.2.0",
+    "vitest": "^1.6.0"
+  }
+}
