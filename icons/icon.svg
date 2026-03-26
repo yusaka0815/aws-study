@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="80" fill="#0f172a"/>
+
+  <!-- AWSオレンジのクラウド -->
+  <g fill="#f97316">
+    <!-- クラウド本体 -->
+    <ellipse cx="256" cy="220" rx="130" ry="70"/>
+    <ellipse cx="180" cy="240" rx="70" ry="55"/>
+    <ellipse cx="330" cy="240" rx="70" ry="55"/>
+    <rect x="130" y="240" width="252" height="60" rx="0"/>
+  </g>
+
+  <!-- クラウドの下部を白で -->
+  <rect x="126" y="270" width="260" height="34" rx="17" fill="#f97316"/>
+
+  <!-- 雷マーク（ML/クラウドの象徴） -->
+  <polygon points="270,140 240,210 258,210 242,290 285,200 264,200 280,140" fill="#fff" opacity="0.9"/>
+
+  <!-- テキスト AWS -->
+  <text x="256" y="380" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="72" fill="#f97316" text-anchor="middle" letter-spacing="2">AWS</text>
+
+  <!-- テキスト STUDY -->
+  <text x="256" y="440" font-family="Arial, sans-serif" font-weight="bold" font-size="36" fill="#94a3b8" text-anchor="middle" letter-spacing="6">STUDY</text>
+</svg>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>アイコン生成ツール</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #1e293b; color: #f1f5f9; padding: 40px; }
+  button { background: #f97316; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 8px; }
+  canvas { border: 1px solid #334155; margin: 10px; }
+  .info { background: #0f172a; padding: 16px; border-radius: 8px; margin: 16px 0; }
+</style>
+</head>
+<body>
+<h1>PWAアイコン生成ツール</h1>
+<div class="info">
+  <p>このページを開いてボタンをクリックすると、PWAに必要なPNGアイコンが生成・ダウンロードされます。</p>
+  <p>ダウンロードされた <code>icon-192.png</code> と <code>icon-512.png</code> を <code>icons/</code> フォルダに保存してください。</p>
+</div>
+
+<button onclick="generateAll()">アイコンを生成してダウンロード</button>
+
+<div>
+  <canvas id="canvas192" width="192" height="192"></canvas>
+  <canvas id="canvas512" width="512" height="512"></canvas>
+</div>
+
+<script>
+function drawIcon(canvas, size) {
+  const ctx = canvas.getContext('2d');
+  const s = size;
+
+  // 背景
+  ctx.fillStyle = '#0f172a';
+  const r = s * 0.15;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(s - r, 0);
+  ctx.quadraticCurveTo(s, 0, s, r);
+  ctx.lineTo(s, s - r);
+  ctx.quadraticCurveTo(s, s, s - r, s);
+  ctx.lineTo(r, s);
+  ctx.quadraticCurveTo(0, s, 0, s - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // クラウド
+  ctx.fillStyle = '#f97316';
+  const cx = s * 0.5;
+  const cy = s * 0.38;
+
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, s * 0.28, s * 0.14, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(cx - s*0.14, cy + s*0.04, s*0.15, s*0.11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(cx + s*0.14, cy + s*0.04, s*0.15, s*0.11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillRect(cx - s*0.28, cy + s*0.06, s*0.56, s*0.12);
+
+  // 雷マーク
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.9;
+  ctx.beginPath();
+  ctx.moveTo(cx + s*0.03, cy - s*0.15);
+  ctx.lineTo(cx - s*0.06, cy + s*0.02);
+  ctx.lineTo(cx, cy + s*0.02);
+  ctx.lineTo(cx - s*0.09, cy + s*0.20);
+  ctx.lineTo(cx + s*0.10, cy + s*0.02);
+  ctx.lineTo(cx + s*0.03, cy + s*0.02);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // AWS テキスト
+  ctx.fillStyle = '#f97316';
+  ctx.font = `bold ${s * 0.16}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.fillText('AWS', cx, s * 0.74);
+
+  // STUDY テキスト
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = `bold ${s * 0.08}px Arial`;
+  ctx.fillText('STUDY', cx, s * 0.88);
+}
+
+function generateAll() {
+  const canvas192 = document.getElementById('canvas192');
+  const canvas512 = document.getElementById('canvas512');
+
+  drawIcon(canvas192, 192);
+  drawIcon(canvas512, 512);
+
+  download(canvas192, 'icon-192.png');
+  setTimeout(() => download(canvas512, 'icon-512.png'), 500);
+}
+
+function download(canvas, filename) {
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// プレビュー表示
+window.onload = () => {
+  drawIcon(document.getElementById('canvas192'), 192);
+  drawIcon(document.getElementById('canvas512'), 512);
+};
+</script>
+</body>
+</html>

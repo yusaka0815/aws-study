@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AWS学習">
+  <meta name="theme-color" content="#f97316">
+  <meta name="description" content="AWS認定試験対策アプリ。スマホで片手操作、スキマ時間に合格を目指せ。">
+
+  <title>AWS Certification Study</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+
+  <!-- スタイル -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ========================================================
+       試験選択画面
+       ======================================================== -->
+  <div id="screen-select" class="screen active">
+    <header class="app-header">
+      <h1>
+        <span class="logo-icon">☁️</span>
+        <span>
+          AWS Study
+          <span class="header-exam-name">試験を選択してください</span>
+        </span>
+      </h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-settings-from-select" title="設定" aria-label="設定">⚙️</button>
+      </div>
+    </header>
+
+    <div class="select-header">
+      <h2>試験を選択</h2>
+      <p>学習したい試験を選んでください</p>
+    </div>
+
+    <div id="exam-list">
+      <!-- JavaScript で描画 -->
+    </div>
+
+    <div class="select-footer">
+      <p class="coming-soon">※ その他の試験は順次追加予定</p>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       問題画面（メイン）
+       ======================================================== -->
+  <div id="screen-study" class="screen">
+    <header class="app-header">
+      <h1>
+        <span class="logo-icon">☁️</span>
+        <span>
+          AWS Study
+          <span class="header-exam-name" id="header-exam-name">-</span>
+        </span>
+      </h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-stats" title="統計" aria-label="統計">📊</button>
+        <button class="icon-btn" id="btn-change-exam" title="試験変更" aria-label="試験変更">🔄</button>
+        <button class="icon-btn" id="btn-settings" title="設定" aria-label="設定">⚙️</button>
+      </div>
+    </header>
+
+    <div class="study-content">
+      <!-- プログレスバー -->
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-bg">
+          <div id="progress-fill"></div>
+        </div>
+        <span id="progress-text">0 / 0</span>
+      </div>
+
+      <!-- 問題カード -->
+      <div class="question-card">
+        <div id="question-meta"></div>
+        <div id="question-text">問題を読み込んでいます...</div>
+      </div>
+
+      <!-- 選択肢 -->
+      <div id="choices-list" role="list" aria-label="選択肢">
+        <!-- JavaScript で描画 -->
+      </div>
+
+      <!-- 回答エリア（初期非表示） -->
+      <div id="answer-area" class="hidden">
+        <div class="answer-verdict">
+          <span id="answer-icon"></span>
+          <span id="answer-label"></span>
+        </div>
+        <button id="explanation-toggle" class="hidden">解説を見る</button>
+        <div id="explanation-text" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- 次へボタン（画面下部・親指の届く位置） -->
+    <div class="next-btn-wrap">
+      <button id="next-btn" class="hidden">次の問題へ →</button>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       統計画面
+       ======================================================== -->
+  <div id="screen-stats" class="screen">
+    <header class="app-header">
+      <div class="back-header">
+        <button class="back-btn" id="stats-back-btn" aria-label="戻る">‹</button>
+        <h2>学習統計</h2>
+      </div>
+    </header>
+
+    <div class="stats-content">
+      <div>
+        <span id="stats-exam-name"></span>
+        <div class="section-title">全体サマリー</div>
+        <div id="stats-overview">
+          <!-- JavaScript で描画 -->
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">カテゴリ別正答率（低い順）</div>
+        <div id="category-stats">
+          <!-- JavaScript で描画 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       設定画面
+       ======================================================== -->
+  <div id="screen-settings" class="screen">
+    <header class="app-header">
+      <div class="back-header">
+        <button class="back-btn" id="settings-back-btn" aria-label="戻る">‹</button>
+        <h2>設定</h2>
+      </div>
+    </header>
+
+    <div class="settings-content">
+      <!-- バックアップ -->
+      <div class="settings-section">
+        <div class="settings-section-title">バックアップ</div>
+
+        <button class="settings-item" id="btn-export">
+          <span class="settings-item-icon">📤</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">学習データをエクスポート</span>
+            <span class="settings-item-desc">JSONファイルとしてダウンロード</span>
+          </span>
+        </button>
+
+        <button class="settings-item" id="btn-import">
+          <span class="settings-item-icon">📥</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">バックアップから復元</span>
+            <span class="settings-item-desc">JSONファイルを選択して読み込む</span>
+          </span>
+        </button>
+
+        <!-- 非表示のファイル選択インプット -->
+        <input type="file" id="import-file-input" accept=".json,application/json" style="display:none">
+      </div>
+
+      <!-- データ管理 -->
+      <div class="settings-section">
+        <div class="settings-section-title">データ管理</div>
+
+        <button class="settings-item danger" id="btn-reset">
+          <span class="settings-item-icon">🗑️</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">学習データをリセット</span>
+            <span class="settings-item-desc">全ての回答履歴を削除します（取り消し不可）</span>
+          </span>
+        </button>
+      </div>
+
+      <!-- アプリ情報 -->
+      <div class="settings-section">
+        <div class="settings-section-title">このアプリについて</div>
+
+        <div class="settings-item" style="cursor:default">
+          <span class="settings-item-icon">ℹ️</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">AWS Certification Study</span>
+            <span class="settings-item-desc">v1.0.0　SAA・MLA 各30問収録</span>
+          </span>
+        </div>
+
+        <div class="settings-item" style="cursor:default">
+          <span class="settings-item-icon">📶</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">オフライン対応</span>
+            <span class="settings-item-desc">初回ロード後はネット接続なしで動作</span>
+          </span>
+        </div>
+
+        <div class="settings-item" style="cursor:default">
+          <span class="settings-item-icon">🧠</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">スペースド・リピティション</span>
+            <span class="settings-item-desc">苦手問題・忘却タイミングを自動検出して出題</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

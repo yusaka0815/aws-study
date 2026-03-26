@@ -1,0 +1,457 @@
+{
+  "examCode": "MLA",
+  "examName": "AWS Certified Machine Learning Engineer - Associate",
+  "version": "1.0.0",
+  "questions": [
+    {
+      "id": "MLA-001",
+      "category": "SageMaker基礎",
+      "difficulty": 1,
+      "question": "Amazon SageMakerの主な目的として正しいものはどれですか？",
+      "choices": [
+        "データウェアハウスの構築",
+        "リアルタイムデータストリーミング処理",
+        "機械学習モデルのビルド、トレーニング、デプロイを一つのプラットフォームで行うフルマネージドサービス",
+        "自然言語処理専用のAIサービス"
+      ],
+      "answers": [2],
+      "explanation": "SageMakerはMLライフサイクル全体（データラベリング、前処理、モデル訓練、評価、デプロイ、監視）をサポートするフルマネージドMLプラットフォームです。Jupyter Notebookベースの開発環境も提供します。",
+      "tags": ["SageMaker", "機械学習", "基礎"]
+    },
+    {
+      "id": "MLA-002",
+      "category": "SageMaker基礎",
+      "difficulty": 1,
+      "question": "SageMakerでモデルトレーニング時にトレーニングデータを保存するのに推奨される場所はどこですか？",
+      "choices": [
+        "Amazon S3",
+        "Amazon EBS（Elastic Block Store）",
+        "Amazon EFS",
+        "AWS Glue Data Catalog"
+      ],
+      "answers": [0],
+      "explanation": "SageMakerのトレーニングジョブではデータをAmazon S3に保存するのが標準的です。トレーニング開始時にS3からデータを取得し、モデルアーティファクトもS3に保存されます。大規模データの場合はS3 Pipe ModeやFSxを使用することもあります。",
+      "tags": ["SageMaker", "S3", "トレーニング"]
+    },
+    {
+      "id": "MLA-003",
+      "category": "SageMaker推論",
+      "difficulty": 2,
+      "question": "SageMakerでトレーニングしたモデルをリアルタイム推論で使用するために必要なものはどれですか？",
+      "choices": [
+        "AWS Lambda関数",
+        "SageMaker Endpoint（リアルタイム推論エンドポイント）",
+        "EC2インスタンス",
+        "Amazon API GatewayのRESTエンドポイント"
+      ],
+      "answers": [1],
+      "explanation": "SageMaker Endpointはモデルをデプロイしてリアルタイム予測を行うためのマネージドインフラです。AutoScalingをサポートし、A/Bテスト用の複数バリアントも設定できます。大量データの一括処理にはBatch Transformを使用します。",
+      "tags": ["SageMaker", "推論", "エンドポイント"]
+    },
+    {
+      "id": "MLA-004",
+      "category": "SageMaker推論",
+      "difficulty": 2,
+      "question": "100万件の画像ファイルに対してバッチ推論を行う場合、最も適切なSageMakerの機能はどれですか？",
+      "choices": [
+        "SageMaker Real-time Endpoint",
+        "SageMaker Asynchronous Endpoint",
+        "SageMaker Batch Transform",
+        "SageMaker Data Wrangler"
+      ],
+      "answers": [2],
+      "explanation": "Batch TransformはS3に保存された大規模データセットに対して推論を行い、結果をS3に書き出します。常時稼働するエンドポイントが不要で、推論が完了するとリソースが自動的に解放されます。大量データのオフライン処理に最適です。",
+      "tags": ["SageMaker", "Batch Transform", "推論"]
+    },
+    {
+      "id": "MLA-005",
+      "category": "ML概念",
+      "difficulty": 1,
+      "question": "機械学習モデルで過学習（Overfitting）が発生している場合の症状として正しいものはどれですか？",
+      "choices": [
+        "訓練データでの精度は高いが、検証/テストデータでの精度が著しく低い",
+        "訓練データでも検証データでも精度が低い",
+        "訓練データでの精度が低く、検証データでの精度が高い",
+        "どちらのデータでも精度が高い"
+      ],
+      "answers": [0],
+      "explanation": "過学習は訓練データにモデルが過度に適合し、未知のデータへの汎化能力が低下した状態です。訓練誤差は小さいが、検証誤差が大きい場合に発生します。対策としてはL1/L2正則化、ドロップアウト、データ拡張、早期停止（Early Stopping）などがあります。",
+      "tags": ["過学習", "正則化", "ML概念"]
+    },
+    {
+      "id": "MLA-006",
+      "category": "ML概念",
+      "difficulty": 1,
+      "question": "顧客の購買履歴データのみを使って、類似した購買パターンを持つ顧客グループに分類するタスクに適した学習手法はどれですか？",
+      "choices": [
+        "教師あり学習（分類）",
+        "強化学習",
+        "教師なし学習（クラスタリング）",
+        "半教師あり学習"
+      ],
+      "answers": [2],
+      "explanation": "ラベル（正解）なしでデータのパターンや構造を発見するのが教師なし学習です。K-meansやDBSCANなどのクラスタリングアルゴリズムが適しています。教師あり学習は既知のラベルを持つデータから学習します。",
+      "tags": ["教師なし学習", "クラスタリング", "ML概念"]
+    },
+    {
+      "id": "MLA-007",
+      "category": "ML概念",
+      "difficulty": 2,
+      "question": "機械学習における「高バイアス（High Bias）」の状態を表すものはどれですか？",
+      "choices": [
+        "訓練データでの精度は高いが、検証データでの精度が低い（オーバーフィッティング）",
+        "訓練データでも検証データでも精度が低い（アンダーフィッティング）",
+        "訓練データと検証データ両方で精度が高い",
+        "訓練データのみで精度が高い"
+      ],
+      "answers": [1],
+      "explanation": "高バイアスはモデルが単純すぎてデータのパターンを学習できない状態（アンダーフィッティング）です。対策としてはモデルの複雑さを増やす、特徴量を追加するなどがあります。高分散（High Variance）はオーバーフィッティングに対応します。",
+      "tags": ["バイアス", "分散", "ML概念"]
+    },
+    {
+      "id": "MLA-008",
+      "category": "特徴量エンジニアリング",
+      "difficulty": 2,
+      "question": "カテゴリ変数（例：「赤」「青」「緑」）を機械学習モデルで扱うために数値に変換する一般的な手法はどれですか？",
+      "choices": [
+        "ワンホットエンコーディング（One-Hot Encoding）",
+        "標準化（StandardScaler）",
+        "主成分分析（PCA）",
+        "対数変換"
+      ],
+      "answers": [0],
+      "explanation": "ワンホットエンコーディングはカテゴリ変数を数値に変換する手法で、各カテゴリに対して0か1のバイナリ列を作成します。例：「赤」→[1,0,0]、「青」→[0,1,0]、「緑」→[0,0,1]。順序関係のないカテゴリ変数に適しています。",
+      "tags": ["特徴量エンジニアリング", "エンコーディング", "前処理"]
+    },
+    {
+      "id": "MLA-009",
+      "category": "特徴量エンジニアリング",
+      "difficulty": 2,
+      "question": "特徴量の値域（スケール）が大きく異なる場合（例：年収は数百万〜数千万、年齢は0〜100）、前処理として行うべき操作はどれですか？",
+      "choices": [
+        "欠損値の補完のみ",
+        "外れ値の除去のみ",
+        "特徴量のスケーリング（正規化または標準化）",
+        "データのランダムシャッフル"
+      ],
+      "answers": [2],
+      "explanation": "スケールが異なる特徴量はKNN、SVM、ニューラルネットワークなどの距離・勾配ベースのアルゴリズムに悪影響を与えます。正規化（Min-Max、0〜1に変換）や標準化（Z-score、平均0・標準偏差1に変換）を行うことでモデルの収束を速め、性能を改善できます。",
+      "tags": ["特徴量エンジニアリング", "スケーリング", "前処理"]
+    },
+    {
+      "id": "MLA-010",
+      "category": "モデル評価",
+      "difficulty": 2,
+      "question": "二値分類問題の混同行列において、「実際はスパムではないが、スパムと予測した」ケースを表すものはどれですか？",
+      "choices": [
+        "真陽性（True Positive / TP）",
+        "偽陽性（False Positive / FP）",
+        "偽陰性（False Negative / FN）",
+        "真陰性（True Negative / TN）"
+      ],
+      "answers": [1],
+      "explanation": "False Positiveは「実際は陰性（スパムでない）だが、陽性（スパム）と予測した」誤りです。スパムフィルターでは重要なメールがスパムに分類されるのがFPです。がんスクリーニングではFP（健康な人が陽性と判定）とFN（がん患者が陰性と判定）の影響が大きく異なります。",
+      "tags": ["混同行列", "評価指標", "モデル評価"]
+    },
+    {
+      "id": "MLA-011",
+      "category": "モデル評価",
+      "difficulty": 2,
+      "question": "不均衡データ（例：詐欺検出で詐欺は0.1%）でモデルを評価する際、Accuracyだけでは不十分な理由として正しいものはどれですか？",
+      "choices": [
+        "全件を「詐欺でない」と予測するだけで99.9%の精度が達成でき、実際の詐欺を一件も検出できなくても高スコアになる",
+        "Accuracyは計算コストが高すぎる",
+        "Accuracyは不均衡データに対して計算できない",
+        "AccuracyはF1スコアより常に低い値を示す"
+      ],
+      "answers": [0],
+      "explanation": "不均衡データではAccuracy（正解率）が有用な指標になりません。代わりにPrecision（適合率）、Recall（再現率）、F1スコア、AUC-ROCを使用します。特に詐欺検出や医療診断ではRecall（見逃し率の低さ）が重視されます。",
+      "tags": ["評価指標", "不均衡データ", "モデル評価"]
+    },
+    {
+      "id": "MLA-012",
+      "category": "モデル評価",
+      "difficulty": 2,
+      "question": "ROC曲線のAUCスコアが0.5の場合、何を意味しますか？",
+      "choices": [
+        "モデルが完璧な予測をしている",
+        "モデルが50%の精度を持つ",
+        "モデルがランダム推測と同等の性能（識別能力なし）",
+        "モデルが全て間違って予測している"
+      ],
+      "answers": [2],
+      "explanation": "AUCは0.5〜1.0の範囲を取ります。AUC=1.0は完璧な分類器、AUC=0.5はランダムな分類（識別能力なし）を意味します。一般的にAUC > 0.7で実用的、0.9以上は優れたモデルとされます。",
+      "tags": ["AUC-ROC", "評価指標", "モデル評価"]
+    },
+    {
+      "id": "MLA-013",
+      "category": "モデル評価",
+      "difficulty": 2,
+      "question": "k分割交差検証（k-fold cross-validation）の主な目的は何ですか？",
+      "choices": [
+        "モデルのトレーニングを高速化する",
+        "データを複数のサブセットに分割してモデルの汎化性能をより信頼性高く評価する",
+        "訓練データ量を増やす",
+        "特徴量の重要度を計算する"
+      ],
+      "answers": [1],
+      "explanation": "k分割交差検証はデータをk個のサブセットに分割し、k回の評価（毎回異なるサブセットをテストデータとして使用）を行い、平均性能を算出します。特定のデータ分割に偏らない、より信頼性の高いモデル評価が可能になります。",
+      "tags": ["交差検証", "モデル評価", "ML概念"]
+    },
+    {
+      "id": "MLA-014",
+      "category": "データエンジニアリング",
+      "difficulty": 2,
+      "question": "Amazon SageMaker Data Wranglerの主な機能は何ですか？",
+      "choices": [
+        "データのインポート、探索、前処理、特徴量エンジニアリングをGUIで行う",
+        "MLモデルのデプロイと監視",
+        "ハイパーパラメータの自動チューニング",
+        "分散トレーニングの管理"
+      ],
+      "answers": [0],
+      "explanation": "Data Wranglerはノーコード/ローコードのデータ準備ツールです。300以上のデータ変換処理をGUIで適用でき、データ品質レポートや特徴量相関の可視化も提供します。前処理パイプラインをSageMaker PipelinesやGlue等にエクスポートできます。",
+      "tags": ["Data Wrangler", "SageMaker", "前処理"]
+    },
+    {
+      "id": "MLA-015",
+      "category": "SageMaker基礎",
+      "difficulty": 2,
+      "question": "Amazon SageMaker Feature Storeの主な役割として正しいものはどれですか？",
+      "choices": [
+        "モデルのバージョン管理を行う",
+        "トレーニングジョブのスケジューリングを管理する",
+        "機械学習で使用する特徴量を一元管理・再利用するためのリポジトリ",
+        "データパイプラインのオーケストレーション"
+      ],
+      "answers": [2],
+      "explanation": "Feature Storeは特徴量を一元管理するリポジトリです。オンラインストア（低レイテンシのリアルタイム推論用）とオフラインストア（トレーニング用）の両方を提供します。チーム間での特徴量共有により、重複作業を防ぎ、トレーニング/推論間のデータ一貫性を確保できます。",
+      "tags": ["Feature Store", "SageMaker", "MLOps"]
+    },
+    {
+      "id": "MLA-016",
+      "category": "データエンジニアリング",
+      "difficulty": 2,
+      "question": "AWSでETL（Extract, Transform, Load）処理を行うためのマネージドサービスはどれですか？",
+      "choices": [
+        "Amazon Kinesis",
+        "AWS Glue",
+        "Amazon Redshift",
+        "AWS DataSync"
+      ],
+      "answers": [1],
+      "explanation": "AWS GlueはフルマネージドのETLサービスです。Apache Sparkをベースにしており、Python/ScalaでETLコードを記述できます。Glue Crawlerはデータソースを自動探索してスキーマを推測し、Data Catalogに登録します。SageMakerのデータ前処理パイプラインとの統合も容易です。",
+      "tags": ["Glue", "ETL", "データエンジニアリング"]
+    },
+    {
+      "id": "MLA-017",
+      "category": "AWSAIサービス",
+      "difficulty": 1,
+      "question": "Amazon Rekognitionの機能として正しいものはどれですか？",
+      "choices": [
+        "画像・動画内の物体検出、顔認識、テキスト検出などの視覚的分析",
+        "テキストの感情分析や言語検出",
+        "音声からテキストへの変換",
+        "ドキュメントのレイアウト解析とフォームデータの抽出"
+      ],
+      "answers": [0],
+      "explanation": "Rekognitionは画像・動画の分析AIサービスです。物体・シーン検出、顔分析（年齢推定、感情、類似性）、有名人認識、テキスト検出、コンテンツモデレーション（不適切コンテンツ検出）などの機能を提供します。",
+      "tags": ["Rekognition", "AWSAIサービス", "画像認識"]
+    },
+    {
+      "id": "MLA-018",
+      "category": "AWSAIサービス",
+      "difficulty": 1,
+      "question": "Amazon Comprehendが提供する機能として正しいものはどれですか？",
+      "choices": [
+        "音声をテキストに変換する自動音声認識",
+        "画像内のテキストを抽出するOCR機能",
+        "テキストの感情分析、エンティティ認識、キーフレーズ抽出、言語検出などのNLP機能",
+        "機械翻訳サービス"
+      ],
+      "answers": [2],
+      "explanation": "Comprehendは自然言語処理（NLP）サービスです。テキストから感情（ポジティブ/ネガティブ/ニュートラル）、固有表現（人名、組織、場所など）、キーフレーズを自動抽出し、言語を検出します。カスタム分類器や認識モデルの訓練も可能です。",
+      "tags": ["Comprehend", "NLP", "AWSAIサービス"]
+    },
+    {
+      "id": "MLA-019",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon Textractが他のOCRサービスと異なる主な特徴は何ですか？",
+      "choices": [
+        "手書き文字の認識に特化している",
+        "テキストの抽出だけでなく、フォームのキーと値のペアやテーブル構造も自動認識して抽出できる",
+        "リアルタイム動画からのテキスト抽出に特化している",
+        "特定の言語のみをサポートしている"
+      ],
+      "answers": [1],
+      "explanation": "Textractは文書のスキャンからテキスト、フォームフィールド（名前:田中 太郎 など）、表のデータを構造化データとして抽出できます。一般的なOCRがテキストのみ抽出するのに対し、文書の構造も理解します。税務書類や医療記録の処理に有用です。",
+      "tags": ["Textract", "OCR", "AWSAIサービス"]
+    },
+    {
+      "id": "MLA-020",
+      "category": "AWSAIサービス",
+      "difficulty": 1,
+      "question": "Amazon Transcribeの機能として正しいものはどれですか？",
+      "choices": [
+        "音声ファイルや音声ストリームをテキストに自動変換する（ASR: 自動音声認識）",
+        "テキストを自然な音声に変換する（TTS）",
+        "音声通話の品質を改善する",
+        "音楽ファイルからメタデータを抽出する"
+      ],
+      "answers": [0],
+      "explanation": "Transcribeは音声認識（ASR）サービスです。MP3、MP4、WAVなどの音声/動画ファイルからテキストを生成します。カスタム語彙の追加、話者の識別（Speaker Diarization）、医療用の専門モデル（Medical Transcribe）も提供します。",
+      "tags": ["Transcribe", "音声認識", "AWSAIサービス"]
+    },
+    {
+      "id": "MLA-021",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon Forecastが最も適しているユースケースはどれですか？",
+      "choices": [
+        "画像内の物体を検出する",
+        "リアルタイムでユーザーにパーソナライズされた推薦を提供する",
+        "将来の需要や売上などの時系列データを予測する",
+        "テキストの感情を分析する"
+      ],
+      "answers": [2],
+      "explanation": "Forecastは時系列予測サービスです。過去の時系列データとオプションの関連データ（気象、イベントなど）を入力として、将来の値（需要、在庫、売上など）を予測します。小売りの在庫計画、エネルギー需要予測、サーバーキャパシティプランニングなどに活用されます。",
+      "tags": ["Forecast", "時系列", "AWSAIサービス"]
+    },
+    {
+      "id": "MLA-022",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "SageMaker Model Monitorの主な役割として正しいものはどれですか？",
+      "choices": [
+        "モデルのトレーニングコストを最適化する",
+        "本番環境のモデルのデータドリフトや品質の変化を自動で監視・アラート",
+        "ハイパーパラメータを自動でチューニングする",
+        "新しいモデルバージョンを自動でデプロイする"
+      ],
+      "answers": [1],
+      "explanation": "Model Monitorは本番エンドポイントの監視サービスです。データドリフト（入力データの分布変化）、コンセプトドリフト（特徴量と予測の相関変化）、モデル品質（予測精度の低下）を自動検出し、CloudWatchアラームで通知します。",
+      "tags": ["Model Monitor", "MLOps", "ドリフト"]
+    },
+    {
+      "id": "MLA-023",
+      "category": "MLOps",
+      "difficulty": 3,
+      "question": "SageMakerでモデルを本番環境に更新する際、一部のトラフィックのみを新バージョンに流してリスクを最小化する手法はどれですか？",
+      "choices": [
+        "カナリアデプロイメント（Production Variantsの重み付きルーティング）",
+        "バッチトランスフォーム",
+        "A/Aテスト",
+        "ローリングデプロイメント（全インスタンス一括更新）"
+      ],
+      "answers": [0],
+      "explanation": "SageMakerエンドポイントは複数のProduction Variantsを設定でき、各バリアントに重み（例：旧モデル90%、新モデル10%）を割り当てることでカナリアデプロイメントを実現します。新モデルの問題を早期発見しながら段階的に切り替えられます。",
+      "tags": ["カナリアデプロイ", "MLOps", "デプロイメント"]
+    },
+    {
+      "id": "MLA-024",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "Amazon SageMaker Pipelinesの主な用途として正しいものはどれですか？",
+      "choices": [
+        "データベースのETLパイプラインを構築する",
+        "リアルタイムデータストリーミングを処理する",
+        "MLワークフロー（データ処理→トレーニング→評価→デプロイ）をCI/CDパイプラインとして自動化・管理する",
+        "ネットワークトラフィックのルーティングを管理する"
+      ],
+      "answers": [2],
+      "explanation": "SageMaker PipelinesはML専用のCI/CDオーケストレーションサービスです。データ処理、トレーニング、評価、登録、デプロイなどのステップをDAGとして定義し、再現可能なMLパイプラインを構築できます。条件分岐（評価スコアが基準を超えた場合のみデプロイ）なども設定できます。",
+      "tags": ["Pipelines", "MLOps", "CI/CD"]
+    },
+    {
+      "id": "MLA-025",
+      "category": "ML概念",
+      "difficulty": 2,
+      "question": "不均衡データに対処するための手法として正しくないものはどれですか？",
+      "choices": [
+        "オーバーサンプリング（少数クラスのサンプルを増加）",
+        "アンダーサンプリング（多数クラスのサンプルを削減）",
+        "クラス重み付け（少数クラスに高い損失ウェイト）",
+        "データ量を増やさずにモデルを単純化する"
+      ],
+      "answers": [3],
+      "explanation": "不均衡データの対処法には、(1)オーバーサンプリング（SMOTEなど）、(2)アンダーサンプリング、(3)クラス重み付け（class_weight=balanced）、(4)F1スコアやAUCなど適切な評価指標の使用があります。モデルを単純化しても不均衡問題は解決しません。",
+      "tags": ["不均衡データ", "ML概念", "前処理"]
+    },
+    {
+      "id": "MLA-026",
+      "category": "SageMaker高度機能",
+      "difficulty": 3,
+      "question": "Amazon SageMaker Automatic Model Tuning（HPO）で使用されるデフォルトの最適化手法はどれですか？",
+      "choices": [
+        "グリッドサーチ（Grid Search）",
+        "ベイズ最適化（Bayesian Optimization）",
+        "ランダムサーチ（Random Search）",
+        "遺伝的アルゴリズム"
+      ],
+      "answers": [1],
+      "explanation": "SageMakerのAutomatic Model Tuningはベイズ最適化を使用します。過去のトレーニング結果を基に次の探索点を賢く選択するため、グリッドサーチやランダムサーチよりも効率的に最適なハイパーパラメータを見つけられます。探索ジョブの並列数も設定できます。",
+      "tags": ["HPO", "ハイパーパラメータ", "SageMaker"]
+    },
+    {
+      "id": "MLA-027",
+      "category": "SageMakerアルゴリズム",
+      "difficulty": 2,
+      "question": "SageMakerのビルトインアルゴリズムの中で、時系列予測に特化したアルゴリズムはどれですか？",
+      "choices": [
+        "XGBoost",
+        "BlazingText",
+        "DeepAR",
+        "Linear Learner"
+      ],
+      "answers": [2],
+      "explanation": "DeepARはLSTM（Long Short-Term Memory）ベースのリカレントニューラルネットワークを使用した時系列予測アルゴリズムです。複数の関連時系列を同時に学習し、確率的な予測（予測区間）を提供します。需要予測、エネルギー消費予測などに適しています。",
+      "tags": ["DeepAR", "時系列", "SageMakerアルゴリズム"]
+    },
+    {
+      "id": "MLA-028",
+      "category": "SageMaker高度機能",
+      "difficulty": 3,
+      "question": "Amazon SageMaker Neoの主な機能として正しいものはどれですか？",
+      "choices": [
+        "様々なハードウェア（エッジデバイス、クラウドなど）向けにモデルをコンパイルしてパフォーマンスを最適化する",
+        "複数のモデルを一つにまとめてアンサンブル学習を行う",
+        "モデルの訓練データを自動生成する",
+        "テキストと画像を組み合わせたマルチモーダルモデルを構築する"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Neoは機械学習モデルを特定のハードウェアアーキテクチャ向けにコンパイルし、パフォーマンスを最大2倍改善します。AWS IoT GreengrassとAWS Inferentiaと連携し、エッジデバイス（Raspberry Pi、NVIDIA Jetsonなど）へのモデルデプロイを容易にします。",
+      "tags": ["Neo", "エッジ推論", "SageMaker"]
+    },
+    {
+      "id": "MLA-029",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "SageMakerトレーニングジョブで使用するデータとモデルアーティファクトを暗号化する方法として正しいものはどれですか？",
+      "choices": [
+        "S3のサーバーサイド暗号化（SSE-KMS）とKMSキーをSageMakerジョブ設定に指定する",
+        "暗号化はSageMakerが自動的に行うため設定不要",
+        "エンドポイントにSSL証明書をインストールする",
+        "AWS Shieldを使用して暗号化する"
+      ],
+      "answers": [0],
+      "explanation": "SageMakerのトレーニングデータはS3に暗号化して保存（SSE-S3またはSSE-KMS）し、トレーニングジョブ設定でKMSキーを指定することでEBSボリュームとモデルアーティファクトも暗号化できます。VPCを設定してネットワークを分離することも重要なセキュリティ対策です。",
+      "tags": ["セキュリティ", "暗号化", "KMS"]
+    },
+    {
+      "id": "MLA-030",
+      "category": "ML概念",
+      "difficulty": 2,
+      "question": "転移学習（Transfer Learning）の主な利点として正しいものはどれですか？",
+      "choices": [
+        "全く新しいデータなしでモデルを訓練できる",
+        "大規模データで訓練済みのモデルを別のタスクに適用することで、少ないデータと計算コストで高い性能を実現できる",
+        "モデルのパラメータ数を自動的に削減する",
+        "ランダム初期化より常に性能が低下する"
+      ],
+      "answers": [1],
+      "explanation": "転移学習では、大量データで事前学習されたモデル（例：ImageNet学習済みResNet、BERT）の知識を活用し、少量の新しいデータでファインチューニングします。画像分類、NLPタスクで特に効果的で、SageMaker JumpStartでは多数の事前学習モデルが利用できます。",
+      "tags": ["転移学習", "ファインチューニング", "ML概念"]
+    }
+  ]
+}
