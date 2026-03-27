@@ -2252,6 +2252,156 @@
       "answers": [0],
       "explanation": "ABAC（Attribute-Based Access Control）vs RBAC（Role-Based Access Control）：RBAC：サービス別・環境別に異なるIAMポリシーを作成（管理ポリシーの増加）。ABAC：①リソースとプリンシパルのタグの一致でアクセスを制御②IAMポリシーの条件にaws:ResourceTagとaws:PrincipalTagを使用③少数のポリシーで多様なシナリオに対応。例：Team=AのユーザーがProject=Aのリソースにのみアクセス可能なポリシーを1つ作成→チームやプロジェクトが増えてもポリシー変更なし（タグを付けるだけ）④大規模組織でのポリシー管理簡略化に有効。組み合わせ：RBACとABACを組み合わせた細粒度アクセス制御が実用的。",
       "tags": ["セキュリティ", "IAM", "ABAC", "タグベース", "アクセス制御"]
+    },
+    {
+      "id": "SAA-151",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "「サーバーレスアーキテクチャ」の設計パターンで「オーケストレーション」として最適なAWSサービスはどれですか？",
+      "choices": [
+        "AWS Step Functions：Lambda・ECS・Fargate・SNS・SQS等を視覚的なワークフローで組み合わせ、条件分岐・並列処理・エラー処理・再試行を宣言的に定義するオーケストレーションサービス",
+        "Amazon SQSはStep Functionsと同等のオーケストレーション機能を持つ",
+        "サーバーレスアーキテクチャのオーケストレーションにはEC2が最も適している",
+        "Lambda関数内に全てのワークフロー制御ロジックをハードコードするのが最善"
+      ],
+      "answers": [0],
+      "explanation": "AWS Step Functionsはサーバーレスオーケストレーションの中心サービスです。特徴：①ビジュアルワークフロー（ASL: Amazon States Language）で複数のサービスを統合②組み込みエラーハンドリング（Catch・Retry・Fail状態）③並列処理（Parallel・Map状態）④条件分岐（Choice状態）⑤350以上のAWSサービスをSDK統合で直接呼び出し（Lambda不要）⑥Express Workflow：高スループット短時間処理、Standard：長時間・Exactly-once。ユースケース：注文処理パイプライン・ETLワークフロー・ヒューマンアプルーバルフロー・MLトレーニングパイプライン（SageMaker Pipeline代替）。",
+      "tags": ["アーキテクチャ", "Step Functions", "サーバーレス", "オーケストレーション"]
+    },
+    {
+      "id": "SAA-152",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "VPCのセキュリティグループとネットワークACL（NACL）の動作の違いとして正しいものはどれですか？",
+      "choices": [
+        "SG：インスタンスレベル・ステートフル（戻りトラフィック自動許可）・許可ルールのみ。NACL：サブネットレベル・ステートレス（戻りトラフィックに明示的許可が必要）・許可と拒否ルール両方・ルール番号の小さい順に評価",
+        "NACLはステートフルでSGはステートレス",
+        "SG はDenyルールを設定できNACLはAllowのみ",
+        "NACLはインスタンスレベルでSGはサブネットレベルに適用される"
+      ],
+      "answers": [0],
+      "explanation": "SG vs NACL比較：セキュリティグループ（SG）：①適用レベル：EC2等のネットワークインターフェイス（インスタンス）②ステートフル：アウトバウンドを許可したトラフィックの戻りは自動許可（逆方向の明示的ルール不要）③Allowルールのみ（Denyは設定不可・デフォルト全拒否）④1インスタンスに複数SG適用可能。NACL：①適用レベル：サブネット（そのサブネット内の全インスタンス）②ステートレス：アウトバウンドを許可しても戻りトラフィックに明示的なインバウンド許可が必要③AllowとDenyルール両方③ルール番号の昇順で評価・最初にマッチしたルールが適用。防御の深さ：SG+NACLの2層で多重防御。",
+      "tags": ["VPC", "セキュリティグループ", "NACL", "ステートフル"]
+    },
+    {
+      "id": "SAA-153",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 Auto ScalingとELBの「接続ドレイン（Connection Draining）」/ 「登録解除の遅延（Deregistration Delay）」の説明として正しいものはどれですか？",
+      "choices": [
+        "インスタンスをターゲットグループから削除する際、処理中のリクエストが完了するまで一定時間（デフォルト300秒）インスタンスを接続状態に保ち、新しいリクエストは別インスタンスへルーティングする機能",
+        "接続ドレインはEC2インスタンスの再起動前にEBSデータを保存するバックアップ機能",
+        "登録解除の遅延はALBがターゲット登録を確認するまでのヘルスチェック待機時間",
+        "この機能はNLBでのみ利用可能でALBは対応していない"
+      ],
+      "answers": [0],
+      "explanation": "Connection Draining（CLB）/ Deregistration Delay（ALB・NLB）：スケールイン時やデプロイ時の優雅なシャットダウンを実現します。動作：①Auto Scalingがインスタンスをスケールインすると、ELBはそのインスタンスへの新規リクエストのルーティングを停止②既存の処理中リクエストは設定された時間（デフォルト300秒・0〜3600秒）内に完了を待つ③時間内に完了しない場合はELBが接続を強制終了。設定のポイント：リクエスト処理時間に応じて設定（短いリクエストなら30秒で十分・長時間処理なら大きく設定）。ゼロダウンタイムデプロイ（Blue/Green・ローリング）と組み合わせて使用。",
+      "tags": ["EC2", "Auto Scaling", "ELB", "接続ドレイン"]
+    },
+    {
+      "id": "SAA-154",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "Amazon MSK（Managed Streaming for Apache Kafka）の主な特徴として正しいものはどれですか？",
+      "choices": [
+        "Apache Kafkaブローカーのプロビジョニング・パッチ適用・ZooKeeper管理を自動化するフルマネージドKafkaサービス（KinesisよりKafka互換性が必要な場合・既存Kafkaクライアントの移行に適切）",
+        "MSKはAmazon SQSのKafka互換ラッパーで同じAPIを使用する",
+        "MSKはリアルタイムデータの永続化専用でSQSはキューイング専用のため用途が全く異なる",
+        "MSKはKinesis Data Streamsより常に低コストで移行が推奨される"
+      ],
+      "answers": [0],
+      "explanation": "Amazon MSK（Managed Streaming for Apache Kafka）：①フルマネージドKafka：ブローカー・ZooKeeper（またはKRaft）のプロビジョニング・パッチ・バックアップを自動化②Apache Kafka完全互換：既存のKafkaクライアント（Java・Python等）・ツール（Kafka Connect・Kafka Streams・KSQL）をそのまま使用③VPC内デプロイ：マルチAZでの高可用性④MSK Serverless：Kafkaクラスターキャパシティ管理不要（オンデマンドスケーリング）⑤MSK Connect：Kafka Connectのマネージド環境（S3・OpenSearch等へのデータ転送）。Kinesis vs MSK：既存KafkaワークロードはMSK、AWSネイティブでシンプルなストリーミングはKinesis Data Streams。",
+      "tags": ["分析", "MSK", "Kafka", "ストリーミング"]
+    },
+    {
+      "id": "SAA-155",
+      "category": "セキュリティ",
+      "difficulty": 3,
+      "question": "AWS の「共同責任モデル（Shared Responsibility Model）」においてEC2 on RDSのセキュリティで「顧客の責任」に該当するものとして正しいものはどれですか？",
+      "choices": [
+        "OSへのパッチ適用・セキュリティグループの設定・データ暗号化（転送中・保存中）・IAMによるアクセス制御・バックアップ設定・ネットワーク設定",
+        "RDSの物理ハードウェアのメンテナンス・データセンターの物理セキュリティ・ハイパーバイザーの管理",
+        "AWSマネージドサービスでは全てのセキュリティ責任がAWS側にあり顧客は何も設定不要",
+        "物理サーバーの電源管理・ネットワーク機器の設置・OSカーネルのバグフィックス"
+      ],
+      "answers": [0],
+      "explanation": "共同責任モデルのEC2とRDSでの比較：AWSの責任（Security OF the Cloud）：物理インフラ（DC・電源・冷却・物理セキュリティ）・ネットワークインフラ・ハイパーバイザー、RDSではOSとDBエンジンのパッチ適用も担当。顧客の責任（Security IN the Cloud）EC2：OSパッチ・アプリ管理・FW設定（SG/NACL）・データ暗号化・IAM設定・ネットワーク設定。顧客の責任 RDS：インスタンス設定（SG）・DBユーザー管理・データ暗号化（at rest/in transit）・バックアップポリシー設定・マルチAZ設定・パラメータグループ設定・KMSキー管理。「クラウドのセキュリティ」はAWS、「クラウドにおけるセキュリティ」は顧客。",
+      "tags": ["セキュリティ", "共同責任モデル", "RDS", "EC2"]
+    },
+    {
+      "id": "SAA-156",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "Amazon S3 のデータ転送コストを削減するための戦略として正しいものはどれですか？",
+      "choices": [
+        "S3からAWSサービス（EC2・Lambda等）への同一リージョン転送は無料・S3からCloudFrontへの転送は無料・VPCゲートウェイエンドポイント経由のS3転送はデータ転送コストなし",
+        "S3からインターネットへのすべてのデータ転送は無料",
+        "S3 Transfer Accelerationはデータ転送コストを削減するサービス",
+        "すべてのリージョン間のS3転送コストは同一"
+      ],
+      "answers": [0],
+      "explanation": "S3データ転送コストの最適化：無料/低コストの転送：①S3へのインポート（PUT/POST）：無料②S3→同一リージョンのEC2・Lambda等：無料（ただしEC2への転送はEgressコスト考慮）③S3→CloudFront：無料（CloudFrontからインターネットへの転送は別途課金）④VPCゲートウェイエンドポイント経由：EC2からS3への通信がVPC内を通り、インターネット転送とNAT GWコストを削減⑤S3 Select：オブジェクト全体を取得せず必要データのみ取得でデータ転送量削減。有料：S3からインターネットへの転送・クロスリージョン転送・クロスAZ転送（同一リージョン内も微課金）。",
+      "tags": ["コスト最適化", "S3", "データ転送", "VPCエンドポイント"]
+    },
+    {
+      "id": "SAA-157",
+      "category": "高可用性",
+      "difficulty": 2,
+      "question": "マルチAZアーキテクチャで「クロスAZデータ転送コスト」を最小化するための設計として正しいものはどれですか？",
+      "choices": [
+        "各AZにNAT Gatewayを配置（そのAZのEC2からはそのAZのNAT Gatewayを使用）・EFSは同一AZ内のマウントポイントを優先・クロスAZの通信を最小化するサービス設計",
+        "1つのNAT GatewayをすべてのAZで共有すればコストが最も低い",
+        "マルチAZではクロスAZデータ転送コストは発生しない",
+        "VPCピアリングでAZ間通信はすべて無料になる"
+      ],
+      "answers": [0],
+      "explanation": "クロスAZデータ転送コスト最適化：①NAT Gatewayのマルチ配置：各AZに個別NAT Gatewayを配置し、そのAZのEC2は同一AZのNAT Gatewayを経由（クロスAZのNAT経由はクロスAZデータ転送コスト発生）②EFSマウントターゲット：EC2と同一AZのマウントターゲットを使用（クロスAZは$0.01/GB課金）③EC2とRDS：同一AZに配置することでEC2→RDSのクロスAZデータ転送コスト削減（ただしマルチAZ RDSのスタンバイは別AZが必要）④ALBと登録インスタンス：ALBは自動的に最も近いAZにルーティング（cross-zone load balancingの設定に注意）。高可用性のためのマルチAZと転送コストのバランスが設計の鍵。",
+      "tags": ["高可用性", "マルチAZ", "コスト最適化", "NAT Gateway"]
+    },
+    {
+      "id": "SAA-158",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "AWSアーキテクチャの「レジリエンス（回復力）」を高めるためのパターンとして「Bulkhead（隔壁）パターン」の説明として正しいものはどれですか？",
+      "choices": [
+        "システムを独立したコンポーネント（スレッドプール・コネクションプール・SQSキュー・Lambda予約済み同時実行）に分離し、1つのコンポーネントの障害が他の部分に影響しないよう隔離する設計パターン",
+        "Bulkheadパターンはデータを複数のS3バケットに分散保存する冗長化パターン",
+        "Bulkheadパターンは大規模なEC2インスタンスを使って単一障害点を排除するスケールアップ戦略",
+        "BulkheadパターンはVPCのNACLルールで通信を隔離するセキュリティパターン"
+      ],
+      "answers": [0],
+      "explanation": "Bulkhead（隔壁）パターンは船の隔壁設計に由来する回復力パターンです。一部の区画が浸水しても船全体は沈まないように、システムを分離します。AWSでの実装：①Lambda予約済み同時実行：重要なAPI（注文）は専用の同時実行数を予約し、他の処理（レポート）が同時実行上限を消費して注文処理に影響しないよう隔離②SQSキューの分離：注文キューとレポートキューを分け、レポート処理の遅延が注文処理に影響しない③EC2インスタンス別ASG：コアサービスとバックグラウンドサービスを別Auto Scalingグループで独立スケール④DynamoDB予約済みキャパシティ：重要なテーブルにキャパシティを確保。",
+      "tags": ["アーキテクチャ", "Bulkhead", "回復力", "Lambda同時実行", "障害分離"]
+    },
+    {
+      "id": "SAA-159",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "大規模なECSワークロードでFargateとEC2起動タイプのコスト比較において、EC2が有利になる条件として正しいものはどれですか？",
+      "choices": [
+        "24時間安定して稼働するハイリソース（高CPU・高メモリ）なワークロードでは、EC2のReserved/Savings Plansを活用するとFargateより大幅にコスト削減できる",
+        "FargateはEC2より常に低コストのためEC2起動タイプを選ぶ理由はない",
+        "EC2は管理オーバーヘッドが高く常にFargateより総コスト（TCO）が高くなる",
+        "スポットインスタンスはFargateでしか利用できないためEC2のコスト優位性はない"
+      ],
+      "answers": [0],
+      "explanation": "Fargate vs EC2コスト比較：Fargateが有利：①間欠的・スパイク性トラフィック（遊休時に課金なし）②小〜中規模ワークロード③インフラ管理コスト（人件費）を削減したい場合④開発・テスト環境。EC2が有利：①24時間安定稼働の大規模コンピュート②Reserved Instances（最大72%割引）またはSavings Plansを適用③特定インスタンスタイプ（GPU・大メモリ）でのコンテナ実行④Spot Instances：EC2上のECSコンテナをスポットで実行（最大90%削減）。分析ツール：AWS Pricing Calculatorで具体的な数値で比較。Fargate Spotも利用可能（ただしEC2 Spotより中断リスクあり）。",
+      "tags": ["コスト最適化", "ECS", "Fargate", "EC2", "Reserved Instances"]
+    },
+    {
+      "id": "SAA-160",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "AWS Well-Architected Frameworkの「セキュリティの柱（Security Pillar）」の設計原則として正しいものはどれですか？",
+      "choices": [
+        "強力なアイデンティティ基盤（IAM最小権限）・すべての層でのセキュリティ適用（多層防御）・セキュリティイベントの追跡可能性・自動化によるセキュリティのスケール・転送中と保存中のデータ保護・インシデント対応準備",
+        "セキュリティの柱はコスト最適化を主な目的とし、セキュリティへの過剰投資を避けることが原則",
+        "セキュリティの柱は外部攻撃への対策のみを対象とし内部不正は対象外",
+        "Well-Architectedのセキュリティは単一のファイアウォールを最大化することが核心原則"
+      ],
+      "answers": [0],
+      "explanation": "Well-Architected Framework セキュリティの柱（Security）の6原則：①強力なアイデンティティ基盤：IAM最小権限・MFA・認証情報の定期ローテーション・長期クレデンシャルの排除②トレーサビリティ：CloudTrail・Config・CloudWatchで全アクションを記録・アラート・監査③すべての層にセキュリティを適用（多層防御）：エッジ・VPC・ロードバランサー・インスタンス・アプリ・データの各層④自動化によるセキュリティのスケール：IaC・自動パッチ・インシデント自動対応⑤転送中・保存中のデータ保護：TLS・KMS暗号化⑥不要時の人間アクセス排除：AWS Systems Manager Session Manager・Just-In-Timeアクセス⑦セキュリティイベントへの準備：Runbook・GameDayで事前訓練。",
+      "tags": ["アーキテクチャ", "Well-Architected", "セキュリティ", "多層防御"]
     }
   ]
 }
