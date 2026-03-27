@@ -191,6 +191,16 @@ test.describe('回答処理', () => {
     await expect(page.locator('#explanation-text')).toBeHidden();
   });
 
+  test('解説ボタンに開閉を示すアイコンが表示される', async ({ page }) => {
+    await page.locator('.choice-btn').first().click();
+    const closedText = await page.locator('#explanation-toggle').textContent();
+    expect(closedText).toContain('▼');
+
+    await page.locator('#explanation-toggle').click();
+    const openText = await page.locator('#explanation-toggle').textContent();
+    expect(openText).toContain('▲');
+  });
+
   test('回答後は選択肢をクリックしても再判定されない', async ({ page }) => {
     await page.locator('.choice-btn').first().click();
     const iconBefore = await page.locator('#answer-icon').textContent();

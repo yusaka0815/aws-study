@@ -115,7 +115,7 @@ export function renderResult(question, selectedIndex, isCorrect) {
 
   // 解説は折りたたんだ状態で表示
   document.getElementById('explanation-text').classList.add('hidden');
-  document.getElementById('explanation-toggle').textContent = '解説を見る';
+  document.getElementById('explanation-toggle').textContent = '▼ 解説を見る';
 }
 
 /**
@@ -127,7 +127,7 @@ export function toggleExplanation(explanation) {
   const isHidden = expEl.classList.contains('hidden');
 
   expEl.classList.toggle('hidden', !isHidden);
-  btn.textContent = isHidden ? '解説を閉じる' : '解説を見る';
+  btn.textContent = isHidden ? '▲ 解説を閉じる' : '▼ 解説を見る';
 
   if (isHidden) {
     expEl.textContent = explanation;
