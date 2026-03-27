@@ -521,6 +521,526 @@
       ],
       "answers": [0, 1, 2, 3],
       "explanation": "CodeCommit開発ワークフロー：(1)Gitflow戦略：feature/xxx → develop（CI実行）→ release/x.x.x（RC版ビルド・テスト）→ main（本番デプロイ）の複数ブランチ管理。hotfixブランチはmainと開発ブランチ両方にマージ。(2)Approval Rule Templates：AWSアカウント/ロールに適用されるApproval Rule TemplateでPR承認者数・特定承認者の必須化をCodeCommitリポジトリに設定。承認なしのマージをAPIレベルでブロック。(3)EventBridge PR通知：CodeCommitのpullRequestCreated・pullRequestStatusChanged・pullRequestMergeStatusUpdated等のイベントをEventBridgeで検知してSlack/Teams/メール通知。レビュアーへの依頼を自動化。(4)Triggers：ブランチ/タグへのプッシュイベントをトリガーとしてSNS通知またはLambda関数を呼び出す。CodePipelineのポーリングよりEventBridgeルールが推奨だが、TriggerはCodeCommitネイティブの軽量通知機能として使用可能。"
+    },
+    {
+      "id": "DOP-041",
+      "category": "CI/CDパイプライン",
+      "question": "AWS CodePipelineのステージ間でパイプラインの状態を管理する際のベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "CodePipeline Variablesを使用してステージ間でGitコミットID・ビルドバージョン等の動的な値を受け渡す",
+        "S3アーティファクトストアに中間成果物を保存してステージ間でテスト結果・設定ファイルを共有する",
+        "Lambda Invoke ActionでパイプラインのどのステージからもAWS APIを呼び出して外部システムと統合する",
+        "Manual Approval Actionのタイムアウトは最大30日まで設定でき承認待ち中もパイプラインは他のアクションを実行できる"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "CodePipelineステージ間状態管理：(1)Variables：アクション出力変数をNamespace::variableNameで参照。CodeBuildの#{CodeBuildAction.CODEBUILD_BUILD_ID}やLambdaカスタム変数をダウンストリームアクションに渡すことでトレーサビリティ向上。(2)S3アーティファクトストア：入力アーティファクト→ビルド→出力アーティファクトのフローでステージ間のデータ受け渡し。テスト結果レポート・設定ファイル・コンパイル済みコードをS3経由で次ステージに渡す。(3)Lambda Invoke Action：任意のAWS APIやサードパーティサービスとの統合にLambda関数を使用。CodePipelineのAPIでパイプラインを制御したり外部チケットシステムに通知したりできる。(4)誤り：Manual Approval Actionのデフォルトタイムアウトは7日。最大値の設定変更は承認アクション自体では30日ではない。また承認待ち中は同一ステージの後続アクションはブロックされる。"
+    },
+    {
+      "id": "DOP-042",
+      "category": "モニタリング・ログ",
+      "question": "AWS CloudWatch Application Signalsを使用したSLI/SLO管理として正しいものをすべて選べ。",
+      "choices": [
+        "Application Signalsでサービスのレイテンシー・可用性・エラー率をSLIとして自動的に計測する",
+        "SLOを定義して目標値とバーンレートアラームでサービス品質の継続的な監視を実現する",
+        "X-RayトレースとCloudWatchメトリクスをApplication Signalsが自動相関付けしてサービスパフォーマンスを可視化する",
+        "Application Signalsのサービスマップでマイクロサービス間の依存関係とSLO達成状況を一覧表示する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudWatch Application Signals（2024年GA）：(1)自動SLI計測：OpenTelemetryベースのAWS管理エージェントがアプリケーションのレイテンシー（p50/p90/p99）・可用性・エラー率を自動計測。コードの変更なしにJava/Pythonアプリを自動計装。(2)SLO管理：SLOを定義して目標値（可用性99.9%等）に対するError Budget消費率を追跡。バーンレートアラームで残りエラーバジェットが急速に消費されている場合にアラート。(3)トレース・メトリクス相関：X-RayトレースデータとCloudWatchメトリクスをApplication Signalsが自動的に関連付けてコンテキストを保持。特定のSLO違反を引き起こしているトレースに直接ジャンプ可能。(4)サービスマップ：全マイクロサービスとその依存関係（呼び出し元・呼び出し先）をグラフで可視化し、各サービスのSLO達成状況（達成/違反/リスク）を色分けで表示。"
+    },
+    {
+      "id": "DOP-043",
+      "category": "インフラストラクチャ as Code",
+      "question": "AWS CDKのテスト戦略として正しいものをすべて選べ。",
+      "choices": [
+        "CDK AssertionsライブラリのTemplateクラスでCFnテンプレートのリソース・プロパティをユニットテストする",
+        "cdk synthで生成されたスナップショットテストでCDKアプリの意図しない変更を検出する",
+        "Integ-test（CDK Integration Tests）フレームワークで実際のAWSリソースをデプロイして統合テストを実行する",
+        "Jest/Pytestなどのテストフレームワークでビジネスロジックを含むCDKコンストラクトをモックでテストする"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CDKテスト戦略：(1)CDK Assertions：aws-cdk-lib/assertions モジュールのTemplateクラスでtemplate.hasResourceProperties('AWS::S3::Bucket', {...})等のアサーションを記述。生成されるCFnリソースの属性値・数量・依存関係をユニットテスト。(2)スナップショットテスト：CDKアプリのsynth結果（CFnテンプレートJSON）をスナップショットとして保存し、変更後の出力と比較。意図しないリソース追加・プロパティ変更を早期検出。(3)CDK Integ-test：@aws-cdk/integ-testsフレームワークで実際のAWS環境に対して統合テストを実行。ユニットテストでは検証できないIAMポリシー評価・VPCルーティング等をE2E検証。(4)モックテスト：Jest/Pytestでクラウドプロバイダーをモック（aws-sdk-mock等）してCDKコンストラクトのロジック（条件分岐・ループ等）を単体テスト。インフラ構築ロジック自体のバグを早期発見。"
+    },
+    {
+      "id": "DOP-044",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWS Organizations全体のセキュリティポスチャー管理として正しいものをすべて選べ。",
+      "choices": [
+        "AWS Security Hubを組織全体に有効化してGuardDuty・Inspector・Macie等のFindingsを中央管理アカウントに集約する",
+        "Security HubのAWS Foundational Security Best Practices（FSBP）標準で全アカウントのセキュリティスコアを評価する",
+        "Suppressed Findings機能で承認済みの例外にコメントを付与して誤検知によるノイズを低減する",
+        "Security Hub Automationsで特定のFinding条件に一致した際のアクション（状態更新・EventBridgeイベント等）を自動化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Security Hub組織セキュリティポスチャー管理：(1)組織集約：Organizations統合でSecurity Hub管理者アカウントを指定し、全メンバーアカウントのFindingsを自動集約。新規アカウント追加時も自動的にSecurity Hubが有効化される。(2)FSBP標準：AWSのセキュリティエキスパートが定義した170+のコントロールでEC2・IAM・S3・RDS等のベストプラクティス準拠を評価。Securityスコア（0〜100）で組織全体の状況を数値化。(3)Suppressed Findings：開発環境の既知の例外や承認済みリスク受容のFindingをSuppressedに設定して管理ノイズを削減。監査ログに記録されるため後から追跡可能。(4)Security Hub Automations：Finding条件（ProductName='Inspector', SeverityLabel='CRITICAL'等）にマッチした際にステータス自動更新・SNS通知・EventBridgeイベント発火を設定。反復的な対応を自動化してSOCの効率化。"
+    },
+    {
+      "id": "DOP-045",
+      "category": "高可用性・信頼性",
+      "question": "Amazon EKS上のアプリケーションの自動スケーリングとして正しいものをすべて選べ。",
+      "choices": [
+        "Horizontal Pod Autoscaler（HPA）でCPU/メモリまたはカスタムメトリクスに基づいてPod数を自動スケールする",
+        "Vertical Pod Autoscaler（VPA）でPodのCPU・メモリリクエスト/リミットを自動的に最適化する",
+        "KEDA（Kubernetes Event-Driven Autoscaling）でSQS・Kinesis・Kafka等のイベントソースメトリクスでPodをスケールする",
+        "Karpenterでノードプロビジョニングを需要に応じて自動化しPod配置最適化でノードコストを削減する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "EKS自動スケーリング戦略：(1)HPA：metrics-serverからのCPU/メモリ使用率またはPrometheus Adapterのカスタムメトリクスでreplica数を自動調整。KEDA対応前のスタンダードなPodスケーリング。(2)VPA：Pod作成時の適切なresource requests/limitsを過去の使用率から推奨。Admission WebhookモードでPodの再起動なしに動的変更（VPA 1.0以降）が可能。HPAとの併用時はCPU/メモリ以外のメトリクスでHPAを使用する必要がある。(3)KEDA（AWSサポート）：Amazon SQS Queue Length・Kinesis shard lag・MSK consumer lag・DynamoDB Streams等のAWSサービスメトリクスをトリガーにPodをゼロ→N にスケール。AWSマーケットプレイスでKEDAアドオンも提供。(4)Karpenter：AWS管理のKubernetesノードプロビジョニングツール。スケジュールされていないPodのリソース要件を検出し、最もコスト効率の良いEC2インスタンスを自動起動。Spot/On-Demand混合・Graviton優先等の設定が可能。"
+    },
+    {
+      "id": "DOP-046",
+      "category": "CI/CDパイプライン",
+      "question": "テスト自動化戦略としてTestPyramidを実装するAWSサービス活用として正しいものをすべて選べ。",
+      "choices": [
+        "CodeBuildでユニットテスト・カバレッジレポートを実行しS3にJUnitレポートをアップロードしてCodePipelineで可視化する",
+        "AWS Device Farmでモバイル/Webアプリの実機E2Eテストを複数デバイス・ブラウザで並列実行する",
+        "CodeBuild Report GroupsでE2Eテスト結果をCodeBuild TestReportとして管理しトレンドを追跡する",
+        "AWS FIS（Fault Injection Service）をテストパイプラインに組み込んでChaos Engineeringテストを自動化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Test Pyramid on AWS：(1)Unit Test + Coverage：CodeBuildのbuildspecでpytest --cov・jest --coverage等を実行。JUnit XML形式のレポートをCodeBuild Report Groupsに登録してPR単位のテスト結果とカバレッジトレンドをCI画面で可視化。(2)AWS Device Farm：iOSデバイス・Androidデバイス・Desktopブラウザの実機でAppium/Espresso/UIAutomator/Selenium等のE2Eテストを並列実行。クロスブラウザ・クロスデバイステストを自動化。(3)CodeBuild Report Groups：テストレポートをJUnit/NUnit/Cucumber XML形式でアップロードしてCodeBuild ConsoleおよびAPIで閲覧。Pass/Fail率・実行時間・テスト数のトレンドグラフを提供。(4)FIS Chaos Engineering：ステージング環境のパイプラインにFIS実験（EC2停止・ネットワーク遅延・ECSタスク停止等）を組み込んで耐障害性テストを自動化。実験テンプレートをCFnで管理してCI/CDと統合。"
+    },
+    {
+      "id": "DOP-047",
+      "category": "インフラストラクチャ as Code",
+      "question": "AWS CloudFormationのテンプレート管理と再利用の設計として正しいものをすべて選べ。",
+      "choices": [
+        "CloudFormation Parametersを使用してテンプレートを環境（dev/stg/prod）別にパラメータ化して再利用する",
+        "CloudFormation Mappingsで環境・リージョン別の設定値（AMI ID・インスタンスタイプ等）をテンプレート内に定義する",
+        "CloudFormation Conditionsで環境に応じてリソースの作成・プロパティを条件分岐する",
+        "CloudFormation Rulesでパラメータ間の制約（特定のインスタンスタイプは特定リージョンのみ等）を実行前に検証する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudFormationテンプレート管理：(1)Parameters：デプロイ時に外部から値を注入。InstanceType・VpcId・KeyName等の環境別値をパラメータ化。Allowed Values/Pattern/Constraintsで入力検証。AWS Systems Manager Parameter Storeからの動的参照も可能。(2)Mappings：固定のKey-Value辞書。Fn::FindInMapでリージョン別AMI ID（RegionMap）・環境別インスタンスサイズを参照。条件が複雑でない場合にConditionsよりシンプルな代替。(3)Conditions：Fn::EqualsやFn::Ifで環境判定。Prod環境のみMulti-AZ有効・Dev環境はt3.microを使用する等の条件分岐。リソース自体の作成/スキップもConditionsで制御可能。(4)Rules：CFn Rules（CreationPolicy/UpdatePolicyとは別）でパラメータの相互依存関係を事前検証。アサーション条件が失敗するとスタック操作が開始前に失敗。パラメータ間の整合性を保証。"
+    },
+    {
+      "id": "DOP-048",
+      "category": "モニタリング・ログ",
+      "question": "Kubernetes（EKS）環境でのPrometheus/Grafanaを使用したモニタリングスタック構築として正しいものをすべて選べ。",
+      "choices": [
+        "Amazon Managed Service for Prometheus（AMP）でPrometheusサーバーの管理・スケーリングを自動化する",
+        "kube-prometheus-stack Helm ChartでPrometheus Operator・Grafana・AlertManager・kube-state-metricsを一括インストールする",
+        "Amazon Managed Grafanaでデータソース（AMP・CloudWatch・X-Ray）を統合したダッシュボードを構築する",
+        "ADOT（AWS Distro for OpenTelemetry）CollectorをDaemonSetとしてEKSに展開してメトリクスをAMPに送信する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "EKS Prometheus/Grafanaモニタリング：(1)Amazon Managed Prometheus（AMP）：Prometheusと完全互換のフルマネージドサービス。Prometheusサーバーの運用（スケーリング・HA・ストレージ管理）をAWSが担当。PromQLクエリとアラートルールをそのまま使用可能。(2)kube-prometheus-stack：Kubernetes標準のPrometheusモニタリングスタックをHelmで一括インストール。Node Exporter・kube-state-metrics・ServiceMonitor CRD等のエコシステムを含む。(3)Amazon Managed Grafana：IAM Identity Center認証でAWSリソースのダッシュボードを構築。AMPをデータソースとして追加し、CloudWatchやX-Rayとの統合ダッシュボードを組織全体で共有。(4)ADOT Collector DaemonSet：各EKSノードでADOT CollectorがPrometheus形式のメトリクスをスクレイプしてAMPのRemote Write Endpointに送信。AMPへの認証はSigV4で自動処理。"
+    },
+    {
+      "id": "DOP-049",
+      "category": "構成管理",
+      "question": "AWS Systems Manager Automation Documentを使用した運用自動化として正しいものをすべて選べ。",
+      "choices": [
+        "AWS提供のオートメーションドキュメント（AWS-StartEC2Instance等）を使用して定型運用タスクを自動化する",
+        "カスタムオートメーションドキュメントをYAML/JSON形式で作成してマルチステップの運用手順書をコード化する",
+        "Maintenance WindowsとAutomationを組み合わせて週次パッチ適用やインスタンス再起動を定時実行する",
+        "Change Manager（Change Calendar）でオートメーション実行前に承認ワークフローを追加して変更管理を実施する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "SSM Automation運用自動化：(1)AWS管理ドキュメント：AWS-PatchInstanceWithRollback・AWS-RestartEC2Instance・AWS-StopEC2InstanceWithApproval等の事前構築ドキュメントで標準作業を即時自動化。パラメータ化されているため再利用が容易。(2)カスタムドキュメント：YAML/JSONのSSM Automation Document言語でstep（aws:runCommand・aws:executeAwsApi・aws:waitForAwsResourceProperty等）を記述して複雑な運用手順書をコード化。(3)Maintenance Windows + Automation：Maintenance Window（毎週日曜0:00-2:00等）にRegisterTaskとして Automationを登録して定時実行。対象インスタンスはタグまたはSSMリソースグループで指定。(4)Change Manager承認ワークフロー：Change TemplateにApprover（IAMユーザー/グループ）を設定してオートメーション実行前に承認を要求。Change Calendarで特定期間（リリースフリーズ等）はオートメーションをブロック。ITIL変更管理のAWS実装。"
+    },
+    {
+      "id": "DOP-050",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWS KMSを使用したCI/CDパイプラインのシークレット管理として正しいものをすべて選べ。",
+      "choices": [
+        "CodeBuildのビルド環境変数にSecrets ManagerのシークレットARNを指定してビルド時に動的に値を取得する",
+        "KMS Envelope EncryptionでデータキーをCustomer Managed Key（CMK）で暗号化してシークレットを保護する",
+        "Secrets Manager Resource-based PolicyでCross-Account アクセスを制御してマルチアカウントCI/CDで安全にシークレットを共有する",
+        "AWS Secrets Manager Rotation Lambdaを定期的にトリガーしてデータベースパスワードを無停止で自動ローテーションする"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "KMS/Secrets Manager CI/CDシークレット管理：(1)CodeBuild Secrets Manager統合：CodeBuildのEnvironment Variablesにsecretsmanager:SecretIdを指定すると、ビルド実行時にSecrets ManagerからJSONで取得して個別フィールドを環境変数に自動展開。ビルドログに値が表示されないよう保護。(2)Envelope Encryption：平文データ→データキー（AES-256）で暗号化→データキー自体をCMKで暗号化（Encrypt API）。使用時はCMKでデータキーを復号（Decrypt API）→データを復号。KMSキーがデータに直接触れないため大量データの暗号化に効率的。(3)Secrets Manager クロスアカウント：リソースポリシーでaws:PrincipalAccountの条件を使用して特定のアカウントからのGetSecretValue APIを許可。パイプラインアカウントが本番アカウントのDBパスワードを取得可能に設定。(4)自動ローテーション：Aurora/RDS/Redshift用マネージドローテーション関数で新旧パスワードの同時有効化（Set→Test→Finish）を実現して接続断なしにパスワードを自動更新。"
+    },
+    {
+      "id": "DOP-051",
+      "category": "高可用性・信頼性",
+      "question": "Amazon RDSのMulti-AZ配置とRead Replicaを組み合わせた高可用性設計として正しいものをすべて選べ。",
+      "choices": [
+        "RDS Multi-AZ（スタンバイ）は同期レプリケーションで自動フェイルオーバーを提供するがスタンバイへの直接アクセスは不可",
+        "RDS Read Replicaは非同期レプリケーションで読み取りスケールアウトに使用しセカンダリリージョンに作成可能",
+        "RDS Multi-AZ Cluster（DB Cluster）は2つのリーダーインスタンスで読み取り負荷分散とWrite高可用性を同時提供する",
+        "Aurora Replicaはネイティブレプリケーションで15台まで作成でき同一クラスターのReader Endpointで自動負荷分散する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "RDS高可用性設計：(1)RDS Multi-AZ：プライマリ→スタンバイへの同期レプリケーションで最大30秒以内の自動フェイルオーバー。スタンバイはホットスタンバイで読み取り/書き込み不可（SLAの高可用性のみ）。(2)Read Replica：非同期レプリケーションで最大5台（Auroraは15台）を同リージョンまたはクロスリージョンに作成。読み取りをオフロードしてプライマリの負荷を削減。PR（クロスリージョンRR）はDRの読み取り用セカンダリとして機能。(3)RDS Multi-AZ Cluster：MySQL 8.0.28+/PostgreSQL 13.4+のMulti-AZ DB Clusterはライター1台+リーダー2台の3ノード構成。セミ同期レプリケーションでRPO≈0、読み取りをリーダーに分散可能。(4)Aurora Replica：Auroraのストレージ共有アーキテクチャでReplicaはストレージから直接読み取り。プライマリ停止時にReplicaが自動昇格（数十秒）。Reader Endpointで接続数を均等分散。"
+    },
+    {
+      "id": "DOP-052",
+      "category": "CI/CDパイプライン",
+      "question": "Feature Toggles（Feature Flags）パターンを使用したTrunk Based Developmentの実装として正しいものをすべて選べ。",
+      "choices": [
+        "全開発者がmainブランチに直接コミットするTrunk Based Developmentでフィーチャーブランチを最小限に抑える",
+        "Feature Flagsで未完成の機能をコードベースに含めながら本番で非表示にしてCI/CDの継続的インテグレーションを維持する",
+        "AWS AppConfigでFeature FlagをA/Bテストと段階的ロールアウトに活用してプロダクション上でのリスクを削減する",
+        "Feature FlagのON/OFFをコードではなく設定として外部化して緊急時に再デプロイなしで機能を無効化できるようにする"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Feature Flags + Trunk Based Development：(1)Trunk Based Development（TBD）：長命なフィーチャーブランチを排除しメインブランチへの短命なブランチからの頻繁なマージ（1日1回以上）を行うCI実践のベストプラクティス。マージコンフリクト削減・CI品質向上。(2)Feature Flags適用：未完成機能をフラグで非表示にしてメインブランチにマージすることでブランチ分岐なしに安全に開発を続行。ダークローンチ・実験的機能の本番テストにも活用。(3)AWS AppConfig活用：AppConfigのfreeform configurationまたはfeature flagプロファイルでフラグを管理。段階的ロールアウト（1%→10%→100%）やユーザーセグメント別有効化が可能。(4)設定の外部化：コードハードコードより設定ストア（AppConfig・Parameter Store・LaunchDarkly等）でフラグを管理することで、緊急キルスイッチ（障害時の機能即時無効化）をデプロイなしに実行可能。"
+    },
+    {
+      "id": "DOP-053",
+      "category": "モニタリング・ログ",
+      "question": "AWS CloudWatch Dashboardsの高度な機能として正しいものをすべて選べ。",
+      "choices": [
+        "クロスアカウント・クロスリージョンのメトリクスを1つのダッシュボードに統合して組織全体を可視化する",
+        "ダッシュボードのAlarmsウィジェットで複数のCloudWatchアラーム状態を一覧表示する",
+        "Contributor Insightsでログからハイカーディナリティデータ（トップN IPアドレス・ユーザーID等）を集計表示する",
+        "CloudWatch Dashboardのウィジェットに独自のテキスト・マークダウンを追加してドキュメントと監視を統合する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudWatch Dashboards高度機能：(1)クロスアカウント・クロスリージョン：CloudWatch Cross-Account Cross-Region Dashboardsで複数AWSアカウントと複数リージョンのメトリクスを1つのダッシュボードに統合。組織の全インフラを一元的に監視。(2)Alarms Widget：ダッシュボードにアラームウィジェットを追加して複数アラームの現在状態（OK/ALARM/INSUFFICIENT_DATA）を一覧表示。オンコールチームのランドミングパッドとして活用。(3)Contributor Insights：CloudWatch Logs・DynamoDB・ALBアクセスログのハイカーディナリティデータからトップN分析（最もエラーを発生させているIPアドレス・最もコストのかかっているAPIエンドポイント等）をリアルタイムで可視化。(4)Markdownウィジェット：ダッシュボードにテキスト・マークダウン・リンクを追加して監視手順・エスカレーションフロー・インシデント対応手順をダッシュボードと一緒に記述。RunBook統合。"
+    },
+    {
+      "id": "DOP-054",
+      "category": "インフラストラクチャ as Code",
+      "question": "AWS SAM（Serverless Application Model）を使用したサーバーレスアプリケーション開発として正しいものをすべて選べ。",
+      "choices": [
+        "SAMテンプレートはCloudFormationの拡張でAWS::Serverless::Function等の変換マクロが使用できる",
+        "sam local invoke・sam local start-apiでLambda関数をローカル環境でエミュレートしてテストする",
+        "SAM Accelerate（sam sync）でコード変更をローカルからクラウドにホットリロードしてデプロイ待ち時間を削減する",
+        "SAM PipelinesでCodePipeline/GitHub Actions向けのCI/CDパイプラインテンプレートを自動生成する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS SAM開発フロー：(1)SAMテンプレート：CloudFormationのAWS::Serverless変換マクロでAWS::Serverless::Function（Lambda）・AWS::Serverless::Api（API Gateway）・AWS::Serverless::StateMachine（Step Functions）等を使用。標準CFnより短く表現できる。(2)sam local：DockerコンテナでLambdaランタイムをエミュレートしてローカルで関数を呼び出し・HTTP APIをシミュレーション。ローカルデバッグで反復速度を向上。(3)sam sync（SAM Accelerate）：コード変更を検知してCloudFormation Changesetをスキップし、Lambda関数コードを直接S3→Lambda更新（数秒で完了）。開発イテレーションを大幅に高速化。(4)SAM Pipelines：sam pipeline bootstrap・sam pipeline initコマンドでCodePipeline・GitHub Actions・Jenkins等向けのCI/CDテンプレートと必要なIAMロールを自動生成。サーバーレスアプリのCI/CDをゼロから素早く構築。"
+    },
+    {
+      "id": "DOP-055",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "Amazon GuardDutyの高度な機能と脅威対応として正しいものをすべて選べ。",
+      "choices": [
+        "GuardDuty Malware Protectionで感染したEC2/ECS/EKSのEBSボリュームをスキャンしてマルウェアを検出する",
+        "GuardDuty Runtime Monitoring（EKS/ECS/EC2）でランタイムの脅威行動をリアルタイムに検出する",
+        "GuardDuty S3 Protection・RDS Protection・Lambda Protectionで各サービス固有の脅威を検出する",
+        "GuardDuty Findingsを自動的にIPセット・脅威インテルリストに更新してフィードバックループを構築する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "GuardDuty高度機能：(1)Malware Protection：EC2インスタンスまたはECS/EKSタスクのEBSボリュームをオンデマンドまたはGuardDuty検知トリガーでスキャンしてマルウェア/ランサムウェア/暗号通貨マイナーを検出。スナップショットを取得して本番への影響なし。(2)Runtime Monitoring：EKSノードにGuardDuty SecurityAgentをDaemonSetとして展開してシステムコール（ファイル・ネットワーク・プロセス）をリアルタイム監視。コンテナエスケープ・権限昇格・C2通信を検出。(3)拡張Protection：S3 Protection（異常なバケットアクセス）・RDS Protection（DBへの異常なリクエスト）・Lambda Protection（Lambda呼び出しの異常なネットワーク通信）で各サービス固有の脅威を網羅。(4)脅威インテリジェンス更新：GuardDutyのCustom Threat Intelligence（IPセット/ドメインリスト）をLambdaで定期更新するフィードバックループを構築。内部脅威ハンティングの結果を継続的に学習させる。"
+    },
+    {
+      "id": "DOP-056",
+      "category": "高可用性・信頼性",
+      "question": "AWS Lambda関数の高可用性と信頼性確保として正しいものをすべて選べ。",
+      "choices": [
+        "Lambda Destinations（OnSuccess/OnFailure）で非同期呼び出しの成功・失敗後の宛先（SQS/SNS/EventBridge/Lambda）を設定する",
+        "Lambda Dead Letter Queue（DLQ）で非同期呼び出しの最大試行後も失敗したイベントを保存して後で再処理する",
+        "Lambda関数のエラーレートとスロットル率をCloudWatchアラームで監視してAuto Scalingと連携する",
+        "Lambda Power Tuningツールでメモリサイズとコスト・パフォーマンスのトレードオフを自動分析する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Lambda信頼性確保：(1)Lambda Destinations：非同期関数の実行結果をONSUCCESS/ONFAILUREで異なる宛先に送信。DLQがFailureのみなのに対してDestinationsはSuccess/Failure両方に対応し、実行コンテキスト情報も含む詳細なペイロードを転送。(2)Dead Letter Queue：SQSキューまたはSNSトピックをDLQとして設定。デフォルト2回試行後も失敗したイベントをDLQに移動して手動再処理または根本原因調査を実施。(3)エラーレート監視：Lambda/Errors・Lambda/Throttles・Lambda/ConcurrentExecutionsをCloudWatchで監視。エラーレートアラームでPagerDuty通知・スロットルアラームでConcurrency上限引き上げリクエストをトリガー。(4)Lambda Power Tuning：AWS Labs提供のStep Functionsベースのツール。指定したメモリサイズ範囲でLambdaを複数回実行し、コスト・速度・最適バランスを自動分析してグラフで可視化。パフォーマンスチューニングに活用。"
+    },
+    {
+      "id": "DOP-057",
+      "category": "CI/CDパイプライン",
+      "question": "Amazon ECRを使用したコンテナCI/CDパイプラインの設計として正しいものをすべて選べ。",
+      "choices": [
+        "Dockerfileのマルチステージビルドでビルド依存関係を含まない最小サイズの本番イメージを作成する",
+        "ECR Enhanced Scanningで新しいCVEが公開されたときも既存イメージを継続的に再スキャンする",
+        "マルチアーキテクチャイメージ（ARM64/AMD64）をECRに格納してGravitonとx86の両方に対応する",
+        "ECR Pull Through Cacheで外部レジストリ（Docker Hub・Quay.io等）のイメージをECRでキャッシュしてRate Limitを回避する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ECR CI/CDパイプライン：(1)マルチステージビルド：FROM golang:1.21 AS builder → コンパイル → FROM scratch AS runtime → バイナリのみコピーの構成で最終イメージを最小化（セキュリティリスク削減・転送コスト削減・起動時間短縮）。(2)ECR Enhanced Scanning（Inspector V2）：Basic Scanningは手動または起動時のみのスキャンだが、Enhanced ScanningはCVEデータベース更新時に既存イメージを継続的に再スキャン。保存中のイメージの新規CVEも遅延なく検出。(3)マルチアーキテクチャイメージ：docker buildx + ECRでARM64（Graviton）とAMD64のイメージをDockerマニフェストリストとして格納。ECSタスク定義の変更なしにGraviton移行が可能。(4)Pull Through Cache：Docker HubのRate Limit（匿名200/6h・認証5000/24h）を回避するためECRにキャッシュ。Upstream Registry（Docker Hub/GCR/ECR Public）のイメージをECRドメインを経由してプル→自動キャッシュ。"
+    },
+    {
+      "id": "DOP-058",
+      "category": "インフラストラクチャ as Code",
+      "question": "AWS Control TowerのAccount Factoryを使用したアカウントプロビジョニングの自動化として正しいものをすべて選べ。",
+      "choices": [
+        "Account Factory for Terraform（AFT）でTerraformを使用してアカウント作成と設定を完全にコード化する",
+        "Account Factory Customization（AFC）でGitリポジトリのパイプラインで新規アカウントにカスタム設定を自動適用する",
+        "Service Catalog Account Factoryのポータルからセルフサービスでアカウントをリクエストして承認ワークフローで作成する",
+        "AWS Control Tower Lifecycle Eventsを使用してアカウント作成完了後に追加のカスタマイズを自動実行する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Control Tower アカウントプロビジョニング自動化：(1)Account Factory for Terraform（AFT）：AWSがオープンソース提供するTerraformモジュールでAFTパイプライン（CodePipeline）からアカウント作成・OU割り当て・ガードレール適用を実行。IaCでアカウントの状態を宣言的に管理。(2)Account Factory Customization：GitHub等のリポジトリにカスタマイズスクリプト（VPC設定・ベースラインツール等）を管理し、アカウント作成後のCodePipelineが自動実行して標準環境を構成。(3)Service Catalog Account Factory：IT管理者が定義したAccount Factoryプロダクトをエンドユーザーがセルフサービスでリクエスト。承認者がAWSコンソールで承認するとControl Towerが自動でアカウントを作成。(4)Lifecycle Events：Control Towerの「CreateManagedAccount」・「UpdateManagedAccount」・「DeregisterManagedAccount」等のイベントをEventBridgeで受信してLambdaで追加処理（カスタムDNS設定・Direct Connect追加等）を自動実行。"
+    },
+    {
+      "id": "DOP-059",
+      "category": "モニタリング・ログ",
+      "question": "Kinesis Data Streamsを使用したリアルタイムログ分析パイプラインとして正しいものをすべて選べ。",
+      "choices": [
+        "CloudWatch Logs Subscription FilterでロググループをKinesis Data Streamsにリアルタイムに転送する",
+        "Kinesis Client Library（KCL）またはKinesis Data Analytics（Apache Flink）でストリームをリアルタイム処理する",
+        "Kinesis Data Firehoseを使用してKinesisストリームからS3・Redshift・OpenSearchへのデータ配信を自動化する",
+        "Kinesis Data Streamsの強化ファンアウト（Enhanced Fan-Out）で複数コンシューマーにシャードあたり2MB/sの専用スループットを提供する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Kinesisリアルタイムログ分析パイプライン：(1)CloudWatch Logs→Kinesis Subscription：ロググループのSubscription FilterでフィルタリングされたログをリアルタイムにKinesisに転送。複数のロググループをKinesisに集約して横断分析が可能。(2)KCL/Kinesis Data Analytics：KCLはJava/Python/Rubyアプリでシャードを分散処理するライブラリ。Managed Service for Apache Flinkは複雑なリアルタイム分析（パターンマッチング・ウィンドウ集計・異常検知）をSQLまたはJava/Pythonで実装。(3)Kinesis Firehose：KinesisストリームのデータをFirehoseでS3（Parquet変換・Hive互換パーティショニング）・Redshift・OpenSearch・HTTP Endpointに自動配信。完全マネージドで運用コストが低い。(4)Enhanced Fan-Out：RegisterStreamConsumerで登録したコンシューマーがShardあたり2MB/sの専用スループットをHTTP/2プッシュで受信。標準GetRecords（全コンシューマー合計2MB/s共有）より高スループット・低レイテンシー（〜70ms）。"
+    },
+    {
+      "id": "DOP-060",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWSネットワークセキュリティの多層防御として正しいものをすべて選べ。",
+      "choices": [
+        "AWS Network FirewallでステートフルなディープパケットインスペクションとSuricataルールによるIDS/IPSを実装する",
+        "AWS Shield AdvancedでLayer3/4のDDoS攻撃を自動緩和し、DDoS Response Team（DRT）のサポートを受ける",
+        "VPC Flow LogsをCloudWatch Logs InsightsまたはAthenaで分析して異常なトラフィックパターンを検出する",
+        "AWS Network Access Analyzer（Network Manager）でVPCのネットワーク到達可能性分析を実行して意図しないアクセスパスを検出する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ネットワークセキュリティ多層防御：(1)AWS Network Firewall：VPC内にFirewallエンドポイントを配置してステートフルルールとサーブルールによる深いパケット検査を実施。SuricataフォーマットのカスタムIDS/IPSシグネチャで高度な脅威を検出・ブロック。(2)Shield Advanced：EC2/ELB/CloudFront/Route53に対するL3/L4 DDoSをほぼゼロダウンタイムで自動緩和。Shield AdvancedはDRTアクセスとDDoSコスト保護（攻撃起因のスケーリングコスト払い戻し）を提供。(3)VPC Flow Logs分析：ENI単位のトラフィックログをCloudWatch Logs Insightsの「top talkers」クエリやAthenaで分析。ポートスキャン・内部通信の異常・C2通信（既知悪性IP宛て）を検出。(4)Network Access Analyzer：最終的な到達可能性（意図しない外部公開・S3等への予期しないルーティング）をVPC ReachabilityAnalyzerを使って分析。パスが見つかれば具体的なホップを可視化。"
+    },
+    {
+      "id": "DOP-061",
+      "category": "CI/CDパイプライン",
+      "question": "ECS/EKSクラスターへのRolling UpdateとBlue/Green DeploymentをCodePipelineから制御する構成として正しいものをすべて選べ。",
+      "choices": [
+        "ECSサービスのDeployment ControllerをECSにするとRolling Update、CODEDEPLOYにするとCodeDeploy経由のBlue/Greenになる",
+        "CodePipeline ECSデプロイアクションでimageDetail.jsonを使用してECRイメージURLをタスク定義に動的に注入する",
+        "EKS向けにはCodePipelineのkubectl deployアクション（CodeBuild）またはHelm Chart Releaseでデプロイを実行する",
+        "CodeDeploy AppSpec（appspec.yaml）のContainerNameとContainerPortでBlue/Green切り替えのALBターゲットグループを制御する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ECS/EKS CodePipeline統合：(1)ECS Deployment Controller：ECSコントローラー（Rolling Update）では最小/最大HealthyPercentで旧タスクを置換。CODEDEPLOYコントローラーではCodeDeployとALBが連携してBlue/Greenを管理。(2)imageDetail.json：CodeBuildアクションの出力にimageDetail.json（imageURI含む）を指定することでECSデプロイアクションが最新のECRイメージURIを動的取得してタスク定義を更新。イメージタグを手動変更する必要がない。(3)EKSデプロイ：EKS専用のCodePipelineアクションはないため、CodeBuildのEKS設定済みコンテナでkubectl apply -f k8s/またはhelm upgradeコマンドを実行。EKS Blueprintsとの統合が推奨。(4)AppSpec ContainerName/Port：appspec.yamlのContainerNameとContainerPortがALBのターゲットグループに登録するコンテナを識別。Blue（元のTaskDefinition）からGreen（新TaskDefinition）へのALBリスナールール重みの切り替えをCodeDeployが制御。"
+    },
+    {
+      "id": "DOP-062",
+      "category": "モニタリング・ログ",
+      "question": "AWS CloudTrail Lakeを使用した高度なセキュリティ分析として正しいものをすべて選べ。",
+      "choices": [
+        "CloudTrail LakeのEvent Data StoreにCloudTrailイベントをColumnar形式で最大7年間保存してSQLクエリで分析する",
+        "マルチソース統合でAWSサービスイベント・ActivityLogイベント・非AWSイベントをLakeに取り込む",
+        "CloudTrail Lake Dashboardsで不正アクセスや異常なAPIコールパターンをリアルタイムに可視化する",
+        "Athenaを使用せずにLake上で直接SQLクエリを実行してCloudFormation/IAMの変更履歴をトレースする"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudTrail Lake分析：(1)イベントデータストア：ORC形式のColumnarストレージにイベントを保存。クエリは1-2秒で完了（Athenaより高速）。保持期間は90日〜2557日（7年）で設定。Athena不要でSQL直接クエリ。(2)マルチソース統合：CloudTrailイベント（Management/Data）だけでなく、Activity Audit Log（AWS Config）・Endpoints Activity（AWS Network Firewall）・非AWSイベント（on-premises/SaaS）もインジェストしてLakeに統合した横断分析が可能。(3)Lake Dashboards：CloudTrail Lake内蔵のダッシュボードでTop errorコード・Top APIコール・地理的分布・異常なアクティビティをインタラクティブに可視化。追加コストなし。(4)直接SQLクエリ：SELECT eventSource, eventName, userIdentity.arn, COUNT(*) FROM event_data_store WHERE date_between('2024-01-01', '2024-03-31') GROUP BY 1,2,3 ORDER BY 4 DESC等のSQL。Athenaのクロール・テーブル定義が不要。"
+    },
+    {
+      "id": "DOP-063",
+      "category": "構成管理",
+      "question": "AWS Elastic BeanstalkのCI/CDと構成管理として正しいものをすべて選べ。",
+      "choices": [
+        "Beanstalk環境の設定をEBExtensions（.ebextensions）でYAMLファイルとしてコード管理する",
+        "Beanstalk Platform Branchesで最新のプラットフォームバージョンを選択してOSとランタイムのパッチを自動適用する",
+        "CodePipelineとElastic Beanstalkを統合してソースコード変更から自動デプロイメントまでのCDパイプラインを構築する",
+        "Immutable DeploymentでAll-at-onceやRollingに比べてデプロイ失敗時のリスクを最小化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Elastic Beanstalk CI/CD：(1)EBExtensions：.ebextensions/ファイルのYAML設定（packages/files/commands/services/option_settings）で環境設定をIaCとして管理。アプリケーションバンドルに含めてデプロイと同時に設定が適用される。(2)Platform Updates：Beanstalk Platform Branchesで最新のAmazon Linux 2023・Node.js 20等のManaged Platformを選択。Managed Platform Updatesの有効化でOSセキュリティパッチを自動適用。(3)CodePipeline統合：Source（CodeCommit）→Build（CodeBuild）→Deploy（Elastic Beanstalk）の基本CIパイプライン。eb deployコマンドをCodeBuildから実行するか、CodePipeline Beanstalk DeployアクションでE2Eを自動化。(4)Immutable Deployment：新しいインスタンスセット（ASG）を起動→新バージョンをデプロイ→ヘルスチェック通過後に既存ASGに移行→旧ASGを終了。デプロイ失敗時は新ASGを削除するだけで既存サービスは無影響。最も安全だがコストが一時的に2倍になる。"
+    },
+    {
+      "id": "DOP-064",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "Amazon Macieを使用した個人情報（PII）検出と保護として正しいものをすべて選べ。",
+      "choices": [
+        "Macieの管理検出子でS3バケットのクレジットカード番号・SSN・パスポート等のPIIを自動検出する",
+        "カスタムデータ識別子で正規表現と近傍キーワードを定義して業界固有の機密データ（社員ID等）を検出する",
+        "S3インベントリと連携してMacieがバケットポリシー・ACL・暗号化状態を継続的に評価してパブリックバケットを検出する",
+        "Macie FindingsをSecurity HubとEventBridgeに転送してSOARワークフローとの自動インシデント対応を実装する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Amazon Macie PII保護：(1)管理検出子：AWSが管理するPII検出パターン（クレジットカード・SSN・Drivers License・パスポート・IBAN等）でS3オブジェクトを自動スキャン。日本語PII（マイナンバー等）への対応も一部提供。(2)カスタムデータ識別子：正規表現パターン（例：社員ID ENP-[0-9]{6}）と近傍キーワード（「社員番号」「Employee ID」）を組み合わせたカスタム検出子で企業固有の機密データを検出。(3)S3バケット評価：Macieは全S3バケットのポリシー・ACL・暗号化設定・パブリックアクセスブロック設定を継続的に評価。パブリックにアクセス可能なバケット・共有バケット・暗号化未設定バケットをFindingsとしてレポート。(4)SOAR連携：Macie FindingsをSecurity Hub（中央集約）とEventBridge（リアルタイムイベント）に送信。EventBridge→Step Functions→Lambda→Jiraチケット作成・S3バケット隔離・SNS通知等の自動対応フローに統合。"
+    },
+    {
+      "id": "DOP-065",
+      "category": "高可用性・信頼性",
+      "question": "Amazon DynamoDBの高可用性と運用のベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "DynamoDB On-Demandキャパシティモードで予測不能なワークロードに対してリクエスト単位の自動スケーリングを使用する",
+        "Auto ScalingポリシーをProvisionedモードに設定してTarget Utilization（例：70%）でRCU/WCUを自動調整する",
+        "DynamoDB Streams + Lambda Triggerで変更イベントをリアルタイム処理してElasticSearch等の検索インデックスを同期する",
+        "CloudWatch のDynamoDB ConsumedReadCapacityUnits・ThrottledRequests等でキャパシティ管理を可視化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "DynamoDB高可用性運用：(1)On-Demand：プロビジョニング容量の設定なしにリクエスト数に応じた自動スケーリング。急激なトラフィックスパイクにも即対応。RCU/WCU単価はProvisionedより高いがキャパシティ管理が不要。(2)Provisioned + Auto Scaling：基準スループット（Provisioned）を設定して70%使用率をターゲットにAuto Scalingで拡縮。急激なスパイクへの応答性はOn-Demandより低いが定常負荷が予測可能な場合はコスト効率が良い。(3)DynamoDB Streams→Lambda：INSERT/MODIFY/REMOVE操作をStreamsに記録し、Lambda Triggerがリアルタイムに処理。OpenSearch/ElasticSearch Indexの同期・キャッシュ無効化・監査ログ書き込み等に活用。(4)CloudWatchメトリクス監視：ConsumedRead/WriteCapacityUnitsで実際の使用量、ThrottledRequests/ThrottledWriteRequests でキャパシティ不足によるエラーを監視。Throttleが増加した場合はキャパシティ増加またはバーストクレジット確認が必要。"
+    },
+    {
+      "id": "DOP-066",
+      "category": "CI/CDパイプライン",
+      "question": "Progressive Deliveryの概念とAWSでの実装として正しいものをすべて選べ。",
+      "choices": [
+        "カナリアリリースで新バージョンに1-5%のトラフィックを送り段階的にロールアウトしてリスクを最小化する",
+        "フィーチャーフラグと組み合わせて特定のユーザーセグメント（ベータユーザー・内部テスター等）に新機能を先行提供する",
+        "SLO（Service Level Objective）バーンレートアラームを監視してロールアウト中にSLOが悪化した場合に自動停止する",
+        "Route53 Weighted RoutingとALB Listener RulesをCodePipelineから自動制御してリリースの重みを段階的に変更する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Progressive Delivery on AWS：(1)カナリアリリース：CodeDeploy Linear10Percent・ALB重み付きターゲットグループ・Route53 Weightedルーティングで新バージョンのトラフィックを段階的増加。問題発生時はすぐに0%にロールバック。(2)フィーチャーフラグ統合：AppConfig・LaunchDarkly等でユーザー属性（ロール・アカウントID・地域等）ベースのフラグでベータユーザーのみに新機能を提供。カナリアとは独立してロールアウトを制御。(3)SLO連動自動停止：Application SignalsまたはDatadog等のSLOダッシュボードでエラーバジェット消費を監視。バーンレートアラームがトリガーされた場合にCodePipeline API呼び出しでロールアウトを自動停止・ロールバック。(4)AWS自動制御：CodePipelineのLambda ActionでRoute53 API（ChangeResourceRecordSets）またはALB API（ModifyTargetGroupAttributes）を呼び出してトラフィック重みを自動調整するProgressive Deliveryコントロールループを実装。"
+    },
+    {
+      "id": "DOP-067",
+      "category": "インフラストラクチャ as Code",
+      "question": "AWS CloudFormation Hookを使用したIACポリシー実施として正しいものをすべて選べ。",
+      "choices": [
+        "CloudFormation Hooksでリソース作成・更新・削除のライフサイクルイベントに対してカスタム検証ロジックを実行する",
+        "TypeでAWS::CloudFormation::Hookを登録してリソースが仕様に準拠しているかをLambdaで検証する",
+        "HookのFailureModeをFAILに設定することでフックが失敗した場合にスタック操作を自動停止する",
+        "AWS CloudFormation RegistryにHookを登録してOrganizations全体に展開して一元的にポリシーを適用する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudFormation Hooks：(1)ライフサイクル検証：リソースのPRECREATE・PREDELETE・PREUPDATE・POSTDELETE等のライフサイクルフックでカスタム検証（セキュリティチェック・タグ付き確認・暗号化設定確認等）を実行してCloudFormationデプロイの左シフトポリシーを実現。(2)Lambda Hook：AWSまたはサードパーティのHookタイプをCloudFormation Registryに登録。Lambdaベースのハンドラーがリソースプロパティを検証してPASSED/FAILEDを返す。(3)FailureMode：FAIL（失敗時にスタック操作を停止）またはWARN（警告のみでスタック操作は継続）を設定。本番環境ではFAIL、監視・学習フェーズではWARNを使用。(4)Organizations展開：Hookを組織全体のCloudFormation Registryに登録し、ActivatedTypes設定でどのリソースタイプに適用するかを定義。SCPのIaC版としてインフラポリシーを組織レベルで統一。"
+    },
+    {
+      "id": "DOP-068",
+      "category": "モニタリング・ログ",
+      "question": "Amazon CloudWatchのコスト最適化として正しいものをすべて選べ。",
+      "choices": [
+        "CloudWatch Logs Log Classを使用してアクセス頻度の低いログをInfrequent Accessクラスに変更してログストレージコストを削減する",
+        "サンプリングベースのX-Rayトレースで全リクエストのトレースを避けてコストを制御する",
+        "CloudWatch Metric Filterで必要なメトリクスのみをカスタムメトリクスとして抽出してメトリクス数を最小化する",
+        "CloudWatch Logsのロールグループに保持ポリシー（Retention Policy）を設定して不要な古いログを自動削除する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudWatchコスト最適化：(1)Infrequent Access Log Class：CloudWatch Logs Log Classの「Infrequent Access」（GA 2023）でアーカイブ目的のログを50%低コストで保存。Insights・Metric Filters・Subscription等の機能は制限されるが監査ログの長期保存に最適。(2)X-Rayサンプリング：デフォルト1req/sec+5%ランダムサンプリングでトレースコストを大幅削減。カスタムサンプリングルールでヘルスチェック等のノイジーパスをサンプリングから除外。(3)Metric Filter最適化：CloudWatch Logsのカスタムメトリクスは1メトリクス/月$0.30。Metric Filterで本当に必要なメトリクスのみ作成してメトリクス数を管理。使用されていないメトリクスを定期的に棚卸し。(4)Retention Policy：デフォルトで永久保存されるCloudWatch Logsに30日・90日・1年等の保持ポリシーを設定して自動削除。不要な長期ログ保存は最大のコスト原因の1つ。Lambda・API Gatewayログ等は30日が多くのケースで十分。"
+    },
+    {
+      "id": "DOP-069",
+      "category": "高可用性・信頼性",
+      "question": "AWS Backup を使用したエンタープライズグレードのデータ保護として正しいものをすべて選べ。",
+      "choices": [
+        "バックアッププランでEC2・RDS・EFS・DynamoDB・S3等の複数サービスのバックアップを一元的にスケジュール管理する",
+        "バックアップVault Lockを有効化して特定期間（最大36500日）バックアップの削除と変更を防止する",
+        "Organizations統合でバックアップポリシーをOU全体に適用して全アカウントのバックアップ準拠を自動化する",
+        "クロスアカウント・クロスリージョンコピーでバックアップをセカンダリリージョンとアカウントにコピーしてDRを実現する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS Backupエンタープライズ機能：(1)バックアッププラン一元管理：単一のバックアッププランでEC2 AMI・RDSスナップショット・EFSバックアップ・DynamoDBバックアップ・S3バックアップを統合スケジュール管理。タグベースでリソースを動的に選択。(2)Vault Lock（WORM）：Compliance modeでバックアップボールトに保持期間を設定するとrootユーザーでも削除・変更が不可能。SOX・HIPAA・PCI DSS等の規制要件で要求されるデータ不変性を実現。(3)Organizations バックアップポリシー：Organizations管理アカウントからバックアップポリシー（SCPに似たJSON）をOU/アカウントに配布して全アカウントに一元的なバックアップ要件を適用。非準拠のアカウントをAWS Configで検出可能。(4)クロスアカウント・クロスリージョン：バックアッププランのコピールールで自動的にセカンダリリージョンと別アカウントにバックアップを複製。Ransomware攻撃でプライマリが暗号化されても別アカウントのバックアップから復元可能。"
+    },
+    {
+      "id": "DOP-070",
+      "category": "CI/CDパイプライン",
+      "question": "大規模モノレポ（Monorepo）のCI/CD最適化として正しいものをすべて選べ。",
+      "choices": [
+        "CodePipeline V2のGlob Pathフィルターで変更されたディレクトリのみに対応するパイプラインをトリガーする",
+        "Turborepo・Nx等のモノレポビルドシステムでキャッシュを活用して変更されたパッケージのみを差分ビルドする",
+        "CodeBuildのBatch Buildで複数のビルドジョブを並列実行してモノレポの各サービスを同時ビルドする",
+        "GitのPathspec（git diff HEAD~1 --name-only）で変更ファイルを検出して影響を受けるサービスのみビルドするスクリプトを実装する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Monorepo CI/CD最適化：(1)CodePipeline V2 Glob Filter：パイプライントリガーにservices/auth/**・services/payment/**等のGlobパターンを設定。Authサービス変更時はAuthパイプラインのみ、Paymentサービス変更時はPaymentパイプラインのみがトリガーされてCIコスト削減。(2)差分ビルドシステム：TurborepoやNxはパッケージ間の依存グラフを解析し、変更パッケージとその依存先のみを再ビルド/テスト。変更に影響されないパッケージはキャッシュから復元してビルド時間を大幅短縮。(3)CodeBuild Batch Build：Matrix Build（複数環境/バージョン組み合わせ）またはGraph Build（依存グラフ順ビルド）で並列ビルドを制御。各バッチジョブの成否を独立して管理。(4)GitのPathspec分析：シェルスクリプトでgit diff --name-onlyの出力をパースして影響するサービスディレクトリを検出。CodeBuild環境でパイプライン開始前のスクリプトで変更セットを計算して下流のデプロイをコントロール。"
+    },
+    {
+      "id": "DOP-071",
+      "category": "インフラストラクチャ as Code",
+      "question": "CloudFormation StackSetsを利用したセキュリティベースライン展開のベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "GuardDuty・Security Hub・Config・CloudTrailの有効化をStackSetsでOrganizations全体に自動デプロイする",
+        "アカウント作成後にControl Tower Lifecycle EventをトリガーとしてLambdaがStackSetsにインスタンスを追加する",
+        "StackSetsのDeployment TargetsにOU IDを指定してOU配下の全アカウントにベースラインを展開する",
+        "DeleteStackInstances時のRetainStacks=trueでアカウントがOUから外れてもセキュリティリソースを維持する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "StackSetsセキュリティベースライン：(1)セキュリティサービス一括有効化：Organizations統合のService-Managed StackSetsでGuardDuty・Security Hub・AWS Config・CloudTrailを全アカウントに展開。新アカウント追加時はAuto Deploymentで自動適用。(2)Control Tower + Lambda自動化：Control Towerのアカウントプロビジョニング完了後にCreateManagedAccount EventをEventBridgeで受信してLambdaがStackSetsのCreateStackInstances APIを呼び出して追加セキュリティリソースをデプロイ。(3)OU ID指定デプロイ：DeploymentTargets.OrganizationalUnitIdsにOU IDを指定するとOU配下の全アカウント・リージョンに自動展開。特定OU（本番OU等）のみに適用する差別化も可能。(4)RetainStacks=true：セキュリティリソースはアカウントがOUから移動しても継続が必要なケース（コンプライアンス要件）にRetainStacksで保持。誤って削除されてしまうリスクを防止。"
+    },
+    {
+      "id": "DOP-072",
+      "category": "モニタリング・ログ",
+      "question": "Site Reliability Engineering（SRE）の実践とAWSサービス活用として正しいものをすべて選べ。",
+      "choices": [
+        "Error Budget（エラーバジェット）の残量をCloudWatch DashboardのSLO達成率で可視化して開発/信頼性への投資を判断する",
+        "SLAよりも厳しいSLOを設定してエラーバジェットが枯渇した場合に新機能開発を停止してリライアビリティ改善に集中する",
+        "Toil削減のためにSSM Automation・Lambda・EventBridgeで反復的な手動作業を自動化する",
+        "Blameless Postmortem（無咎事後検討）の結果をConfluence等のWikiに記録してシステム学習と再発防止を促進する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "SRE実践 on AWS：(1)Error Budget可視化：SLOを定義（例：月間可用性99.9%=43.8分ダウンタイム許容）してCloudWatch Application SignalsまたはDatadogのSLOダッシュボードで残りエラーバジェット（分数）をリアルタイム表示。エラーバジェットの燃焼速度（Burn Rate）でリリース判断を下す。(2)エラーバジェット枯渇ポリシー：エラーバジェットが枯渇した場合に新機能開発のデプロイを凍結し、信頼性改善（自動化・テスト強化・負荷テスト等）にエンジニアリングリソースを再配分する組織的ルール。(3)Toil削減自動化：SREの定義するToil（手動・反復・価値を生まない作業）をSSM AutomationドキュメントやLambdaで自動化。オンコールエンジニアの反復作業（DB再起動・証明書更新等）を排除。(4)Blameless Postmortem：AWS Well-Architected OE PillarのBest Practice。障害の根本原因分析と再発防止策に焦点を当て個人の責任追及を避ける文化。5Whys・タイムライン分析・Action Itemsを文書化して組織学習を促進。"
+    },
+    {
+      "id": "DOP-073",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWS Private CAを使用したゼロトラストネットワークの証明書インフラとして正しいものをすべて選べ。",
+      "choices": [
+        "AWS Private Certificate Authority（Private CA）でルートCAと下位CAの階層PKIをマネージドで構築する",
+        "ACM Private CAとEKSを統合してPodのmTLS通信用のクライアント証明書を自動発行・更新する",
+        "AWS IoT CoreとPrivate CAを連携してIoTデバイスの相互認証証明書を自動プロビジョニングする",
+        "CRL（Certificate Revocation List）とOCSP（Online Certificate Status Protocol）をS3とCloudFront経由で提供する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS Private CA ゼロトラストPKI：(1)階層PKI構築：Private CAでRoot CA→Subordinate CA（サービス別・地域別）の階層構造を構築。Root CAの秘密鍵はAWSが管理（HSM保管）しオフライン状態を維持してセキュリティ向上。(2)EKS mTLS：cert-manager（Kubernetes証明書管理ツール）とaws-privateca-issuerを組み合わせてKubernetesのCertificateリソースからPrivate CA経由で証明書を自動発行。Istio/App Meshのmtlsプロファイルに統合。(3)IoT証明書自動化：AWS IoT CoreのJust-in-Time Provisioning（JITP）でIoTデバイス初回接続時にPrivate CAと連携して証明書を自動発行。製造ラインでのデバイス証明書焼き込みが不要に。(4)失効インフラ：Private CAのCRL（24時間ごと更新）をS3に保存してCloudFront CDN経由で高速配信。OCSPスタプリング（証明書に失効状態を含める）でOCSPリクエストの遅延を排除。"
+    },
+    {
+      "id": "DOP-074",
+      "category": "高可用性・信頼性",
+      "question": "AWS Systems Manager OpsCenter と Incident Managerを使用したインシデント管理として正しいものをすべて選べ。",
+      "choices": [
+        "Systems Manager OpsItemsで運用問題をチケット化してバックログ管理とコンテキスト付きインシデント追跡を実施する",
+        "Incident Managerのインシデントレコードで影響範囲・タイムライン・アクションアイテムを一元管理する",
+        "Runbookの自動化をIncident Manager連携のSSM Automation Documentとして定義してインシデント対応を自動化する",
+        "PagerDutyやOpsGenieとの統合でIncident Managerのエンゲージメントプランから自動的にオンコールを呼び出す"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Incident Manager / OpsCenter：(1)OpsItems：CloudWatch Alarm・GuardDuty・Security Hub等からの検知を自動的にOpsItemsとして作成。関連するAWSリソース・RunBook・過去のOpsItemsを同じ画面でコンテキスト確認しながらインシデント処理。(2)Incident Manager レコード：インシデントのタイトル・影響度・影響するリソース・タイムライン・チャットチャンネル（Chime/Slack）・バインドされたRunbookを1つのインシデントレコードで管理。MTTRの測定とPIR（Post-Incident Review）の基礎データとなる。(3)Automation Runbook：Incident Managerのインシデントレスポンスプランに自動起動するSSM Automation Documentを定義。初動対応（通知・診断スクリプト実行・メトリクス収集）を自動化してMTTRを短縮。(4)PagerDuty/OpsGenie連携：Incident ManagerのEngagement Planにエスカレーションポリシーを設定してSSMコンタクト経由でPagerDutyやOpsGenieにアラートを転送。オンコールスケジュールの自動管理と電話/SMSでのエスカレーションを実現。"
+    },
+    {
+      "id": "DOP-075",
+      "category": "CI/CDパイプライン",
+      "question": "AWS CodePipeline V2とGitHub Connectionsを使用した外部リポジトリ統合として正しいものをすべて選べ。",
+      "choices": [
+        "AWS CodeConnections（旧CodeStar Connections）でGitHub/GitLab/BitBucketリポジトリをAWS IAMで認証してパイプラインに接続する",
+        "Pull Request Triggerを設定してGitHub PRのオープン・更新時にCI確認用パイプラインを自動起動する",
+        "ブランチフィルターとFilePathフィルターを組み合わせて特定のブランチと特定ファイルパスの変更時のみパイプラインをトリガーする",
+        "GitHub RepositoryのStatus ChecksにCodePipeline実行結果を送信してPRのマージ条件としてCI通過を強制する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CodePipeline V2 GitHub統合：(1)CodeConnections：Webhookではなくマネージド接続（OAuth 2.0）でGitHubと認証。IAMポリシーでConnections ARNへのアクセスを制御してセキュアな外部リポジトリ統合。(2)PR Trigger：V2ではPull Request TriggersをCodePipelineのGit Configuration設定で有効化。PRオープン・同期・クローズイベントでCI専用パイプラインを起動してマージ前の品質確認を自動化。(3)フィルター組み合わせ：branchesFilter（mainブランチのみ）とfilesPathsFilter（src/**, tests/**のみ）を組み合わせてドキュメント変更等の不要なトリガーを排除。コストとCI時間を最適化。(4)GitHub Status Checks：CodePipelineの実行結果をGitHub Commit Status APIに送信してPRにCI/CD通過ステータスを表示。GitHub ブランチ保護ルールのRequired Status ChecksにCodePipelineの確認を設定してマージをブロック。"
+    },
+    {
+      "id": "DOP-076",
+      "category": "構成管理",
+      "question": "マルチアカウント環境でのAWS Systems Manager Fleet Managerを使用したEC2/オンプレミス管理として正しいものをすべて選べ。",
+      "choices": [
+        "Fleet ManagerでOrganizations全体のSSMマネージドインスタンスを単一コンソールで一元管理する",
+        "SSH/RDPポートなしにFleet ManagerのGUIからブラウザベースでWindowsデスクトップをリモート操作する",
+        "マネージドインスタンスのパッチコンプライアンス状態・Inventory・State Managerアソシエーション状態を横断的に確認する",
+        "タグベースのリソースグループでFleet Managerの管理対象インスタンスをフィルタリングして特定チームのインスタンスのみを表示する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "SSM Fleet Manager多アカウント管理：(1)Organizations統合：Fleet Managerの設定でOrganization全体のアカウントを集約表示。管理アカウントから全アカウントの全マネージドインスタンス（EC2+オンプレミス）を横断管理。(2)RDPブラウザ経由：Fleet ManagerのRemote Desktop機能でWindowsインスタンスにRDP接続。SSM Session Managerを通じてインターネット公開なしにPort 3389なしでGUI管理が可能。EC2の管理効率を大幅向上。(3)統合オペレーション：パッチコンプライアンス（全インスタンスのパッチ適用状況）・Inventory（インストールソフトウェア・ネットワーク設定）・State Managerアソシエーション（設定適用状態）をFleet Managerの単一ビューで確認。(4)タグフィルタリング：Fleet Managerのインスタンスリストをタグ（Team=Backend・Environment=Production等）でフィルタリング。特定チームの担当インスタンスのみを表示してオペレーションの焦点を絞る。"
+    },
+    {
+      "id": "DOP-077",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWS Organizationsのサービスコントロールポリシー（SCP）の設計パターンとして正しいものをすべて選べ。",
+      "choices": [
+        "FullAWSAccess SCPをRoot OUに適用してDeny-by-Default（デフォルト拒否）から許可するアクションを明示的に定義する",
+        "SCPのConditionキー（aws:RequestedRegion等）で許可リージョンを制限して未承認リージョンへのリソース作成を防止する",
+        "特定のサービス（GuardDuty・CloudTrail等）の無効化をSCPでDenyしてセキュリティコントロールの改ざんを防止する",
+        "管理アカウントにはSCPが適用されないため管理アカウントへの権限集中を避けてメンバーアカウントから操作する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "SCP設計パターン：(1)FullAWSAccess + Deny OUフィルタ：Organizations管理ではAll OU/All AccountにFullAWSAccess SCPが付与され、サービス単位でDeny SCPを追加する戦略（DenyList）か、FullAWSAccess以外にALLOWを積み上げる戦略（AllowList）が主流。(2)リージョン制限SCP：aws:RequestedRegionコンディションでap-northeast-1・us-east-1等の許可リージョン以外はdenyする。不要なリージョンへのリソースデプロイを組織レベルで防止。データ主権・コンプライアンスに必須。(3)セキュリティサービス無効化防止：GuardDuty/DisassociateMaster・CloudTrail/DeleteTrail・Config/DeleteConfigRule等のAPIをSCPでDeny。メンバーアカウントのrootまたは管理者によるセキュリティコントロールの改ざんを防止。(4)管理アカウントSCP免除：管理アカウント（Management Account）はSCPの対象外。このため管理アカウントでの日常業務を避け、専用の代理管理者アカウントまたはアクセス制限されたロールを使用することがAWS推奨。"
+    },
+    {
+      "id": "DOP-078",
+      "category": "高可用性・信頼性",
+      "question": "Amazon ECSサービスのオートスケーリングと可用性設計として正しいものをすべて選べ。",
+      "choices": [
+        "Application Auto ScalingでECSサービスのTarget Tracking PolicyによるCPU/ALBリクエスト数ベースのスケールを設定する",
+        "ECSサービスのminimumHealthyPercent=100・maximumPercent=200でデプロイ中のサービス可用性を維持する",
+        "Fargate Spot（スポット容量）とFargate（オンデマンド）のキャパシティプロバイダー戦略でコストと可用性を最適化する",
+        "ECS Service Auto ScalingのStep Scaling Policyで急激なトラフィックスパイク時のスケール速度を制御する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ECS Auto Scaling可用性設計：(1)Target Tracking：ECSServiceAverageCPUUtilization/ALBRequestCountPerTargetをターゲットメトリクスに設定したTarget Tracking Policyが最もシンプルで推奨。平均CPU 70%のターゲットでスケールアウト/インを自動制御。(2)minimumHealthyPercent/maximumPercent：minimumHealthyPercent=100は常に現在のdesiredCount以上のタスクを維持（Old Task削除前にNew Taskを起動）。maximumPercent=200で2倍のタスクを一時的に許容してローリングアップデート中も可用性を100%維持。(3)Fargate Spot + Capacity Provider：重み50のFargate OnDemandと重み50のFargate Spotのキャパシティプロバイダー戦略で中断耐性のある作業を安価に実行。Spot中断時はOnDemandに自動フォールバック。最大70%コスト削減。(4)Step Scaling：突発的なトラフィックスパイク（セール・プロモーション等）でAlarmのBreachSize（50-75%:+2タスク、75-90%:+5タスク等）に応じた段階的スケールアウトでTarget Trackingより敏感に反応。"
+    },
+    {
+      "id": "DOP-079",
+      "category": "CI/CDパイプライン",
+      "question": "Database Schema Migration をCIパイプラインに組み込む際のベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "Flyway・Liquibase等のスキーマ移行ツールをCodeBuildで実行して新しいDBスキーマをバージョン管理する",
+        "スキーマ変更はBackward Compatible（後方互換）な変更のみ許可しBreaking ChangeはExpand-Contract（並行実行）パターンで対応する",
+        "RDSのBlue/Green Deploymentを使用してスキーマ変更とアプリ変更を切り離してゼロダウンタイムで適用する",
+        "AWS DMS継続的レプリケーションでスキーマ変更前後のDBを並行稼働させてロールバックの安全網を作る"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "DB Schema Migration CI統合：(1)Flyway/Liquibase CI統合：マイグレーションSQLファイル（V1__initial.sql・V2__add_index.sql等）をGitでバージョン管理。CodeBuildでflyway migrate等を実行してスキーマを最新状態に更新。ロールバックはV番号に応じた順序を保証。(2)Expand-Contract（拡張縮小）パターン：(Expand)新カラム追加・新テーブル作成 → (App Update)アプリを新旧両対応に更新 → (Migrate)旧データを新構造に移行 → (Contract)旧カラム削除 の順で非破壊的なスキーマ変更を実現。ゼロダウンタイム変更の基本原則。(3)RDS Blue/Green Schema変更：Blue/Green Deploymentでプライマリ（Blue）とGreen（クローン）を作成し、GreenでDDL変更を適用→アプリと同時にカットオーバー。問題時はBlueに戻す安全なスキーマ変更手順。(4)DMS並行稼働：ソースDB（旧スキーマ）とターゲットDB（新スキーマ）をDMS CDCで並行稼働させてスキーマ変更を適用。アプリ側のカットオーバーに問題があればDMSで古いDBへの参照に戻す。"
+    },
+    {
+      "id": "DOP-080",
+      "category": "インフラストラクチャ as Code",
+      "question": "AWS CloudFormation Guard（cfn-guard）を使用したIaCポリシーチェックとして正しいものをすべて選べ。",
+      "choices": [
+        "cfn-guard独自のRuleセット言語でCFnテンプレートのリソースプロパティに対するコンプライアンスルールを定義する",
+        "GUARD_RASSによるS3バケット暗号化・パブリックブロック・バージョニング等のセキュリティルールをCIパイプラインで実行する",
+        "cfn-guard testコマンドでルールのユニットテストを記述してルール自体の品質を保証する",
+        "AWS Config Rules Managed RulesのCloudFormation Guard Hookとしてデプロイ前にテンプレート検証を自動化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudFormation Guard（cfn-guard）：(1)cfn-guard Rule言語：rule ensure_s3_encryption when cfn_template.Resources.*.Type == 'AWS::S3::Bucket' { cfn_template.Resources.*.Properties.BucketEncryption.ServerSideEncryptionConfiguration[*].ServerSideEncryptionByDefault.SSEAlgorithm == 'aws:kms' }等のDSLでリソースプロパティを検証。(2)CIパイプライン統合：cfn-guard validate --data template.json --rules s3_rules.guard --show-summary allをCodeBuildで実行してCFnテンプレートのポリシー準拠をチェック。ルール違反があればビルドを失敗させてデプロイをブロック。(3)cfn-guard test：テストケースファイル（input_template.json + expected_outputs.json）でルールの正・負テストを記述してrule単体の品質を保証。TDDアプローチでルール開発を実施。(4)CFN Guard Hook統合：CloudFormation HooksとしてGuardルールをRegistryに登録してCFnスタック操作のプレフック検証として実行。デプロイの左シフトポリシーチェックを自動化。"
     }
   ]
 }
