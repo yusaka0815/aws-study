@@ -2028,7 +2028,7 @@
         "長時間実行のLambda処理にはcontinuationToken機能で処理を複数Lambdaの呼び出しに分散して15分の実行制限を回避する"
       ],
       "answers": [0, 1, 2, 3],
-      "explanation": "CodePipeline Lambda統合：(1)Lambda Invoke Action活用：ヘルスチェックAPI呼び出し・外部承認システムへのチケット作成・Slack通知・脆弱性スキャン結果評価等のカスタムロジックをLambdaとして実装してCodePipelineに統合。CodeBuildより軽量でAWSサービスの操作に最適。(2)Job Poll方式：Lambda関数がCodePipeline.pollForJobs APIでJobを取得→処理実行→putJobSuccessResult/putJobFailureResultで結果報告するAsync Invoke Actionパターン。長時間処理の場合は定期的にputJobSuccessResult(continuationToken)でCheckpointを更新。(3)UserParameters活用：Lambda InvokeアクションのUserParametersフィールドに{"env":"prod","threshold":95}等のJSONを設定して汎用Lambda関数に実行時設定を渡す。同一Lambda関数を複数パイプライン・環境で再利用可能。(4)ContinuationToken：Lambda Actionの最大実行時間は15分（Lambda制限）を超える場合はputJobSuccessResult(continuationToken=progress)で途中報告→CodePipelineが同じActionを再呼び出し→完了後にputJobSuccessResult(continuationToken=None)で完了報告する継続実行パターン。"
+      "explanation": "CodePipeline Lambda統合：(1)Lambda Invoke Action活用：ヘルスチェックAPI呼び出し・外部承認システムへのチケット作成・Slack通知・脆弱性スキャン結果評価等のカスタムロジックをLambdaとして実装してCodePipelineに統合。CodeBuildより軽量でAWSサービスの操作に最適。(2)Job Poll方式：Lambda関数がCodePipeline.pollForJobs APIでJobを取得→処理実行→putJobSuccessResult/putJobFailureResultで結果報告するAsync Invoke Actionパターン。長時間処理の場合は定期的にputJobSuccessResult(continuationToken)でCheckpointを更新。(3)UserParameters活用：Lambda InvokeアクションのUserParametersフィールドに{\"env\":\"prod\",\"threshold\":95}等のJSONを設定して汎用Lambda関数に実行時設定を渡す。同一Lambda関数を複数パイプライン・環境で再利用可能。(4)ContinuationToken：Lambda Actionの最大実行時間は15分（Lambda制限）を超える場合はputJobSuccessResult(continuationToken=progress)で途中報告→CodePipelineが同じActionを再呼び出し→完了後にputJobSuccessResult(continuationToken=None)で完了報告する継続実行パターン。"
     },
     {
       "id": "DOP-157",
