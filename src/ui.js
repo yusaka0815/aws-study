@@ -70,6 +70,14 @@ export function renderQuestion(question, questionIndex, totalQuestions) {
   document.getElementById('next-btn').classList.add('hidden');
   document.getElementById('explanation-toggle').classList.add('hidden');
   document.getElementById('explanation-text').classList.add('hidden');
+
+  // 問題カード・選択肢のアニメーションを再発動
+  const card = document.querySelector('.question-card');
+  card.classList.remove('entering');
+  choicesEl.classList.remove('entering');
+  void card.offsetHeight; // reflow を強制してアニメーションをリセット
+  card.classList.add('entering');
+  choicesEl.classList.add('entering');
 }
 
 /**

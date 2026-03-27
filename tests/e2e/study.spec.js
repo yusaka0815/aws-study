@@ -170,6 +170,18 @@ test.describe('回答処理', () => {
     // 問題が変わっている（同じ問題が連続して出ないことを確認）
     expect(secondQuestion).not.toBe(firstQuestion);
   });
+
+  test('次へボタン押下時に問題カードのアニメーションが再発動する', async ({ page }) => {
+    await page.locator('.choice-btn').first().click();
+    await page.locator('#next-btn').click();
+    await page.waitForFunction(
+      () => document.getElementById('answer-area')?.classList.contains('hidden')
+    );
+    const hasEntering = await page.evaluate(() =>
+      document.querySelector('.question-card')?.classList.contains('entering')
+    );
+    expect(hasEntering).toBe(true);
+  });
 });
 
 // ============================================================
