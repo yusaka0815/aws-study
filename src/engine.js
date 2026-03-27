@@ -71,29 +71,22 @@ export function getNextQuestion(questions, userState, lastQuestionId = null) {
 
   const now = Date.now();
 
-  // 各問題にスコアを付与
-  const scored = questions.map(q => {
-    const qState = userState.questions[q.id];
-    let score = calculateScore(qState, now);
-
-    // 直前と同じ問題は出さない
-    if (q.id === lastQuestionId) {
-      score -= 100;
-    }
-
-    return { question: q, score };
-  });
-
-  // スコア降順でソート
-  scored.sort((a, b) => b.score - a.score);
+  // 各問題にスコアを付与してスコア降順でソート
+  const scored = questions
+    .map(q => ({ question: q, score: calculateScore(userState.questions[q.id], now) }))
+    .sort((a, b) => b.score - a.score);
 
   // 上位20%を候補に（最低3問、最大全問）
   const topCount = Math.max(3, Math.ceil(scored.length * 0.2));
   const candidates = scored.slice(0, Math.min(topCount, scored.length));
 
+  // 直前と同じ問題を除外（代替がある場合のみ）
+  const eligible = candidates.filter(c => c.question.id !== lastQuestionId);
+  const pool = eligible.length > 0 ? eligible : candidates;
+
   // 候補からランダムに1問選択
-  const idx = Math.floor(Math.random() * candidates.length);
-  return candidates[idx].question;
+  const idx = Math.floor(Math.random() * pool.length);
+  return pool[idx].question;
 }
 
 /**
