@@ -1041,6 +1041,526 @@
       ],
       "answers": [0],
       "explanation": "AWS Glue Schema Registryはデータスキーマのバージョン管理・互換性チェック・スキーマ進化を管理するサービスです。Avro・JSON Schema・Protobuf形式に対応し、KinesisやMSKのプロデューサーがスキーマをシリアライズして送信し、コンシューマーがレジストリからスキーマを取得してデシリアライズできます。後方互換性（Backward）・前方互換性（Forward）・完全互換性（Full）の検証モードがあります。スキーマドリフトを防ぎデータパイプラインの信頼性を向上させます。"
+    },
+    {
+      "id": "DEA-081",
+      "category": "データ取り込み・変換",
+      "question": "AWS Glueのデータソースとして対応しているものをすべて選べ。",
+      "choices": [
+        "Amazon S3（CSV・JSON・Parquet・ORC・Avro）",
+        "Amazon RDS（MySQL・PostgreSQL・Oracle・SQL Server）",
+        "Amazon DynamoDB",
+        "Amazon Redshift"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS GlueはAWS上の主要なデータストアにネイティブで接続できます：(1)S3（CSV・JSON・Parquet・ORC・Avro・XML等）、(2)RDS/Aurora（MySQL・PostgreSQL・Oracle・SQL Server・MariaDB、JDBC接続）、(3)DynamoDB（DynamoDB Export for S3経由やGlue DynamoDB Connectorを利用）、(4)Redshift（JDBC接続）。さらにMongoDB・Kafka・MSK・カスタムコネクター等も対応し、300以上のデータソースへの接続をサポートします。"
+    },
+    {
+      "id": "DEA-082",
+      "category": "クエリ・分析",
+      "question": "Amazon Athenaでのクエリ最適化のベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "SELECT * ではなく必要な列のみSELECTする（列プルーニング）",
+        "データを時系列でパーティション化してWHERE句でパーティションを絞る",
+        "小さなファイルを大きなファイルに統合してファイル数を減らす（Small File Problem解消）",
+        "Parquet形式に変換して列指向ストレージのスキャン最適化を行う"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Athenaコスト・パフォーマンス最適化の全手法：(1)列プルーニング：SELECT *の代わりに必要な列のみ選択してスキャン量削減（Parquetでは列ごとにスキャン）。(2)パーティションプルーニング：WHERE句でパーティションキー（year/month/day等）を指定して対象ファイルを絞る。(3)Small File Problem：S3に多数の小さなファイル（1MB以下等）があるとOpenオーバーヘッドが増大するため、GlueまたはSparkでcompactする。(4)列指向フォーマット：CSV→ParquetでスキャンするデータサイズをBT大幅削減。"
+    },
+    {
+      "id": "DEA-083",
+      "category": "データストレージ",
+      "question": "Amazon S3のクロスリージョンレプリケーション（CRR）を使用する典型的なユースケースはどれか？",
+      "choices": [
+        "コンプライアンス要件によるデータのジオグラフィカルな複製や、別リージョンユーザーへのレイテンシ低減",
+        "同一リージョン内の複数AZへのデータ冗長化",
+        "S3データのバージョン管理と削除防止",
+        "S3データのコスト削減のための自動階層化"
+      ],
+      "answers": [0],
+      "explanation": "S3クロスリージョンレプリケーション（CRR）の主なユースケース：(1)コンプライアンス・規制要件（データを特定の地理的に分離されたリージョンに保存する必要がある場合）、(2)レイテンシ低減（異なるリージョンのユーザーがより近いリージョンからデータにアクセス）、(3)災害対策（別リージョンにデータのコピーを維持）。同一リージョン内の複数AZへの冗長化はS3が標準で自動的に行います（SRRで同一リージョン）。"
+    },
+    {
+      "id": "DEA-084",
+      "category": "データパイプライン",
+      "question": "Amazon EMR on EKSの特徴として正しいのはどれか？",
+      "choices": [
+        "EKSクラスターでSparkジョブを実行し、Kubernetes podとしてタスクをスケールする",
+        "EMR on EKSはHadoopのみをサポートし、SparkはEMR on EC2のみ",
+        "EMR on EKSはEKSクラスターのノードグループに常時CPUリソースを確保する必要がある",
+        "EMR on EKSはEC2インスタンスではなくFargateのみで動作する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EMR on EKSはAmazon EKSクラスター上でSparkジョブをKubernetes PodsとしてネイティブにSubmitできます。メリット：(1)既存のEKSクラスターのリソースをEMRワークロードと共有してコスト効率を向上、(2)Kubernetesのネイティブスケーリング（Spot/On-Demand混在）、(3)コンテナイメージカスタマイズ。Sparkの他にHiveもサポート。Fargate（EKS on Fargate）も対応していますが、EC2ノードグループも使用可能です。"
+    },
+    {
+      "id": "DEA-085",
+      "category": "データ変換",
+      "question": "AWS Glue ETLジョブでデータのフォーマット変換（CSV→Parquet）を行う際のベストプラクティスとして正しいものはどれか？",
+      "choices": [
+        "Glue DynamicFrame または Spark DataFrameのwrite.parquet()でParquetに変換し、パーティションを指定してS3に保存する",
+        "AWS LambdaでCSVファイルを1件ずつ読み込みPyArrowでParquetに変換する",
+        "AWS Batchでカスタムコンテナを使いPandasで変換する",
+        "Amazon Kinesis Data Firehoseを使いリアルタイムで変換する（バッチCSVには不向き）"
+      ],
+      "answers": [0],
+      "explanation": "大量のCSVファイルのParquet変換には、Glue ETLジョブ（PySpark）が最適です。Glue DynamicFrameの`write_dynamic_frame.from_options()`またはSpark DataFrameの`df.write.partitionBy('col').parquet('s3://...')`でパーティション分割しながら並列書き込みできます。Lambdaは最大15分タイムアウト・メモリ制限があり大量データには不向き。Batchはコンテナ管理が必要。Firehoseはストリーミングデータ用でバッチCSV変換には適しません。"
+    },
+    {
+      "id": "DEA-086",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftのクラスターバージョンアップグレードと設定として正しいものはどれか？",
+      "choices": [
+        "Redshiftはメンテナンスウィンドウ中に自動的にパッチ適用でき、クラスターのバージョンを管理できる",
+        "RedshiftはEC2インスタンスと同様に手動でOSパッチを適用する必要がある",
+        "Redshiftのバージョンアップグレードはデータロスを伴い、バックアップから復元が必要",
+        "Redshiftはバージョンアップグレード中は常時利用不可になる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshiftはフルマネージドサービスのため、OSパッチやRDBMSのバージョンアップはAWSが管理します。クラスターには「メンテナンスウィンドウ」を設定でき、指定した時間帯に自動的にパッチが適用されます。クラスターのトラック（Current/Trailing）を選択してメジャーバージョンの適用タイミングを制御できます。パッチ適用中は短時間のダウンタイムが発生する場合がありますが、データロスは発生しません。"
+    },
+    {
+      "id": "DEA-087",
+      "category": "データ品質",
+      "question": "データカタログ（Data Catalog）の役割として正しいものをすべて選べ。",
+      "choices": [
+        "データのメタデータ（スキーマ・パーティション・場所）を一元管理する",
+        "データのビジネス定義・オーナー・品質情報を管理するビジネスカタログとしても機能する",
+        "データのアクセス頻度に基づいて自動的にストレージクラスを変更する",
+        "データリネージ（データの流れ）の追跡をサポートする"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "データカタログの役割：(1)技術的メタデータ（スキーマ・データ型・パーティション・S3パス等）の管理（Glue Data Catalogが担当）。(2)ビジネスカタログとして、AWS Glue Data Quality・DataZoneを使ってビジネス定義・データオーナー・品質スコアを管理。(3)データリネージ：Lake Formation・Glue Studio等でデータの変換・流れを可視化。ストレージクラスの自動変更はS3 Intelligent-Tieringや S3 Lifecycle Policiesが担当します。"
+    },
+    {
+      "id": "DEA-088",
+      "category": "データ取り込み・変換",
+      "question": "Amazon Data Firehoseでカスタム変換を行う際の構成として正しいのはどれか？",
+      "choices": [
+        "Firehoseに到達したレコードをLambda関数に転送して変換し、変換後のレコードをFirehoseが宛先に書き込む",
+        "Firehoseはカスタム変換をサポートしておらず、別途Kinesis Data Streamsを使う必要がある",
+        "カスタム変換はGlueジョブとして実行され、Firehoseが自動的に呼び出す",
+        "Firehoseは変換のためにEC2インスタンスを自動プロビジョニングする"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Data Firehoseのデータ変換機能：Firehoseはレコードをバッファして設定されたLambda関数に同期的に送り、Lambda関数は変換したレコードをFirehoseに返します。これにより、カスタムパース・フィルタリング・エンリッチメント・データマスキング等が可能です。変換後のレコードが宛先（S3等）に書き込まれます。GlueやEC2は使用しません。変換に失敗したレコードは指定したS3「backup prefix」に送ることもできます。"
+    },
+    {
+      "id": "DEA-089",
+      "category": "クエリ・分析",
+      "question": "Amazon SageMaker Data Wranglerの主な目的として正しいのはどれか？",
+      "choices": [
+        "SageMaker Studio内でMLのデータ準備・探索・変換を視覚的インターフェースで行うツール",
+        "SageMakerのトレーニングジョブのハイパーパラメータを自動チューニングするサービス",
+        "本番環境のモデルのパフォーマンスを監視するModel Monitorツール",
+        "SageMakerのデータセットをS3間で転送するコネクター"
+      ],
+      "answers": [0],
+      "explanation": "Amazon SageMaker Data Wranglerは SageMaker Studio内で動作するデータ準備ツールです。S3・Athena・Redshift・EMR等からデータをインポートし、300以上の組み込み変換（欠損値処理・エンコーディング・外れ値検出等）を視覚的に組み合わせて前処理パイプラインを構築できます。処理フローはSageMaker Processingジョブや Glue ETLジョブとしてエクスポートして本番運用できます。Glue DataBrewと類似した位置付けですが、MLパイプラインとの統合が強化されています。"
+    },
+    {
+      "id": "DEA-090",
+      "category": "データセキュリティ",
+      "question": "Amazon Redshiftで保存データとデータ転送の暗号化を設定する際の説明として正しいものはどれか？",
+      "choices": [
+        "クラスター作成時にKMS暗号化を有効にすると保存データが暗号化され、SSL/TLS接続で転送データも保護される",
+        "Redshiftの暗号化は転送データのみに対応し、保存データの暗号化は別途設定が必要",
+        "Redshiftの暗号化を有効にするとクエリパフォーマンスが50%低下する",
+        "暗号化されたRedshiftクラスターのスナップショットは暗号化されない"
+      ],
+      "answers": [0],
+      "explanation": "Redshiftのデータ保護：(1)保存時暗号化：クラスター作成時にKMS（またはCloudHSMを使ったカスタムキー）を選択するとAES-256で全データブロック・システムメタデータ・スナップショットが暗号化されます。(2)転送時暗号化：JDBCおよびODBC接続でSSL/TLSを強制（パラメータグループでrequire_sslをtrueに設定）。暗号化によるパフォーマンス影響は軽微（数%以内）です。暗号化クラスターのスナップショットも暗号化されます。"
+    },
+    {
+      "id": "DEA-091",
+      "category": "データパイプライン",
+      "question": "AWS Glueのワーカータイプとその違いとして正しいものはどれか？",
+      "choices": [
+        "Standard（4vCPU/16GB）・G.1X（4vCPU/16GB DPU・1DPU）・G.2X（8vCPU/32GB・2DPU）・G.4X（16vCPU/64GB・4DPU）などがある",
+        "全てのワーカータイプはメモリとCPUが同一でコストのみ異なる",
+        "G.2Xはストリーミング処理専用でバッチジョブには使用できない",
+        "Python ShellジョブはSparkワーカーと同じリソースを使用する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glueワーカータイプの選択はジョブの処理内容に応じて行います：Standard（4vCPU・16GBメモリ・50GB disk）・G.1X（同等リソース・ML変換等メモリ集約向け）・G.2X（8vCPU・32GBメモリ・大規模データセット向け）・G.4X（16vCPU・64GB・最大規模）・G.025X（スポットFlexible、コスト削減）・Z.2X（EMR互換・ray向け）。Python Shellは最大1DPUの単一ノード実行で小規模処理向けです。"
+    },
+    {
+      "id": "DEA-092",
+      "category": "データストレージ",
+      "question": "Amazon DynamoDB Streamsの特徴として正しいものをすべて選べ。",
+      "choices": [
+        "テーブルの変更（INSERT/MODIFY/REMOVE）を時系列で捕捉するストリーム",
+        "最大24時間のレコード保持期間",
+        "Lambda関数のイベントソースとして設定できる",
+        "Kinesis Data Streamsと同じAPIを使用してデータを読み込める"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "DynamoDB Streamsの特徴：(1)テーブルの書き込み操作（INSERT・UPDATE・DELETE）をstream of change recordsとして提供します。変更前・後のイメージを含めることができます（KEYS_ONLY・NEW_IMAGE・OLD_IMAGE・NEW_AND_OLD_IMAGES）。(2)レコードは最大24時間保持されます。(3)Lambda関数のイベントソースマッピングとして設定し、変更をリアルタイムにトリガーできます。DynamoDB Streamsは独自APIを使用し、Kinesis Data Streams APIとは異なります（ただし「Kinesis Data Streams for DynamoDB」を有効にすることでKinesis APIで読めるようになります）。"
+    },
+    {
+      "id": "DEA-093",
+      "category": "データ変換",
+      "question": "Apache Spark のパーティション（Partition）について正しい説明はどれか？",
+      "choices": [
+        "データを分割した論理的な単位で、各パーティションが1つのタスクとして並列処理される",
+        "Sparkのパーティション数はデータサイズに関わらず常に200に固定されている",
+        "パーティション数を増やすと常にパフォーマンスが向上する",
+        "DataFrameのパーティション数はクエリ実行後に変更できない"
+      ],
+      "answers": [0],
+      "explanation": "Sparkパーティションは分散データセットの分割単位で、各パーティションが1つのExecutorタスクとして並列処理されます。デフォルトのシャッフルパーティション数はspark.sql.shuffle.partitions（デフォルト200）ですが、データサイズに応じて調整が必要です。パーティションが多すぎると多数の小さなタスクでオーバーヘッドが増加、少なすぎると並列度が低下します。repartition()やcoalesce()でパーティション数を動的に変更できます。"
+    },
+    {
+      "id": "DEA-094",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftのゾーンマップ（Zone Maps）の説明として正しいのはどれか？",
+      "choices": [
+        "各1MBブロックの最小値・最大値を記録したメタデータで、クエリのブロックスキャンを最適化する",
+        "ノード間のデータ分散を可視化するRedshift専用のモニタリングツール",
+        "ソートキーとは独立して設定するセカンダリインデックス機能",
+        "ゾーンマップはRedshiftのみのユニークな機能でSpark/Hiveには存在しない"
+      ],
+      "answers": [0],
+      "explanation": "Redshiftのゾーンマップはソートキーと組み合わせて最大の効果を発揮するブロックレベルのメタデータです。各1MBのデータブロックに対して、そのブロック内のソートキーの最小値・最大値を記録します。クエリのWHERE句でソートキーに範囲条件があると、ゾーンマップの最小値・最大値を参照して条件に合致しないブロックをスキップし、ディスクI/Oを大幅削減できます。テーブルがソートされているほどゾーンマップの精度が高くなります。"
+    },
+    {
+      "id": "DEA-095",
+      "category": "データ取り込み・変換",
+      "question": "Amazon Kinesis Data StreamsのKCL（Kinesis Client Library）の機能として正しいものはどれか？",
+      "choices": [
+        "シャードのリシャーディング（分割・統合）後のシャード変更を自動検出し、コンシューマーのシャード割り当てを再調整する",
+        "KCLはプロデューサーライブラリでコンシューマーには使用しない",
+        "KCLを使うとシャードあたりの読み取りスループットが5MB/sに向上する",
+        "KCLはKinesis Data Firehoseにのみ対応しKinesis Data Streamsには使用できない"
+      ],
+      "answers": [0],
+      "explanation": "KCL（Kinesis Client Library）は分散コンシューマーアプリケーションを構築するためのJavaライブラリ（Python・Rubyのラッパーも提供）です。主な機能：(1)シャードのリシャーディング（shard split/merge）を自動検出して新しいシャードの処理を開始。(2)DynamoDBテーブルを使ってシャードのチェックポイント（処理済みシーケンス番号）を記録。(3)複数のKCLインスタンス間でシャードを自動的に負荷分散。コンシューマー（読み取り）専用のライブラリです。"
+    },
+    {
+      "id": "DEA-096",
+      "category": "データパイプライン",
+      "question": "Amazon SageMaker Pipelinesの説明として正しいのはどれか？",
+      "choices": [
+        "データ前処理・トレーニング・評価・デプロイをステップとして定義するMLワークフローオーケストレーションサービス",
+        "SageMaker PipelinesはデータエンジニアリングのETLパイプラインのみを管理する",
+        "SageMaker PipelinesはAirflowのDAGと同じPython構文で定義する",
+        "SageMaker Pipelinesは手動承認なしで全ステップを自動実行する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon SageMaker PipelinesはエンドツーエンドのMLワークフローをコードで定義・実行・追跡できるサービスです。Processing step（データ前処理）・Training step（モデルトレーニング）・Evaluation step（モデル評価）・Condition step（条件分岐）・Model step（モデル登録）・Endpoint step（デプロイ）等を組み合わせます。独自のPython SDK（SageMaker SDK）を使用し、AirflowとはAPIが異なります。手動承認（Manual Approval）ステップも設定可能です。"
+    },
+    {
+      "id": "DEA-097",
+      "category": "データ品質",
+      "question": "ETLパイプラインにおける「データプロファイリング」の目的として正しいのはどれか？",
+      "choices": [
+        "データの統計情報（NULL率・一意値数・最小/最大/平均・分布）を分析してデータ品質の問題を発見する",
+        "データのパフォーマンスボトルネックを特定するプロファイリング",
+        "AWSサービスの利用コストをプロファイリングして最適化提案を行う",
+        "ユーザーのアクセスパターンを記録してセキュリティ監査に使用する"
+      ],
+      "answers": [0],
+      "explanation": "データプロファイリングはデータセットの統計的特性を分析してデータ品質を評価する作業です。分析内容：(1)NULL率・空文字率（完全性）、(2)一意値数・重複率（一意性）、(3)最小値・最大値・平均・標準偏差・ヒストグラム（分布）、(4)パターン（メールアドレス形式・電話番号形式等のフォーマット整合性）。AWS GlueのDataBrew・Data Qualityでプロファイリングが可能です。パイプライン構築前に実施することでデータ品質問題を早期発見できます。"
+    },
+    {
+      "id": "DEA-098",
+      "category": "データストレージ",
+      "question": "AWS Lake Formationのデータレイク設定でTransactional Data Lakesをサポートするためにどのサービスを使うか？",
+      "choices": [
+        "Apache Iceberg（Lake Formation + Glue Data Catalog + Athena）",
+        "AWS DMS + Kinesis Data Streams",
+        "Amazon QLDB（量子台帳データベース）",
+        "Amazon Redshift Spectrum"
+      ],
+      "answers": [0],
+      "explanation": "Lake FormationがApache Icebergテーブルをサポートすることで、S3上のデータレイクにACIDトランザクション機能を追加できます。Icebergテーブルはメタデータをマニフェストファイル（S3）とGlue Data Catalogで管理し、Lake FormationのアクセスコントロールをIcebergにも適用できます。Athena・Glue・EMR SparkでIcebergテーブルをUPDATE/DELETE/MERGE INTOで操作できます。QQLDBは不変台帳DB（証明可能な履歴）でETL用途ではありません。"
+    },
+    {
+      "id": "DEA-099",
+      "category": "データ変換",
+      "question": "AWS GlueでApache Sparkのコードをデバッグする際に利用できるツールはどれか？",
+      "choices": [
+        "Glue Interactive Sessions（インタラクティブセッション）でノートブック形式でコードを段階的に実行・テストできる",
+        "Glue ETLジョブはバッチ実行のみでインタラクティブなデバッグは不可能",
+        "AWS CloudShellからGlueジョブのSparkコードを直接デバッグできる",
+        "GlueジョブはRDSに接続したデバッグサーバーを自動起動してステップ実行できる"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue Interactive Sessionsは、JupyterノートブックまたはSageMaker Studio JupyterLabからGlueのPySparkカーネルを使ってコードを段階的に実行・デバッグできる機能です。本番用GlueジョブをいきなりFull Clusterで実行する前に、少量のデータでロジックを検証できます。セッション開始が速く（数秒〜数分）、Glue Studio NotebooksでもInteractive Sessionsが使用されます。コスト効率は最低1DPU・1分単位課金です。"
+    },
+    {
+      "id": "DEA-100",
+      "category": "データパイプライン",
+      "question": "AWS Step FunctionsのMap ステートの説明として正しいのはどれか？",
+      "choices": [
+        "入力配列の各要素に対して同じワークフローを並列または順次に実行するIterator機能",
+        "MapステートはAWSのリージョンマッピングを行うためのステート",
+        "MapステートはParallelステートと全く同じ機能を持つ",
+        "MapステートはキーバリューのMapデータ構造を返すSQL的なステート"
+      ],
+      "answers": [0],
+      "explanation": "Step FunctionsのMapステートはAmazon States LanguageでIterator（繰り返し処理）を定義するステートです。入力のJSON配列の各要素に対して定義したサブ状態マシン（IteratorまたはItemProcessor）を実行します。Modeとして`INLINE`（配列の各要素を並列実行・最大40並列）と`DISTRIBUTED`（大規模配列・S3 JSONLinesを直接処理・最大10,000並列）があります。Parallelステートは異なる固定ブランチを並列実行するため、Mapとは用途が異なります。"
+    },
+    {
+      "id": "DEA-101",
+      "category": "クエリ・分析",
+      "question": "Amazon Athenaのクエリエンジンのバージョンとして、Athena エンジンv3の特徴として正しいものはどれか？",
+      "choices": [
+        "Apache Trinoベースのエンジンで、より多くのデータ型・関数・ANSI SQL機能をサポートする",
+        "Athenaエンジンv3はPrestoの後継でPrestoより遅い",
+        "Athenaエンジンv3はJavaのみサポートし、Pythonユーザー定義関数（UDF）はv2のみ",
+        "Athenaエンジンv3はS3 Standard以外のストレージクラスに対応しない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Athena エンジンv3（Trino）は、PrestoDBのフォーク（分岐）であるTrinoをベースにしています。v2（Presto）からの改善点：(1)より多くのSQL関数・文字列操作・日付関数をサポート。(2)JOIN・GROUP BY等のパフォーマンス向上。(3)Apache Iceberg・Hudi・Delta Lakeテーブルのより充実したサポート。(4)Lambda関数（Java・Python）を使ったユーザー定義関数（UDF）。デフォルトはエンジンv3で自動設定されます。"
+    },
+    {
+      "id": "DEA-102",
+      "category": "データセキュリティ",
+      "question": "AWS Identity Center（旧SSO）とAmazon Redshiftを組み合わせた場合のメリットとして正しいのはどれか？",
+      "choices": [
+        "IAMユーザーを個別に作成せずに、ADやOktaなどのIdPのID・グループをRedshiftのロールにマッピングしてSSOアクセスを実現できる",
+        "Identity CenterはRedshiftへのアクセスのみに対応し他のAWSサービスには使えない",
+        "Identity CenterはRolesではなくユーザーとして直接RedshiftへのIAMユーザー作成を省略する",
+        "Identity Centerを使うとRedshiftのクエリが暗号化されずに送信される"
+      ],
+      "answers": [0],
+      "explanation": "AWS IAM Identity Center（旧AWS SSO）をRedshiftと統合すると、社内のActive Directory・Okta・Azure AD等のIdPユーザー・グループをRedshiftのロールにマッピングしてSSOログインが可能になります。データアナリストが社内資格情報でRedshift Query EditorやBIツールにログインでき、個別のDBユーザー管理が不要です。Amazon Redshift IDC Integrationを有効にすることで設定できます。"
+    },
+    {
+      "id": "DEA-103",
+      "category": "データ取り込み・変換",
+      "question": "AWS Database Migration ServiceのCDC（Change Data Capture）モードの説明として正しいのはどれか？",
+      "choices": [
+        "ソースデータベースのトランザクションログを読み取り、INSERT/UPDATE/DELETEの変更を継続的にターゲットに適用する",
+        "CDCは全データの完全な再コピーを定期的に行う「フルロード」の別名",
+        "CDCはRDBMSのみサポートし、DynamoDBやDocumentDBには使えない",
+        "CDCモードではソースデータベースへの負荷が高くなりトランザクションパフォーマンスが低下する"
+      ],
+      "answers": [0],
+      "explanation": "AWS DMS CDCモードはソースDBのトランザクションログ（MySQL binlog・PostgreSQL WAL・Oracle redo log等）を継続的に読み取り、変更されたレコードのみをターゲットにリアルタイムで適用します。フルロード後にCDCに切り替えることで、移行中もソースDBが継続稼働できます。CDCはソースDBへの負荷は軽微（ログ読み取りのみ）です。DynamoDB（Streams）・DocumentDB（変更ストリーム）・MongoDB（OpLog）もCDCに対応しています。"
+    },
+    {
+      "id": "DEA-104",
+      "category": "データパイプライン",
+      "question": "AWS Glue Crawler が対応するデータストアとして正しいものをすべて選べ。",
+      "choices": [
+        "Amazon S3（CSV・Parquet・ORC・JSON等）",
+        "Amazon DynamoDB",
+        "JDBC対応データベース（RDS・Redshift等）",
+        "Amazon DocumentDB（MongoDB互換）"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "Glue Crawlerが対応するデータストア：(1)Amazon S3（各種フォーマット）、(2)Amazon DynamoDB（テーブルのスキャン）、(3)JDBCデータベース（MySQL・PostgreSQL・Oracle・SQL Server・Redshift等）。DocumentDBはGlue Crawlerのネイティブサポート対象外です（DocumentDB→S3→Crawlerの迂回が必要）。その他、Delta Lake・Iceberg・Hudi形式のS3テーブルもCrawlerが認識できます。"
+    },
+    {
+      "id": "DEA-105",
+      "category": "データ品質",
+      "question": "ETLパイプラインのテスト戦略として「コントラクトテスト（Contract Testing）」の説明として正しいのはどれか？",
+      "choices": [
+        "プロデューサーとコンシューマー間で合意したデータスキーマ・型・フォーマットが守られているかを自動検証する",
+        "データ処理の速度（SLA）を測定するパフォーマンステスト",
+        "本番データをマスクしてテスト環境に利用するデータサニタイズ手法",
+        "ベンダーとのSLAを自動的に確認する契約管理システム"
+      ],
+      "answers": [0],
+      "explanation": "コントラクトテスト（Contract Testing）はデータパイプラインのプロデューサー（データを送る側）とコンシューマー（データを受け取る側）が合意した「コントラクト」（スキーマ・データ型・必須フィールド・値の範囲等）を自動検証する手法です。スキーマレジストリ（Glue Schema Registry）・Great Expectations・dbt Testsといったツールで実装できます。パイプラインの上流の変更が下流に意図しない影響を与えることを早期に検出できます。"
+    },
+    {
+      "id": "DEA-106",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftのワークロード管理（WLM: Workload Management）の目的として正しいのはどれか？",
+      "choices": [
+        "短時間クエリと長時間クエリを別々のキューに割り当て、クエリの優先度・メモリ・同時実行数を管理する",
+        "WLMはクラスターのノード間のネットワークトラフィックを管理するサービス",
+        "WLMはS3からのデータロード速度を自動調整するサービス",
+        "WLMを設定するとクエリのコストが自動的に最小化される"
+      ],
+      "answers": [0],
+      "explanation": "RedshiftのWLMはクエリキューを定義してクエリのリソース割り当てを管理します。複数のキューを作成し、各キューにメモリ割合・同時実行スロット数・タイムアウト・ユーザーグループ・クエリグループを割り当てます。Auto WLM（自動WLM）はMLを使って各クエリに必要なリソースを自動判断します。Short Query Acceleration（SQA）は短時間クエリを別キューで優先実行し、長時間クエリによるスタベーションを防ぎます。"
+    },
+    {
+      "id": "DEA-107",
+      "category": "データ変換",
+      "question": "Apache Sparkのキャッシュ（persist/cache）の使い方として正しいのはどれか？",
+      "choices": [
+        "同じDataFrameを複数回使用する場合にcache()またはpersist()でメモリにキャッシュして再計算を防ぐ",
+        "cache()は全データを必ずディスクに保存する",
+        "persist()はDEFAULTでネットワーク越しに分散キャッシュを構築する",
+        "cache()を使うと全Executorのメモリを超えた場合にジョブが失敗する"
+      ],
+      "answers": [0],
+      "explanation": "Sparkのcache()/persist()はDataFrame/RDDをメモリ（またはディスク）にキャッシュして、後続のActionで再計算しないようにします。同じDataFrameを複数のActionで使う場合（count()してからshow()等）に有効です。cache()はDEFAULT_PERSIST_STORAGE（MEMORY_AND_DISK）で、メモリに収まらない場合はディスクにスピルします。persist(StorageLevel.DISK_ONLY)等でストレージレベルを指定できます。メモリを超えた場合はスピルダウンするため失敗はしません（パフォーマンス低下）。"
+    },
+    {
+      "id": "DEA-108",
+      "category": "データパイプライン",
+      "question": "Amazon EventBridge Pipesの説明として正しいのはどれか？",
+      "choices": [
+        "SQS・DynamoDB Streams・Kinesis・MSK等のソースから直接ターゲット（Lambda・StepFunctions・API GW等）へのポイントツーポイントのイベントパイプを構築する",
+        "EventBridge PipesはEventBridgeのルールと同一機能で名前が異なるだけ",
+        "EventBridge PipesはS3イベントのみ処理できる",
+        "EventBridge PipesはAmazon CloudWatchからのメトリクスストリームのみ処理できる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EventBridge Pipesはイベントソース（SQS・DynamoDB Streams・Kinesis・MSK・MQ等）とターゲット（Lambda・Step Functions・SQS・SNS・EventBridge・API Gateway・Firehose等）を直接接続するマネージドパイプです。オプションでLambdaやStep Functionsによるフィルタリング・エンリッチメント・変換を挟むことができます。従来のLambda Patternsを使っていたSQS→Lambdaのような連携をローコードで実現できます。EventBridgeルールとは異なりファンアウトではなくポイントツーポイントです。"
+    },
+    {
+      "id": "DEA-109",
+      "category": "クエリ・分析",
+      "question": "Amazon OpenSearch Serviceのインジェストパイプライン（Ingestion Pipeline）として使用できるサービスはどれか？",
+      "choices": [
+        "Amazon OpenSearch Ingestion（OpenSearch Service IngestionまたはOSIS）",
+        "AWS Glue（OpenSearch専用のGlueコネクターを使用）",
+        "Amazon Kinesis Data Firehose（OpenSearch直接配信）",
+        "AとCの両方が正しい"
+      ],
+      "answers": [3],
+      "explanation": "OpenSearch Serviceへのデータ投入方法は複数あります：(1)Amazon OpenSearch Ingestion（OSIS）：OpenSearchのネイティブパイプラインサービスで、Data Prepper（オープンソース）ベース。S3・CloudWatch Logs・Kinesis等からOpenSearchへの変換・転送を設定可能。(2)Amazon Data Firehose：直接OpenSearch Service（またはServerless）への配信をサポート。バッファリング・変換機能付き。(3)Logstash・自作Lambda等も利用可能。AとCの両方が正しいため答えはD。"
+    },
+    {
+      "id": "DEA-110",
+      "category": "データセキュリティ",
+      "question": "AWS Glueジョブでシークレット情報（DBパスワード・APIキー）を安全に扱う方法として正しいのはどれか？",
+      "choices": [
+        "AWS Secrets ManagerまたはAWS Systems Manager Parameter Store（SecureString）にシークレットを保存し、ジョブ実行時にIAMロール経由で取得する",
+        "Glueジョブのスクリプト内にハードコードする",
+        "S3バケットに平文テキストファイルとして保存しジョブが読み込む",
+        "環境変数としてGlueジョブのパラメータに平文で設定する"
+      ],
+      "answers": [0],
+      "explanation": "GlueジョブでのシークレットのベストプラクティスはAWS Secrets ManagerまたはSSM Parameter Store（SecureString/KMS暗号化）に保存し、Glueジョブ実行ロールにget-secret-value権限を付与してランタイムに取得します。GlueジョブはConnection設定でSecrets ManagerのSecretを使用してRDS等のJDBCパスワードを自動管理することも可能です。スクリプトへのハードコード・S3平文保存・平文環境変数はいずれも非推奨です。"
+    },
+    {
+      "id": "DEA-111",
+      "category": "データ取り込み・変換",
+      "question": "リアルタイムデータ処理においてWatermarkとはどのような概念か？",
+      "choices": [
+        "イベント時刻ベースのウィンドウ処理において、遅延データ（Late Arriving Data）をどこまで待つかを定義するしきい値",
+        "S3へのデータ書き込み時のウォーターマーク（書き込み完了マーカー）",
+        "Kinesis Data Streamsのシャードスプリット処理の完了を示すマーカー",
+        "データのプライバシー保護のためにデータに埋め込む識別子"
+      ],
+      "answers": [0],
+      "explanation": "Watermarkはストリーム処理でのイベント時刻（Event Time）ベースのウィンドウ集計において重要な概念です。ストリームのデータは処理時刻（Processing Time）と実際のイベント発生時刻（Event Time）がずれる場合があります（ネットワーク遅延・モバイルオフライン等）。Watermarkは「この時刻以前のイベントはもう到着しないであろう」というしきい値を定義し、これ以前のウィンドウを「閉じて」集計します。Apache Flinkでは`assignTimestampsAndWatermarks()`で設定します。"
+    },
+    {
+      "id": "DEA-112",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftの行レベルセキュリティ（Row-Level Security）の説明として正しいのはどれか？",
+      "choices": [
+        "ユーザーのロール・グループに基づいてクエリ結果から特定の行を自動的にフィルタリングするセキュリティ機能",
+        "行レベルセキュリティはRedshiftでは実装不可能でビューを使う必要がある",
+        "行レベルセキュリティはクラスター管理者ユーザーも迂回できない",
+        "行レベルセキュリティを有効にするとテーブルへのDML操作ができなくなる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshiftはネイティブの行レベルセキュリティ（RLS）をサポートしています。CREATE RLS POLICY文でポリシーを定義し、ATTACH RLS POLICYでテーブルとロールに適用します。ポリシーはWHERE句と同様の条件式で定義でき、ユーザーが実行するSELECT/INSERT/UPDATE/DELETE時に自動的に条件が付加されます。スーパーユーザーはデフォルトでRLSを迂回しますが、`SET SESSION AUTHORIZATION`でユーザー権限をシミュレーションできます。"
+    },
+    {
+      "id": "DEA-113",
+      "category": "データパイプライン",
+      "question": "AWS GlueのTriggerタイプとして正しいものをすべて選べ。",
+      "choices": [
+        "スケジュールトリガー（cron式・固定間隔）",
+        "イベントトリガー（他のジョブの成功/失敗）",
+        "オンデマンドトリガー（手動実行）",
+        "ETLジョブの完了イベントをKinesisに送るストリームトリガー"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "AWS Glueのトリガータイプは3種類：(1)スケジュールトリガー（Scheduled）：cron式または分単位の固定間隔で定期実行。(2)条件トリガー（Conditional）：他のGlueジョブ/クローラーの実行結果（成功・失敗・タイムアウト等）を条件に後続ジョブをトリガー。依存関係チェーンを作れます。(3)オンデマンドトリガー（On Demand）：手動でStartTrigger APIを呼ぶかコンソールから起動。Kinesisへのストリームトリガーはネイティブに存在せず、EventBridgeとLambdaで実現します。"
+    },
+    {
+      "id": "DEA-114",
+      "category": "クエリ・分析",
+      "question": "Amazon QuickSightのML Insightsの機能として正しいものをすべて選べ。",
+      "choices": [
+        "異常検出（Anomaly Detection）：指定したメトリクスの異常値を自動検出してアラート",
+        "予測（Forecasting）：時系列データの将来値を予測してビジュアライゼーションに表示",
+        "自然言語クエリ（Q&A）：自然言語で「先月の売上は？」等のデータ質問に自動回答",
+        "自動インサイト（Auto Narratives）：ダッシュボードのデータを自然言語で要約"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Amazon QuickSightのML Insights機能：(1)Anomaly Detection（異常検出）：Random Cut Forest（RCF）アルゴリズムでメトリクスの異常値をリアルタイム検出・アラート。(2)Forecasting（予測）：時系列データをMLで予測し、予測範囲をビジュアル上に表示（信頼区間付き）。(3)QuickSight Q：自然言語（英語・日本語等）でデータについての質問を入力するとビジュアルを自動生成。(4)Auto Narratives：グラフの数値変化を自然言語テキストで自動説明。全てがQuickSightに組み込まれており追加サービス不要です。"
+    },
+    {
+      "id": "DEA-115",
+      "category": "データセキュリティ",
+      "question": "AWS Glue Data Catalogへのアクセスをリソースポリシー（Resource Policy）で制御する際の説明として正しいのはどれか？",
+      "choices": [
+        "Glue Data Catalogのリソースポリシーを設定して、クロスアカウントアクセスや特定プリンシパルへのアクセスを許可・拒否できる",
+        "Glue Data Catalogのアクセス制御はIAMロールのみで行われ、リソースポリシーはサポートされない",
+        "Glue Data Catalogのリソースポリシーはリージョンに関係なくグローバルに適用される",
+        "リソースポリシーを設定するとLake Formationのアクセス制御が無効になる"
+      ],
+      "answers": [0],
+      "explanation": "Glue Data Catalogはリソースベースポリシー（Resource Policy）をサポートします。これを使うと：(1)クロスアカウントアクセス許可（別アカウントのGlueジョブ・Athenaがカタログを参照できるように）、(2)特定のIAMプリンシパルへのきめ細かいアクセス制御を設定できます。Lake FormationをGlue Data Catalogのアクセス制御に使用している場合、Lake FormationとGlueリソースポリシーが両方評価されます（両方の許可が必要）。リージョン単位で設定が必要です。"
+    },
+    {
+      "id": "DEA-116",
+      "category": "データ取り込み・変換",
+      "question": "Amazon Data Firehoseが直接Apache Iceberg Tablesへ書き込む際の特徴として正しいのはどれか？",
+      "choices": [
+        "FirehoseがGlue Data Catalogに登録されたIcebergテーブルにUPSERT（INSERT/UPDATE）を行い、トランザクション処理をサポートする",
+        "Firehoseは標準的なS3ファイル書き込みのみサポートしIcebergには対応しない",
+        "IcebergへのFirehose書き込みはJSON形式のみサポートする",
+        "Firehose経由のIceberg書き込みはAWS GlueでのETLより常に遅い"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Data Firehoseは2023年からApache Iceberg Tableをターゲットとして直接サポートしています。FirehoseはストリーミングデータをバッファしてGlue Data Catalogに登録されたIcebergテーブルにUPSERT（INSERT新規レコード・UPDATE既存レコード）を自動実行します。これにより、ストリーミングパイプラインで最新のデータをIcebergトランザクションテーブルとして管理できます。Parquet形式でIcebergのデータファイルが書き込まれます。"
+    },
+    {
+      "id": "DEA-117",
+      "category": "データパイプライン",
+      "question": "Apache Airflowで使用されるXCom（Cross-Communication）の説明として正しいのはどれか？",
+      "choices": [
+        "タスク間で小さなデータや状態を共有するためのメカニズムで、タスクの出力を後続タスクが参照できる",
+        "XComはAirflowの分散キャッシュシステムで、Redisを内部的に使用する",
+        "XComは大量のDataFrameをタスク間で効率的に共有するためのSparkAPI",
+        "XComはApache AirflowとAWS Step FunctionsのAPI統合レイヤー"
+      ],
+      "answers": [0],
+      "explanation": "Apache AirflowのXCom（Cross-Communication）はDAG内のタスク間で情報を共有するメカニズムです。タスクが`xcom_push(key='result', value=...)` でデータをプッシュし、後続タスクが`xcom_pull(task_ids='upstream_task', key='result')`で取得できます。XComはAirflowのメタデータDB（RDS/PostgreSQL等）に保存されるため、小さなデータ（IDリスト・ファイルパス・設定値等）の共有に適しています。大量データ（DataFrameの中身等）はS3に保存してパスを共有するパターンが推奨です。"
+    },
+    {
+      "id": "DEA-118",
+      "category": "データ変換",
+      "question": "AWS Glue ETLジョブでのデータ型の不一致（Schema Mismatch）を処理するためにDynamicFrameを使う利点はどれか？",
+      "choices": [
+        "DynamicFrameは各レコードが独自のスキーマを持てるChoiceTypeをサポートし、型不一致を例外なく処理できる",
+        "DynamicFrameはスキーマを完全に無視してデータを文字列として処理する",
+        "DynamicFrameはSparkのDataFrameと全く同じAPIを持つ",
+        "DynamicFrameを使うとスキーマ不一致レコードが自動的に削除される"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue DynamicFrameはSparkのDataFrameとは異なり、レコードごとに異なるスキーマを持つ「半構造化データ」を処理できます。カラムが一部のレコードでは数値型、他では文字列型という場合、DataFrameでは例外が発生しますが、DynamicFrameではChoiceType（型の選択）として表現し例外なく処理できます。`resolveChoice()`メソッドで型の解決方法（CAST/PROJECT/MAKE_COLS等）を指定できます。複数ソースのマージや進化したスキーマのデータ処理に有効です。"
+    },
+    {
+      "id": "DEA-119",
+      "category": "データストレージ",
+      "question": "Amazon OpenSearch Serverlessの特徴として正しいのはどれか？",
+      "choices": [
+        "クラスター管理不要のサーバーレスOpenSearchで、インデックスコレクションを自動スケールする",
+        "OpenSearch ServerlessはOpenSearch Dashboards（Kibana）を提供しない",
+        "OpenSearch ServerlessはEC2インスタンスと同じ課金モデル（時間課金）",
+        "OpenSearch ServerlessはVPCエンドポイントに対応しない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon OpenSearch Serverlessはインデックスノード（インデクシング）とサーチノード（検索）を分離したサーバーレスアーキテクチャです。コレクションという単位でデータを管理し、自動スケーリングします。OpenSearch Dashboards（可視化UI）は引き続き利用可能です。課金はOCU（OpenSearch Capacity Unit）時間単位（インデクシングOCU・サーチOCU別）です。VPCエンドポイントもサポートしており、パブリックアクセスを無効化できます。"
+    },
+    {
+      "id": "DEA-120",
+      "category": "データパイプライン",
+      "question": "Amazon DataZoneの主な目的として正しいのはどれか？",
+      "choices": [
+        "データプロデューサーとコンシューマー間のデータ資産の検索・共有・ガバナンスを行うデータメッシュプラットフォーム",
+        "DataZoneはAWS専用のリージョン間データ転送サービス",
+        "DataZoneはS3バケットのコストを最適化する自動階層化サービス",
+        "DataZoneはAthenaとRedshiftを統合したハイブリッドクエリサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon DataZoneはデータメッシュ・データカタログ・データガバナンスを提供するフルマネージドサービスです。主な機能：(1)データポータル（ビジネスカタログ）：データ資産（S3・Redshift・Glue等）をビジネス定義付きで公開・検索。(2)サブスクリプション：データコンシューマーがデータ資産へのアクセスをリクエストし、プロデューサーが承認。(3)ドメイン管理：部門・チームごとのデータドメインを管理。(4)Lake Formationと統合してきめ細かいアクセス制御を実現。"
     }
   ]
 }
