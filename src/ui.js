@@ -89,6 +89,9 @@ export function renderResult(question, selectedIndex, isCorrect) {
 
   buttons.forEach((btn, idx) => {
     btn.disabled = true;
+    if (idx === selectedIndex) {
+      btn.classList.add('selected');
+    }
     if (question.answers.includes(idx)) {
       btn.classList.add('correct');
     } else if (idx === selectedIndex && !isCorrect) {

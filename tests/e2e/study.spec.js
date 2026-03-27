@@ -117,6 +117,14 @@ test.describe('回答処理', () => {
     expect(['○', '×']).toContain(icon);
   });
 
+  test('選択肢クリック後に selected クラスが付与される', async ({ page }) => {
+    const btn = page.locator('.choice-btn').first();
+    await btn.click();
+    // 回答後は selected クラスが残り、自分が選んだ選択肢を示す
+    const hasSelected = await btn.evaluate(el => el.classList.contains('selected'));
+    expect(hasSelected).toBe(true);
+  });
+
   test('正解選択肢は緑、不正解選択肢は赤になる', async ({ page }) => {
     // どれかクリック後に正解ボタンが green クラスを持つことを確認
     await page.locator('.choice-btn').first().click();
