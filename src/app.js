@@ -50,6 +50,11 @@ export const EXAM_LIST = [
     examName: 'AWS Certified SysOps Administrator - Associate',
     file: 'data/soa.json',
   },
+  {
+    examCode: 'DEA',
+    examName: 'AWS Certified Data Engineer - Associate',
+    file: 'data/dea.json',
+  },
 ];
 
 // ============================================================

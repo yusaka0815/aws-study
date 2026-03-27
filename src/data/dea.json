@@ -1,0 +1,526 @@
+{
+  "examCode": "DEA",
+  "examName": "AWS Certified Data Engineer - Associate",
+  "questions": [
+    {
+      "id": "DEA-001",
+      "category": "データ取り込み・変換",
+      "question": "大量のIoTデバイスからリアルタイムでデータを収集し、S3に保存したい。秒間10万件のレコードを処理できるサービスはどれか？",
+      "choices": [
+        "Amazon Kinesis Data Streams",
+        "Amazon SQS Standard Queue",
+        "AWS Glue",
+        "Amazon EMR"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Kinesis Data Streamsはリアルタイムストリーミングデータの収集・処理に特化しており、秒間数百万レコードのスループットに対応します。シャード単位でスケールし、複数のコンシューマーが同じデータを並行処理できます。SQSはメッセージキューでリアルタイムストリーミング用途には不向き、GlueはETLバッチ処理、EMRはビッグデータ処理フレームワークです。"
+    },
+    {
+      "id": "DEA-002",
+      "category": "データ取り込み・変換",
+      "question": "オンプレミスのMySQLデータベースをAmazon Aurora MySQLへ移行する際、ダウンタイムを最小化したい。最適なサービスはどれか？",
+      "choices": [
+        "AWS Database Migration Service（DMS）",
+        "AWS Glue",
+        "Amazon EMR",
+        "AWS DataSync"
+      ],
+      "answers": [0],
+      "explanation": "AWS DMSは異なるデータベースエンジン間の移行（ホモジニアス・ヘテロジニアス）をサポートし、継続的なデータレプリケーション（CDC: Change Data Capture）機能により、ソースDBを稼働させたままターゲットDBへ増分データを同期できます。これにより移行のダウンタイムを最小化できます。AWS Glueは主にETL処理、DataSyncはファイル・オブジェクトストレージ間の転送向けです。"
+    },
+    {
+      "id": "DEA-003",
+      "category": "データストレージ",
+      "question": "分析用のデータレイクをS3上に構築する。Parquet形式でデータを保存するメリットとして正しいものをすべて選べ。",
+      "choices": [
+        "列指向ストレージによりクエリ時のスキャンデータ量が削減される",
+        "Snappy等の圧縮と組み合わせてストレージコストを削減できる",
+        "行単位の更新・削除が容易になる",
+        "スキーマ情報を含むためデータカタログが不要になる"
+      ],
+      "answers": [0, 1],
+      "explanation": "Parquet形式の主なメリット：(1)列指向ストレージのため、特定列のみSELECTするクエリではその列だけ読み込めば済み、スキャンデータ量が大幅削減される。(2)Snappy/Gzip等の圧縮と組み合わせることでCSVより大幅にサイズが小さくなる。行単位の更新・削除はParquetでは困難（不変ファイルのためDelta Lake等の追加レイヤーが必要）。スキーマ情報は埋め込まれるがGlue Data Catalogは依然として必要。"
+    },
+    {
+      "id": "DEA-004",
+      "category": "データ取り込み・変換",
+      "question": "Kinesis Data Streamsからデータを読み取り、S3に書き込む際にリアルタイム変換（フォーマット変換・圧縮）を行いたい。最もシンプルな構成はどれか？",
+      "choices": [
+        "Amazon Kinesis Data Firehose（Amazon Data Firehose）",
+        "AWS Lambda + Amazon S3 SDK",
+        "Amazon EMR Streaming",
+        "AWS Glue Streaming ETL"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Data Firehose（旧Kinesis Data Firehose）はKinesis Data Streamsをソースとして受け取り、バッファリング・フォーマット変換（JSON→Parquet/ORC）・圧縮（Gzip/Snappy）・暗号化をマネージドで行いS3に書き込めます。Lambda関数を組み込んだカスタム変換も可能です。サーバーレスで管理不要なため最もシンプルです。"
+    },
+    {
+      "id": "DEA-005",
+      "category": "データ変換",
+      "question": "AWS Glueジョブで大量のCSVファイルをParquet形式に変換する処理を定期実行したい。コストを最小化する設定として正しいのはどれか？",
+      "choices": [
+        "G.1X ワーカータイプでAuto Scalingを有効にし、不要なWorkerを自動削除する",
+        "Standard ワーカータイプを固定数で常時起動する",
+        "G.025X（Flex）実行を使いスポットキャパシティで実行する",
+        "Python Shell ジョブを使い単一ノードで逐次処理する"
+      ],
+      "answers": [2],
+      "explanation": "AWS Glue Flexible実行（G.025X）はスポットインスタンスキャパシティを使用するため、通常の実行に比べて最大34%コストを削減できます。SLAに柔軟性がある場合（バッチ処理など）に最適です。Auto Scalingも有用ですが、Flex実行の方がコスト削減効果が高い。Standard/G.1X固定は常にオンデマンド料金。Python Shellは小規模処理向けで大量データには不向きです。"
+    },
+    {
+      "id": "DEA-006",
+      "category": "データカタログ",
+      "question": "S3に保存されたデータのスキーマを自動検出し、Athenaでクエリできるようにしたい。最も効率的なアプローチはどれか？",
+      "choices": [
+        "AWS Glue Crawlerを設定してS3パスをスキャンし、Glue Data Catalogにテーブルを自動登録する",
+        "Amazon Athenaでマニュアルでテーブル定義DDLを実行する",
+        "AWS LambdaでS3オブジェクトを読み込みスキーマを検出してDynamoDBに保存する",
+        "Amazon RDSにデータをコピーしてスキーマ管理する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue Crawlerは指定されたS3パスのデータを自動スキャンし、スキーマ（カラム名・型・パーティション情報）を検出してGlue Data Catalogにテーブルとして自動登録します。Crawlerが作成したテーブルはそのままAthenaやEMR、RedshiftSpectrum等から参照できます。手動DDL実行も可能ですが、データ変更のたびに更新が必要です。"
+    },
+    {
+      "id": "DEA-007",
+      "category": "データストレージ",
+      "question": "Amazon S3でデータレイクを構築する際、セキュリティのベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "S3バケットポリシーでパブリックアクセスをブロックする",
+        "機密データにはSSE-KMS（Server-Side Encryption with AWS KMS）を使用する",
+        "バケット名にアカウントIDを含めてユニーク性を確保する",
+        "S3 Access Logsを有効にしてアクセス記録を別バケットに保存する"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "データレイクのセキュリティベストプラクティス：(1)パブリックアクセスブロックは必須。(2)機密データはSSE-KMSで暗号化しキー管理を行う。(3)S3バケット名はグローバルユニークだが、アカウントIDを含めることは推奨されるが必須ではない（実はセキュリティ要件ではなく運用慣行）。(4)アクセスログは監査・コンプライアンスに重要。バケット名にアカウントIDを含めるのはセキュリティ要件ではなく命名規則の話です。"
+    },
+    {
+      "id": "DEA-008",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftで数テラバイトのデータに対して複雑なJOINクエリを実行する際、パフォーマンスを向上させる方法として正しいものはどれか？",
+      "choices": [
+        "ディストリビューションキーを結合キーに設定してデータを同じノードに分散させる",
+        "全テーブルのディストリビューションスタイルをALLに設定する",
+        "インデックスを作成して結合処理を高速化する",
+        "ソートキーをランダムに設定する"
+      ],
+      "answers": [0],
+      "explanation": "Redshiftでは、頻繁にJOINするテーブル同士に同じ列をディストリビューションキー（DISTKEY）として設定すると、同じキー値を持つ行が同じスライスに配置され、ノード間のデータ転送（ブロードキャスト/再分散）が不要になりパフォーマンスが向上します。ALL分散は小さなディメンションテーブルには有効ですが、大きなテーブルには不適切。Redshiftにはインデックスはありません（ソートキーとゾーンマップを使用）。"
+    },
+    {
+      "id": "DEA-009",
+      "category": "データ品質",
+      "question": "AWS Glueで実行するETLジョブのデータ品質を検証したい。NULLチェックや範囲チェックを行う場合、最も適切な機能はどれか？",
+      "choices": [
+        "AWS Glue Data Quality（DQ）ルールセット",
+        "AWS Glue Triggers",
+        "AWS Step Functions",
+        "Amazon CloudWatch Logs Insights"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue Data Quality（DQ）はGlueジョブ内でデータ品質ルールを定義・実行できる機能です。DQDL（Data Quality Definition Language）を使ってIsComplete、IsUnique、ColumnValues between等のルールを定義し、結果をCloudWatchに送信したりジョブを失敗させたりできます。Triggersはジョブのスケジューリング、Step Functionsはワークフロー管理、Logs Insightsはログ分析ツールです。"
+    },
+    {
+      "id": "DEA-010",
+      "category": "クエリ・分析",
+      "question": "S3に保存されたデータに対してサーバーレスでSQLクエリを実行し、結果を別のS3バケットに出力したい。最適なサービスはどれか？",
+      "choices": [
+        "Amazon Athena",
+        "Amazon Redshift",
+        "Amazon EMR",
+        "AWS Glue"
+      ],
+      "answers": [0],
+      "explanation": "Amazon AthenaはS3のデータに対してサーバーレスでPrestoベースのSQLクエリを実行できます。インフラの管理不要で、スキャンしたデータ量に応じた従量課金（スキャン1TBあたり$5）です。クエリ結果は自動的にS3に保存されます。Redshiftはプロビジョンド（またはServerless）DWH、EMRはマネージドHadoop/Sparkクラスター、GlueはETL処理が主用途です。"
+    },
+    {
+      "id": "DEA-011",
+      "category": "データ取り込み・変換",
+      "question": "AWS Glue ETLジョブで、DynamicFrameとDataFrameを相互変換するメソッドとして正しいものはどれか？",
+      "choices": [
+        "toDF()とfromDF()",
+        "toPandas()とfromPandas()",
+        "convert()とrevert()",
+        "cast()とuncast()"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue DynamicFrameはGlue独自のデータ構造で、スキーマ不一致やネストデータを扱いやすい反面、SparkのDataFrameより利用できるAPIが限られます。DynamicFrameからSparkのDataFrameへの変換は`toDF()`メソッドで行い、SparkのDataFrameからDynamicFrameへ戻すには`fromDF(dyf, glue_context, name)`を使います。toPandas()はローカルコレクション変換用（別メソッド）です。"
+    },
+    {
+      "id": "DEA-012",
+      "category": "データストレージ",
+      "question": "Amazon S3のデータに対してAmazon Redshift Spectrumを使用する利点として正しいのはどれか？",
+      "choices": [
+        "S3のデータをRedshiftクラスターにロードせずにJOINクエリを実行できる",
+        "S3のデータをRedshiftの内部ストレージに自動的にコピーしてクエリを高速化する",
+        "S3のデータをリアルタイムにストリーミング処理できる",
+        "S3のデータに対してSQLを実行するが料金はRedshiftとは別に発生しない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshift SpectrumはRedshiftクラスターの外部（Spectrum層）でS3のデータをクエリできます。大量のコールドデータをS3に残したまま、RedshiftのホットデータとJOINできるため、ストレージコストを削減できます。データはRedshiftにコピーされず、S3上のデータに直接アクセスします。料金はスキャンしたデータ1TBあたり$5が別途発生します（Athenaと同様）。"
+    },
+    {
+      "id": "DEA-013",
+      "category": "データパイプライン",
+      "question": "複数のAWS Glueジョブを依存関係に従って順次実行し、特定ジョブが失敗した場合に通知してリトライしたい。最適なサービスはどれか？",
+      "choices": [
+        "AWS Glue Workflows",
+        "AWS Step Functions",
+        "Amazon EventBridge Scheduler",
+        "AWS Batch"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue Workflowsは複数のGlueジョブ・クローラー・トリガーを一つのワークフローとして定義し、依存関係を視覚化・管理できます。ジョブ間の依存関係（前のジョブ成功後に次を実行等）を定義でき、失敗時にはCloudWatch EventsとSNS通知を組み合わせて通知・リトライが可能です。Step Functionsもより複雑なワークフローに対応しますが、Glue特化ならWorkflowsが最もシンプルです。"
+    },
+    {
+      "id": "DEA-014",
+      "category": "データストレージ",
+      "question": "Amazon DynamoDBでの読み取り整合性について正しい説明はどれか？",
+      "choices": [
+        "結果整合性読み取りは最終的に整合するが、書き込み直後は古い値を返す可能性がある",
+        "強整合性読み取りは結果整合性読み取りの2倍のRCUを消費する",
+        "強整合性読み取りはグローバルテーブルでも利用可能",
+        "結果整合性読み取りはリードキャパシティユニット（RCU）を消費しない"
+      ],
+      "answers": [0, 1],
+      "explanation": "DynamoDB読み取り整合性：(1)結果整合性読み取りは書き込み後数ミリ秒で整合するが、書き込み直後に古い値が返る可能性があります。(2)強整合性読み取りは常に最新値を返しますが、RCUを2倍消費します（4KBのページに対して1RCU→2RCU）。グローバルテーブルではレプリカへの強整合性読み取りは利用できません（ローカルレプリカのみ）。結果整合性でもRCUは消費します（ただし半分）。"
+    },
+    {
+      "id": "DEA-015",
+      "category": "データ変換",
+      "question": "Kinesis Data Streamsのシャード数を増やすと、どのような影響があるか？",
+      "choices": [
+        "書き込みスループットが増加する（シャードあたり1MB/s、1000件/s）",
+        "シャード数を増やすとコストが減少する",
+        "シャード数を増やすと保持期間が延長される",
+        "シャード数を増やすとコンシューマー数の制限が緩和される"
+      ],
+      "answers": [0],
+      "explanation": "Kinesis Data Streamsのスループットはシャード数に比例します。各シャードは書き込み1MB/s・1000レコード/s、読み取り2MB/s（拡張ファンアウトで5MB/s）のスループットを提供します。シャード数を増やすとそれに比例して書き込み・読み取りスループットが向上しますが、コストもシャード数に応じて増加します。保持期間（1〜365日）はシャード数と独立した設定です。"
+    },
+    {
+      "id": "DEA-016",
+      "category": "クエリ・分析",
+      "question": "Amazon Athenaでクエリコストを削減する方法として正しいものをすべて選べ。",
+      "choices": [
+        "データをParquet/ORC等の列指向フォーマットに変換する",
+        "S3データをパーティション分割してクエリ時に不要パーティションをスキップする",
+        "クエリ結果をAthena内にキャッシュして再実行時はキャッシュを使用する",
+        "WHERE句で必要な列のみフィルタリングする"
+      ],
+      "answers": [0, 1],
+      "explanation": "Athenaはスキャンしたデータ量に課金されるため：(1)Parquet/ORCのような列指向フォーマットは不要な列をスキップするため、スキャン量を削減（最大80-90%削減可能）。(2)パーティション分割（年/月/日等）により、WHERE句でパーティションを指定すると対象外のS3プレフィックスはスキャンされない。クエリ結果キャッシュは現在Athenaの機能として提供されていない（手動で結果をS3に保存するか、Saved QueryのReuse機能あり）。WHERE句のフィルタはスキャン後のフィルタリングのためコスト削減に直接つながらない。"
+    },
+    {
+      "id": "DEA-017",
+      "category": "データパイプライン",
+      "question": "Apache Kafka互換のマネージドストリーミングサービスとして、AWS上で利用できるサービスはどれか？",
+      "choices": [
+        "Amazon MSK（Managed Streaming for Apache Kafka）",
+        "Amazon Kinesis Data Streams",
+        "Amazon SQS FIFO",
+        "Amazon EventBridge"
+      ],
+      "answers": [0],
+      "explanation": "Amazon MSK（Managed Streaming for Apache Kafka）はApache KafkaのフルマネージドサービスでKafka互換APIを提供します。既存のKafkaアプリケーションをコード変更なしでAWSに移行できます。Kinesis Data StreamsはAWSネイティブのストリーミングサービスでKafka互換ではありません。SQS FIFOはメッセージキュー、EventBridgeはイベントルーティングサービスです。"
+    },
+    {
+      "id": "DEA-018",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftでクエリパフォーマンスを向上させるために使用できる機能をすべて選べ。",
+      "choices": [
+        "マテリアライズドビュー（Materialized Views）",
+        "自動ワークロード管理（Auto WLM）",
+        "クラスターの一時停止と再開（Pause and Resume）",
+        "コンカレンシースケーリング（Concurrency Scaling）"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "Redshiftのパフォーマンス機能：(1)マテリアライズドビューは頻繁に実行される複雑なクエリ結果を事前計算・保存し再クエリを高速化します。(2)Auto WLMはクエリの複雑さと優先度に基づいてメモリとスロットを自動割り当てします。(4)コンカレンシースケーリングは同時クエリが増加した際に追加クラスターを自動追加し対応します。一時停止と再開（Pause/Resume）はコスト削減機能であり、クエリパフォーマンスの向上には直接関係しません。"
+    },
+    {
+      "id": "DEA-019",
+      "category": "データ取り込み・変換",
+      "question": "AWS Glue Studioを使用してETLジョブを作成する利点として正しいものはどれか？",
+      "choices": [
+        "ビジュアルインターフェースでコードを書かずにETLジョブを設計・実行できる",
+        "AWS Glue Studioで作成したジョブはGlue Classic（コード）より高速に実行される",
+        "AWS Glue StudioはApache Sparkクラスターを直接管理できる",
+        "AWS Glue StudioはAthenaのクエリを視覚化するためのツールである"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue StudioはGlue ETLジョブをビジュアルインターフェース（ドラッグ＆ドロップ）で設計・テスト・監視できるツールです。コーディングなしでデータソース・変換・ターゲットを接続でき、裏側ではGlueのPySpark/Scalaコードが自動生成されます。実行速度はコードベースと同等です。Glue Studioはデータエンジニアリング用のUIツールであり、Sparkクラスターの直接管理やAthena視覚化とは異なります。"
+    },
+    {
+      "id": "DEA-020",
+      "category": "データセキュリティ",
+      "question": "S3データレイクのデータへのきめ細かいアクセス制御を実現するために、列レベル・行レベルのセキュリティを提供するサービスはどれか？",
+      "choices": [
+        "AWS Lake Formation",
+        "Amazon Macie",
+        "AWS IAM",
+        "Amazon S3 Object Lock"
+      ],
+      "answers": [0],
+      "explanation": "AWS Lake Formationはデータレイクのセキュリティを管理するサービスで、テーブルレベル・列レベル・行レベルのきめ細かいアクセス制御（Cell-Level Security）を提供します。GlueデータカタログのテーブルにLake Formationのアクセス許可を設定することで、Athena・EMR・Redshift Spectrum等からのアクセスを一元管理できます。Macieはデータ分類・機密情報検出、IAMはAWSリソースへのアクセス制御（テーブル内の行/列は制御不可）です。"
+    },
+    {
+      "id": "DEA-021",
+      "category": "データ取り込み・変換",
+      "question": "Amazon Kinesis Data Firehoseでバッファリング設定として設定できるものはどれか？",
+      "choices": [
+        "バッファサイズ（MB）とバッファ間隔（秒）の2つのしきい値",
+        "バッファサイズ（MB）のみ",
+        "バッファ間隔（秒）のみ",
+        "バッファするレコード数と最大バッチサイズの2つ"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Data Firehoseのバッファリングは2つの条件で制御されます：(1)バッファサイズ（1〜128 MB）と(2)バッファ間隔（60〜900秒）。どちらか一方の条件が満たされた時点でS3（等）へ書き込みが発生します。これにより、データ量が少ない時間帯でも最大900秒以内に書き込まれることが保証されます。"
+    },
+    {
+      "id": "DEA-022",
+      "category": "データ変換",
+      "question": "AWS Glueで実行するPySparkジョブで、大量データのJOIN処理が遅い。パフォーマンスを改善する手法として正しいものはどれか？",
+      "choices": [
+        "小さいテーブルをブロードキャストJOINして各エグゼキューターにキャッシュする",
+        "JOINの前にデータをソートして並べ替えをなくす",
+        "JOINキーにインデックスを作成する",
+        "シャッフル操作を増やして並列度を上げる"
+      ],
+      "answers": [0],
+      "explanation": "Sparkでの大規模JOINのパフォーマンス改善：小さいテーブル（数MB〜数百MB程度）はブロードキャストJOIN（broadcast join hint）を使用することで、各エグゼキューターにキャッシュしてネットワーク越しのシャッフルを回避できます。JOINの前のソートはマージソートJOINを可能にする場合がありますが、一般的にはブロードキャストが最適。SparkにはDBのようなインデックスは存在しません。シャッフルを増やすとネットワーク転送が増え逆効果です。"
+    },
+    {
+      "id": "DEA-023",
+      "category": "データパイプライン",
+      "question": "Amazon Managed Workflows for Apache Airflow（MWAA）の特徴として正しいものをすべて選べ。",
+      "choices": [
+        "Apache AirflowのDAG（有向非巡回グラフ）でデータパイプラインを定義できる",
+        "AirflowのWebサーバー・スケジューラー・ワーカーをAWSがマネージドで運用する",
+        "Python製のDAGファイルをS3から自動的に読み込む",
+        "Glue・EMR・Lambda等のAWSサービスをOrchestrationできる"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Amazon MWAAはApache Airflowのフルマネージドサービスです。(1)DAG（Python）でタスク間の依存関係を定義します。(2)Webサーバー（UI）・スケジューラー・ワーカーの管理をAWSが担当します。(3)DAGファイルはS3バケットに配置し、MWAAが自動的に読み込みます。(4)Glue・EMR・Lambda・Redshift・SageMaker等のAWSサービスのオペレーターが提供されており、複雑なデータパイプラインをオーケストレーションできます。"
+    },
+    {
+      "id": "DEA-024",
+      "category": "データストレージ",
+      "question": "Amazon OpenSearch Serviceを使用する典型的なユースケースとして正しいものをすべて選べ。",
+      "choices": [
+        "ログデータの全文検索・可視化（Kibanaダッシュボード）",
+        "アプリケーションの検索機能（商品検索・ドキュメント検索）",
+        "大量の構造化データに対するバッチ集計処理",
+        "セキュリティアナリティクス（SIEM）"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "Amazon OpenSearch Service（旧Amazon Elasticsearch Service）の主なユースケース：(1)Kinesis・CloudWatch Logs等からログを収集し全文検索・OpenSearch Dashboards（Kibana互換）で可視化。(2)eコマースの商品検索やナレッジベース検索など低レイテンシの検索。(4)CloudTrail・VPC Flow Logs等を収集したセキュリティ分析（SIEM）。大量構造化データのバッチ集計はRedshiftやEMRが適しており、OpenSearchは分析特化ではなく検索・ログ分析特化です。"
+    },
+    {
+      "id": "DEA-025",
+      "category": "データ品質",
+      "question": "データレイクのデータ品質を継続的に監視し、スキーマの変化（スキーマドリフト）を検出したい。最適なアプローチはどれか？",
+      "choices": [
+        "Glue CrawlerをスケジュールでS3スキャンし、スキーマ変化をEventBridgeで検出・通知する",
+        "S3 Event NotificationでLambdaを起動してスキーマを検証する",
+        "定期的にAthenaで全データを読み込んでスキーマを確認する",
+        "Amazon Macie でスキーマ変化を検出する"
+      ],
+      "answers": [0],
+      "explanation": "Glue Crawlerを定期スケジュールで実行すると、S3のデータを再スキャンしてスキーマ変更（列の追加・削除・型変更）を検出し、Glue Data Catalogを更新します。このCrawler実行イベントはAmazon EventBridgeで捕捉でき、スキーマ変更が発生した場合にSNS通知やLambda処理を実行できます。Macieはデータ分類・PIIセンシティブデータの検出ツールでスキーマドリフト検出には対応していません。"
+    },
+    {
+      "id": "DEA-026",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshift Serverlessの特徴として正しいものはどれか？",
+      "choices": [
+        "クラスターの管理不要で、クエリ実行時のみ課金されるサーバーレスDWH",
+        "クラスターを常時起動し、月額固定料金で利用できる",
+        "Redshift Serverlessはファイルベースのデータのみ対応し、リアルタイムデータは不可",
+        "Redshift ServerlessはS3のデータのみクエリでき、内部テーブルは持てない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshift Serverlessはインフラ管理不要のサーバーレス型DWHです。クエリ実行時のコンピューティングリソース（RPU: Redshift Processing Units）を自動スケーリングし、使用した分だけ課金されます。アイドル時は課金されません。内部テーブルも持て、通常のRedshiftと同様にSQL・COPY・Spectrumが利用可能です。クラスタープロビジョニング型とは異なるデプロイオプションです。"
+    },
+    {
+      "id": "DEA-027",
+      "category": "データ取り込み・変換",
+      "question": "AWS DataSyncの主な用途として正しいものはどれか？",
+      "choices": [
+        "オンプレミスのファイルサーバーやNFSからS3・EFS・FSx into AWSへの大量データ転送を自動化する",
+        "データベース間のリアルタイムレプリケーション",
+        "Kinesis Data StreamsのデータをS3に書き込む",
+        "AWS Glue ETLジョブのデータ転送を最適化する"
+      ],
+      "answers": [0],
+      "explanation": "AWS DataSyncはオンプレミスのNFS/SMBファイルシステム、HDFS、S3互換ストレージ等からAWSサービス（S3・EFS・FSx for Windows・FSx for Lustre等）へのデータ転送を自動化・高速化するサービスです。自動暗号化・検証・差分転送・帯域幅制御・スケジュール転送機能を持ちます。DBレプリケーションはDMS、Kinesisデータ転送はFirehose、ETL最適化はGlue/EMRの役割です。"
+    },
+    {
+      "id": "DEA-028",
+      "category": "クエリ・分析",
+      "question": "Amazon EMRでApache Sparkジョブを実行する際、コストを最適化するための手法として正しいものをすべて選べ。",
+      "choices": [
+        "コアノードとタスクノードにスポットインスタンスを使用する",
+        "EMR Serverlessを使用してジョブ実行時のみリソースを使用する",
+        "EMRFS（S3ネイティブFS）を使用してHDFSへの依存を排除する",
+        "クラスターを常時起動しておくことで初期化コストを削減する"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "EMRコスト最適化：(1)スポットインスタンスはオンデマンドより最大90%安く、タスクノード（ステートレス）には特に適しています。コアノードもスポットを使えますが中断リスクがあります。(2)EMR Serverlessはサーバー管理不要でジョブ実行時のみリソースを使用し、アイドル時のコストを削減します。(3)EMRFS（S3への永続化）を使うとHDFS（ローカルEBS）が不要になり、ストレージコストを削減できます。常時起動はアイドル時間のコストが無駄です。"
+    },
+    {
+      "id": "DEA-029",
+      "category": "データセキュリティ",
+      "question": "Amazon Macieの主な機能として正しいものはどれか？",
+      "choices": [
+        "S3バケット内の機密データ（PII・クレジットカード番号等）をMLで自動検出・分類する",
+        "S3バケットへの不正アクセスをリアルタイムで遮断する",
+        "S3データを自動的に暗号化する",
+        "S3バケットのデータ品質を検証してスキーマエラーを検出する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon MacieはML技術を使用してS3バケット内のデータを自動スキャンし、個人情報（PII）・クレジットカード番号・AWSクレデンシャル等の機密データを検出・分類します。また、パブリックアクセスが設定されたバケットやオブジェクトのアクセス制御の問題も検出します。不正アクセスの遮断はGuardDutyやWAF、暗号化はKMS、データ品質検証はGlue DQの役割です。"
+    },
+    {
+      "id": "DEA-030",
+      "category": "データパイプライン",
+      "question": "AWS Step FunctionsでデータパイプラインをOrchestrationする際の特徴として正しいものはどれか？",
+      "choices": [
+        "状態マシン（State Machine）でフロー制御・エラーハンドリング・リトライを定義できる",
+        "Step FunctionsはGlueジョブやLambdaをOrchestrationできるが、EMRには対応していない",
+        "Step Functionsのワークフロー定義はJavaScriptのみサポートされる",
+        "Step Functionsのワークフローは最大10ステップまでの制限がある"
+      ],
+      "answers": [0],
+      "explanation": "AWS Step Functionsは状態マシン（Amazon States Language: ASL, JSON形式）でワークフローを定義します。Task・Choice・Parallel・Map・Wait・Fail・Succeed等の状態タイプを組み合わせ、Lambda・Glue・EMR・ECS・DynamoDB・SNS等200以上のAWSサービスを直接Orchestrationできます。Catch/Retry機能でエラーハンドリングも定義可能です。ステップ数に制限はなく、実行時間は最大1年（Standard Workflow）です。"
+    },
+    {
+      "id": "DEA-031",
+      "category": "データストレージ",
+      "question": "Amazon S3 Intelligentのアクセス層（S3 Intelligent-Tiering）の特徴として正しいものはどれか？",
+      "choices": [
+        "アクセスパターンを監視し、30日以上アクセスのないオブジェクトを低コストの低頻度アクセス層に自動移動する",
+        "S3 Intelligent-Tieringには取り出し料金（GB単位）が発生する",
+        "S3 Intelligent-Tieringはリアルタイムアクセスが必要なオブジェクトには不向き",
+        "S3 Intelligent-Tieringはアーカイブ層への移動をサポートしない"
+      ],
+      "answers": [0],
+      "explanation": "S3 Intelligent-Tieringはアクセス頻度が不明・変化するデータに最適なストレージクラスです。30日間アクセスなし→低頻度アクセス層、90日間アクセスなし→アーカイブインスタント層、180日間以上→ディープアーカイブ層へ自動移行します。再アクセス時は高頻度アクセス層に自動的に戻ります。取り出し料金は発生しません（低頻度アクセス層・アーカイブインスタント層）。リアルタイムアクセスが必要でも低レイテンシで利用可能です。"
+    },
+    {
+      "id": "DEA-032",
+      "category": "データ変換",
+      "question": "AWS Glueのブックマーク（Job Bookmark）機能の説明として正しいのはどれか？",
+      "choices": [
+        "前回のジョブ実行以降に追加・変更されたデータのみを処理する増分処理を実現する",
+        "ジョブの実行コストを削減するために処理済みデータをキャッシュする",
+        "ジョブの失敗時に自動的にリトライするためのチェックポイントを保存する",
+        "ジョブの実行ログをS3に自動保存するためのブックマーク機能"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue Job Bookmark（ジョブブックマーク）は前回のジョブ実行位置（どのファイルまで処理したか等）を追跡する機能です。S3の新しいオブジェクトやJDBC入力の新しい行のみを処理することで増分ETLを実現します。これにより毎回全データを再処理する必要がなくなり、処理時間とコストを削減できます。チェックポイントやキャッシュとは異なる機能です。"
+    },
+    {
+      "id": "DEA-033",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftのソートキー（Sort Key）について正しい説明はどれか？",
+      "choices": [
+        "コンパウンドソートキーは複数の列を指定し、先頭の列から順にソート効果がある",
+        "インターリーブソートキーは全ての列に均等なソート効果を持ち、コンパウンドより常に優れている",
+        "ソートキーを設定するとデータの更新・削除のパフォーマンスが向上する",
+        "ソートキーはRedshiftの内部テーブルには効果がなくRedshift Spectrumのみで有効"
+      ],
+      "answers": [0],
+      "explanation": "Redshiftのソートキー：コンパウンドソートキー（COMPOUND）は指定した列の順序でデータをソートし、先頭列での範囲フィルタリングに最も効果的です（後続列単独のフィルタには効果が薄い）。インターリーブソートキー（INTERLEAVE）は各列に均等な重みを与えますが、バキューム処理のコストが高く、RedshiftはAWSとしてコンパウンドを推奨しています。ソートキーはクエリの範囲スキャン削減に効果があり、内部テーブルで有効です。"
+    },
+    {
+      "id": "DEA-034",
+      "category": "データ取り込み・変換",
+      "question": "Amazon Kinesis Data Streamsで拡張ファンアウト（Enhanced Fan-Out）を使用する利点として正しいのはどれか？",
+      "choices": [
+        "コンシューマーごとに専用の2MB/sの読み取りスループットが割り当てられる",
+        "シャードあたりの書き込みスループットが2倍になる",
+        "コンシューマー数が増えてもポーリング間隔が短縮される",
+        "コスト無料で利用できる追加機能"
+      ],
+      "answers": [0],
+      "explanation": "拡張ファンアウト（Enhanced Fan-Out）を使用すると、各コンシューマーはシャードあたり2MB/sの専用読み取りスループットをプッシュ型（HTTP/2）で受け取れます。通常のGetRecordsポーリング方式では、全コンシューマーが2MB/sのシャードスループットを共有するため、コンシューマー数が増えるとスループットが低下します。Enhanced Fan-Outはコンシューマーごとに分離されています。書き込みスループット（1MB/s・1000件/s）は変わりません。追加料金が発生します（シャード時間あたり＋取得データ量）。"
+    },
+    {
+      "id": "DEA-035",
+      "category": "データ品質",
+      "question": "AWS Glue DataBrewの主な用途として正しいのはどれか？",
+      "choices": [
+        "ノーコードでデータのクレンジング・変換・プロファイリングを行う視覚的データ準備ツール",
+        "Glue ETLジョブのコードを自動生成するAI機能",
+        "データ品質ルールをSQLで定義して実行するデータ検証サービス",
+        "S3とRedshift間のデータ転送を自動化するコネクタ"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue DataBrewは250以上の組み込み変換を持つノーコードのビジュアルデータ準備サービスです。データエンジニアやデータアナリストがコーディングなしで、データプロファイリング（統計情報・欠損値・異常値検出）・クレンジング・変換・フォーマット標準化を実行できます。MLアナリストがSageMakerの前処理として使うユースケースが典型的です。Glue DQ（Data Quality）は品質ルール検証、GlueはSparkベースのETLです。"
+    },
+    {
+      "id": "DEA-036",
+      "category": "データパイプライン",
+      "question": "リアルタイムのストリーミングデータをApache Flink（Amazon Kinesis Data Analytics for Apache Flink）で処理する特徴として正しいのはどれか？",
+      "choices": [
+        "ステートフルなストリーム処理でウィンドウ集計・複合イベント処理（CEP）を実現できる",
+        "Apache FlinkはバッチETLのみ対応し、リアルタイム処理はできない",
+        "Amazon Managed Service for Apache Flinkはデータをポーリングのみで取得する",
+        "Apache Flinkのアプリケーションは必ずJavaで記述する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Managed Service for Apache Flink（旧Kinesis Data Analytics for Apache Flink）はステートフルなストリーム処理を提供します。タンブリングウィンドウ・スライディングウィンドウ・セッションウィンドウでの集計や、複合イベント処理（CEP: Complex Event Processing）が可能です。Kinesis・MSK（Kafka）・S3からリアルタイムにデータを読み込めます。Java・Python・Scala等複数の言語をサポートします。"
+    },
+    {
+      "id": "DEA-037",
+      "category": "データストレージ",
+      "question": "データレイクのトランザクション処理（ACID準拠のUPDATE/DELETE/MERGE）をS3上で実現するオープンフォーマットとして代表的なものはどれか？",
+      "choices": [
+        "Apache Iceberg",
+        "Apache Parquet",
+        "Apache ORC",
+        "Apache Avro"
+      ],
+      "answers": [0],
+      "explanation": "Apache Icebergはオープンテーブルフォーマット（OTF）でS3上のParquet/ORC/Avroファイルをトランザクションテーブルとして管理します。ACID準拠のUPDATE/DELETE/MERGE INTO、タイムトラベル（スナップショット）、スキーマエボリューション、パーティション変換をサポートします。AWSはAthena・Glue・EMR・LakeFormation等でIcebergをサポートしています。Parquet/ORC/Avroはストレージフォーマット（イミュータブルファイル）でACIDはサポートしません。"
+    },
+    {
+      "id": "DEA-038",
+      "category": "データセキュリティ",
+      "question": "Amazon Redshiftで機密列（クレジットカード番号等）に対してダイナミックデータマスキングを実装したい。使用する機能はどれか？",
+      "choices": [
+        "Amazon Redshift Dynamic Data Masking",
+        "AWS Secrets Manager",
+        "Amazon Macie",
+        "AWS KMS 列暗号化"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshift Dynamic Data Maskingは、クエリ実行時にユーザーのロール・グループに基づいて機密列の値を動的にマスキングする機能です。元データは暗号化して保存されたまま、特定ユーザーには「****-1234」等のマスクされた値を返します。ビュー定義不要でポリシーベースの制御が可能です。KMS列暗号化は保存時の暗号化でクエリ時のマスキングとは異なります。"
+    },
+    {
+      "id": "DEA-039",
+      "category": "クエリ・分析",
+      "question": "Amazon Athenaのクエリパフォーマンスを向上させるためにパーティション射影（Partition Projection）を使用する利点として正しいのはどれか？",
+      "choices": [
+        "Glue Data Catalogにパーティションメタデータを保存せずにAthenaが直接パーティションを計算できる",
+        "Athenaがクエリ実行時にS3のファイルを並列でインデックス化する",
+        "パーティション射影を使うとAthenaのスキャンコストがゼロになる",
+        "パーティション射影はRedshift SpectrumではなくAthenaのみで利用できる"
+      ],
+      "answers": [0],
+      "explanation": "Partition Projectionは、AthenaがGlue Data Catalogにパーティションメタデータを照会する代わりに、パーティション値を数式・列挙・日付範囲から直接計算する機能です。パーティション数が多い（数千〜数百万）場合にGlue Catalogへの照会コスト・レイテンシを削減でき、クエリ開始時間が短縮されます。スキャンコストはスキャンするデータ量に依存するため削減されません。"
+    },
+    {
+      "id": "DEA-040",
+      "category": "データパイプライン",
+      "question": "AWS Glue ETLジョブを定期スケジュールで実行し、特定のS3パスに新ファイルが着地した時点で自動起動したい。最適なトリガーはどれか？",
+      "choices": [
+        "Amazon EventBridge ルール（S3 PutObject イベント）でGlueジョブをトリガーする",
+        "Glue Schedule Triggerで1分間隔のポーリングを設定する",
+        "S3 Event NotificationでSQSキューに送り、EC2がポーリングしてGlueジョブAPIを呼ぶ",
+        "Glue Crawlerで新ファイルを検出した後にGlueジョブをトリガーする"
+      ],
+      "answers": [0],
+      "explanation": "S3への新ファイル着地をトリガーとしてGlueジョブを実行する最適構成：S3 Event Notification → EventBridge → Glueジョブ起動（直接またはLambda経由）です。EventBridgeはS3のPutObjectイベントをほぼリアルタイムで捕捉しGlue StartJobRun APIを呼び出せます。Glue Schedule Triggerは定時実行（最小5分間隔）でイベントドリブンではありません。EC2ポーリングは不要なインフラが発生します。Crawlerトリガーも可能ですが、EventBridgeの方がよりシンプルで直接的です。"
+    }
+  ]
+}
