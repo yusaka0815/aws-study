@@ -21,6 +21,11 @@ import {
 // ============================================================
 export const EXAM_LIST = [
   {
+    examCode: 'CLF',
+    examName: 'AWS Certified Cloud Practitioner',
+    file: 'data/clf.json',
+  },
+  {
     examCode: 'SAA',
     examName: 'AWS Certified Solutions Architect - Associate',
     file: 'data/saa.json',

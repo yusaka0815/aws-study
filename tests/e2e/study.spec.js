@@ -38,13 +38,11 @@ test.describe('起動・試験選択画面', () => {
     await expect(page.locator('#exam-list')).toBeVisible();
   });
 
-  test('SAA・MLA の2試験が表示される', async ({ page }) => {
+  test('SAA・MLA が試験一覧に表示される', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.exam-card');
-    const cards = page.locator('.exam-card');
-    await expect(cards).toHaveCount(2);
-    await expect(cards.nth(0)).toContainText('SAA');
-    await expect(cards.nth(1)).toContainText('MLA');
+    await expect(page.locator('.exam-card').filter({ hasText: 'SAA' })).toBeVisible();
+    await expect(page.locator('.exam-card').filter({ hasText: 'MLA' })).toBeVisible();
   });
 
   test('exam-cardにhover CSSルールが定義されている', async ({ page }) => {
@@ -66,8 +64,8 @@ test.describe('起動・試験選択画面', () => {
   test('試験名が正しく表示される', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.exam-card');
-    await expect(page.locator('.exam-card').nth(0)).toContainText('Solutions Architect');
-    await expect(page.locator('.exam-card').nth(1)).toContainText('Machine Learning');
+    await expect(page.locator('.exam-card').filter({ hasText: 'SAA' })).toContainText('Solutions Architect');
+    await expect(page.locator('.exam-card').filter({ hasText: 'MLA' })).toContainText('Machine Learning');
   });
 });
 
@@ -232,6 +230,24 @@ test.describe('回答処理', () => {
       document.querySelector('.question-card')?.classList.contains('entering')
     );
     expect(hasEntering).toBe(true);
+  });
+});
+
+// ============================================================
+// CLF試験
+// ============================================================
+test.describe('CLF試験', () => {
+  test('CLF が試験一覧に表示される', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await expect(page.locator('.exam-card').filter({ hasText: 'CLF' })).toBeVisible();
+  });
+
+  test('CLF選択後に問題が表示される', async ({ page }) => {
+    await selectExam(page, 'CLF');
+    await expect(page.locator('#screen-study')).toBeVisible();
+    const questionText = await page.locator('#question-text').textContent();
+    expect(questionText.length).toBeGreaterThan(10);
   });
 });
 
