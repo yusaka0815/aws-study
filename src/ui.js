@@ -55,13 +55,14 @@ export function renderQuestion(question, questionIndex, totalQuestions) {
   document.getElementById('question-text').textContent = question.question;
 
   // 選択肢
+  const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E'];
   const choicesEl = document.getElementById('choices-list');
   choicesEl.innerHTML = '';
   question.choices.forEach((choice, idx) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.index = idx;
-    btn.textContent = choice;
+    btn.innerHTML = `<span class="choice-label">${CHOICE_LABELS[idx] ?? idx + 1}</span><span class="choice-text">${choice}</span>`;
     choicesEl.appendChild(btn);
   });
 

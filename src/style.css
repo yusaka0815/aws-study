@@ -266,6 +266,7 @@ body {
 .question-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
   border-radius: var(--radius);
   padding: 20px;
 }
@@ -297,7 +298,7 @@ body {
   background: var(--bg-card);
   border: 2px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 14px 16px;
   text-align: left;
   font-size: 15px;
   font-weight: 500;
@@ -306,6 +307,29 @@ body {
   line-height: 1.5;
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
   min-height: 56px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.choice-label {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.choice-text {
+  flex: 1;
 }
 
 .choice-btn:not(:disabled):active {

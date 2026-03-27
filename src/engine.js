@@ -133,11 +133,11 @@ export function getStats(questions, userState) {
 
     if (qState && qState.attempts > 0) {
       answered++;
-      totalAttempts += qState.attempts;
-      totalCorrect += qState.correct;
+      totalAttempts += qState.attempts ?? 0;
+      totalCorrect += qState.correct ?? 0;
       categoryStats[q.category].answered++;
-      categoryStats[q.category].correct += qState.correct;
-      categoryStats[q.category].attempts += qState.attempts;
+      categoryStats[q.category].correct += qState.correct ?? 0;
+      categoryStats[q.category].attempts += qState.attempts ?? 0;
     }
   }
 

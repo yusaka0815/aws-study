@@ -295,4 +295,38 @@ describe('getStats', () => {
     const s3 = stats.categoryList.find(c => c.name === 'S3');
     expect(s3.total).toBe(2);
   });
+
+  it('qState.correct が undefined でも accuracy が NaN にならない', () => {
+    const userState = {
+      questions: {
+        'Q-001': { attempts: 1, correct: undefined, wrong: 1, recentResults: [0], lastAnsweredAt: 0, nextReviewAt: 0 },
+      },
+    };
+    const stats = getStats(questions, userState);
+    expect(stats.accuracy).not.toBeNaN();
+    expect(stats.accuracy).toBe(0);
+  });
+
+  it('qState.attempts が undefined でも accuracy が NaN にならない', () => {
+    const userState = {
+      questions: {
+        'Q-001': { attempts: undefined, correct: 0, wrong: 1, recentResults: [0], lastAnsweredAt: 0, nextReviewAt: 0 },
+      },
+    };
+    const stats = getStats(questions, userState);
+    expect(stats.accuracy).not.toBeNaN();
+    expect(stats.accuracy).toBe(0);
+  });
+
+  it('カテゴリ別 accuracy も NaN にならない（correct が undefined）', () => {
+    const userState = {
+      questions: {
+        'Q-001': { attempts: 2, correct: undefined, wrong: 2, recentResults: [0, 0], lastAnsweredAt: 0, nextReviewAt: 0 },
+      },
+    };
+    const stats = getStats(questions, userState);
+    const s3 = stats.categoryList.find(c => c.name === 'S3');
+    expect(s3.accuracy).not.toBeNaN();
+    expect(s3.accuracy).toBe(0);
+  });
 });
