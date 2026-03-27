@@ -3,7 +3,7 @@
  * Service Worker - オフラインキャッシュ
  */
 
-const CACHE_NAME = 'aws-study-v2';
+const CACHE_NAME = 'aws-study-v3';
 
 // アプリシェル: 常にネットワーク優先で更新を即座に反映
 const APP_SHELL = new Set([
@@ -48,19 +48,23 @@ self.addEventListener('install', event => {
 });
 
 // ============================================================
-// アクティベート: 古いキャッシュを削除
+// アクティベート: 古いキャッシュを削除し全クライアントを制御下に置く
 // ============================================================
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim()).then(() =>
+      // 全ページに更新通知（新しいapp.jsにリスナーがある場合に有効）
+      self.clients.matchAll({ type: 'window' }).then(clients =>
+        clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }))
+      )
+    )
   );
 });
+
+// SW自身のベースURL（例: https://example.com/aws-study/ ）
+const SW_BASE = new URL('./', location.href).href;
 
 // ============================================================
 // フェッチ: アプリシェルはネットワーク優先、データはキャッシュ優先
@@ -70,7 +74,11 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
-  const isAppShell = APP_SHELL.has(url.pathname.replace(/^\/[^/]+/, '.'));
+  // ルート・サブパスどちらの構成でも正しく判定
+  const relPath = url.href.startsWith(SW_BASE)
+    ? './' + url.href.slice(SW_BASE.length)
+    : null;
+  const isAppShell = relPath !== null && APP_SHELL.has(relPath);
 
   if (isAppShell) {
     // ネットワーク優先: 更新を即座に反映。失敗時はキャッシュにフォールバック

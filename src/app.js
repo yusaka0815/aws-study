@@ -106,21 +106,32 @@ async function registerServiceWorker() {
   try {
     const reg = await navigator.serviceWorker.register('./sw.js');
 
-    // 新しいSWがインストール済みになったらすぐ有効化させる
+    // 既にwaiting状態のSWがあれば即座に有効化
+    if (reg.waiting) {
+      reg.waiting.postMessage('SKIP_WAITING');
+    }
+
+    // 新しいSWがインストール中になったら完了次第有効化
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
       if (!newWorker) return;
       newWorker.addEventListener('statechange', () => {
         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // 新バージョン検出: SKIP_WAITINGを送りcontrollerchangeを誘発
           newWorker.postMessage('SKIP_WAITING');
         }
       });
     });
 
-    // SWが切り替わったら localStorage を保持したままリロード
+    // SWが切り替わったら自動リロード（localStorageは保持）
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
+    });
+
+    // SWのactivateから更新通知が届いた場合もリロード
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data?.type === 'SW_UPDATED') {
+        window.location.reload();
+      }
     });
   } catch (e) {
     console.warn('SW registration failed:', e);
@@ -328,6 +339,24 @@ function setupSettingsListeners() {
     if (!confirm('全ての学習履歴を削除します。この操作は取り消せません。\n本当にリセットしますか？')) return;
     appState.userState = resetState();
     showToast('学習データをリセットしました', 'success');
+  });
+
+  document.getElementById('btn-force-update').addEventListener('click', async () => {
+    if (!confirm('アプリを強制更新します。\nキャッシュをクリアして最新版を再読み込みします。')) return;
+    try {
+      // Service Worker を全解除
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      // キャッシュを全削除
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } finally {
+      window.location.reload();
+    }
   });
 }
 
