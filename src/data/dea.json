@@ -1561,6 +1561,526 @@
       ],
       "answers": [0],
       "explanation": "Amazon DataZoneはデータメッシュ・データカタログ・データガバナンスを提供するフルマネージドサービスです。主な機能：(1)データポータル（ビジネスカタログ）：データ資産（S3・Redshift・Glue等）をビジネス定義付きで公開・検索。(2)サブスクリプション：データコンシューマーがデータ資産へのアクセスをリクエストし、プロデューサーが承認。(3)ドメイン管理：部門・チームごとのデータドメインを管理。(4)Lake Formationと統合してきめ細かいアクセス制御を実現。"
+    },
+    {
+      "id": "DEA-121",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshiftの拡張VPCルーティング（Enhanced VPC Routing）を有効にする利点として正しいのはどれか？",
+      "choices": [
+        "Redshiftクラスターと外部サービス間のCOPY・UNLOADのトラフィックがパブリックインターネットを経由せず、VPC内部のルーティング（VPCエンドポイント・NAT・Egress等）に従う",
+        "VPCルーティングを有効にするとRedshiftのクエリ速度が向上する",
+        "VPCルーティングはRedshiftクラスターとRDS間の直接接続を確立する",
+        "VPCルーティングを有効にするとRedshiftがインターネットにアクセスできなくなる"
+      ],
+      "answers": [0],
+      "explanation": "Enhanced VPC RoutingはRedshiftのCOPY（S3からのロード）・UNLOAD（S3への書き出し）のトラフィックをVPCのネットワークパスに強制します。有効化前はトラフィックがパブリックAWSネットワーク（インターネット経由）を通りますが、有効化後はVPC内のルーティング（S3 VPCエンドポイント・NAT Gateway・インターネットGW等）に従います。セキュリティ要件（データがパブリックインターネットに出ない）やVPCフローログでの監査が可能になります。"
+    },
+    {
+      "id": "DEA-122",
+      "category": "データ取り込み・変換",
+      "question": "Amazon Kinesis Data Streamsのシャード分割（Shard Split）について正しい説明はどれか？",
+      "choices": [
+        "1つのシャードを2つのシャードに分割してスループットを倍増させる操作で、親シャードのデータは子シャードで引き続き読み込める",
+        "シャード分割は自動的に行われ手動で制御できない",
+        "シャード分割後、即座に親シャードのデータは削除される",
+        "シャード分割はコスト削減のために行う操作"
+      ],
+      "answers": [0],
+      "explanation": "Kinesis Data Streamsのシャード分割（SplitShard）は1つのシャードを2つに分割してスループットを増加させます。分割後、親シャードはCLOSEDになり新しいデータは2つの子シャードに書き込まれます。親シャードの既存レコードはKINESIS保持期間（最大365日）が切れるまで読み込み可能です。KCLコンシューマーは自動的に親シャードの処理完了後に子シャードの処理を開始します。スケールアップは手動またはAWS Application Auto Scalingで自動化できます。"
+    },
+    {
+      "id": "DEA-123",
+      "category": "データパイプライン",
+      "question": "Apache Spark Structured Streamingの特徴として正しいのはどれか？",
+      "choices": [
+        "バッチ処理と同じDataFrame/Dataset APIでストリーミング処理を記述でき、Exactly-Once処理セマンティクスをサポートする",
+        "Structured StreamingはRDDベースのAPIのみを使用する",
+        "Structured StreamingはKafkaのみをソースとしてサポートする",
+        "Structured StreamingはSpark 1.xのレガシーAPIで現在は非推奨"
+      ],
+      "answers": [0],
+      "explanation": "Apache Spark Structured Streamingは、バッチ処理と同じDataFrame/Dataset（高レベル）APIでストリーミング処理を実装できるフレームワークです。チェックポインティングとWrite-Ahead Logにより障害時のExactly-Once処理保証（ソース・シンクの対応が必要）をサポートします。ソースとしてKafka・Kinesis・S3・Socket等に対応し、シンクとしてS3・Kafka・JDBC・DeltaLake等に対応します。Spark 2.0以降の現役APIです（旧Spark Streaming DStreamとは異なる）。"
+    },
+    {
+      "id": "DEA-124",
+      "category": "データ品質",
+      "question": "dbt（data build tool）の主な役割として正しいのはどれか？",
+      "choices": [
+        "SQLで記述されたデータ変換モデルをバージョン管理・テスト・ドキュメント化し、データウェアハウスで実行するETL/ELTツール",
+        "dbtはS3からRedshiftへのデータロードを自動化するサービス",
+        "dbtはAWSが提供するマネージドサービスで月額課金",
+        "dbtはリアルタイムストリーミング処理に特化したオーケストレーションツール"
+      ],
+      "answers": [0],
+      "explanation": "dbt（data build tool）はSQLを使ってデータウェアハウス（Redshift・Snowflake・BigQuery・DuckDB等）内でのデータ変換を管理するオープンソースのETL/ELTフレームワークです。主な機能：(1)SQLモデル（変換ロジック）をGit管理、(2)テスト（not_null・unique・relationships等）の自動実行、(3)データカタログ・ドキュメント自動生成、(4)依存関係グラフの可視化とオーケストレーション。dbt Cloudはマネージドサービスですが、dbt Coreはオープンソースです。"
+    },
+    {
+      "id": "DEA-125",
+      "category": "データストレージ",
+      "question": "Amazon Redshift RA3インスタンスタイプの特徴として正しいのはどれか？",
+      "choices": [
+        "コンピュートとストレージが分離されており、ストレージはRedshift Managed Storage（RMS）としてS3に無制限にスケールする",
+        "RA3はSSDのみのローカルストレージを使用しS3には保存しない",
+        "RA3インスタンスではRedshift Spectrumは使用できない",
+        "RA3はコンピュートとストレージが密結合したレガシーノードタイプ"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshift RA3（Resource-Optimized with Amazon S3）はコンピュートとストレージが分離したアーキテクチャです。Redshift Managed Storage（RMS）は高速なNVMe SSDキャッシュ（ホットデータ）とS3（コールドデータ）を組み合わせ、ストレージを独立してスケールできます。コンピュートノードのサイズに依存せずペタバイト規模のデータを管理できます。Redshift Spectrumも引き続き利用可能です。DC2（Dense Compute）とは異なりストレージがローカルSSDのみではありません。"
+    },
+    {
+      "id": "DEA-126",
+      "category": "クエリ・分析",
+      "question": "Amazon Redshiftのマテリアライズドビュー（Materialized Views）の自動更新について正しいのはどれか？",
+      "choices": [
+        "AUTO REFRESHを有効にすると、ベーステーブルへの変更を検出して自動的にマテリアライズドビューを更新する",
+        "マテリアライズドビューはリアルタイムで常に最新の状態を反映する",
+        "AUTO REFRESHは手動でREFRESH MATERIALIZED VIEWを実行した場合と比べて常に遅い",
+        "マテリアライズドビューはベーステーブルのデータ変更時に同期的に更新される"
+      ],
+      "answers": [0],
+      "explanation": "Redshiftのマテリアライズドビューに`AUTO REFRESH YES`オプションを設定すると、ベーステーブルへのデータ変更（COPYやINSERT等）後にRedshiftが自動的にマテリアライズドビューを非同期にリフレッシュします。完全リフレッシュ（全データ再計算）または増分リフレッシュ（変更差分のみ更新）の2種類があり、後者の方が高速です。クエリオプティマイザはマテリアライズドビューが最新かどうかを確認し、最新の場合はビューのデータを使用してクエリを高速化します。"
+    },
+    {
+      "id": "DEA-127",
+      "category": "データ変換",
+      "question": "Delta Lake（Apache Delta Lake）の主な特徴として正しいものをすべて選べ。",
+      "choices": [
+        "S3上のParquetファイルにACIDトランザクション機能を追加するオープンフォーマット",
+        "タイムトラベル（TIMESTAMP AS OF / VERSION AS OF）で過去のデータを参照できる",
+        "DML操作（UPDATE/DELETE/MERGE INTO）をサポートする",
+        "Apache IcebergやApache Hudiと同様のオープンテーブルフォーマット（OTF）の1つ"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Delta Lake（Databricks発のOSS）の特徴：(1)S3上のParquetファイルにトランザクションログ（_delta_log）を追加してACIDトランザクションを実現。(2)タイムトラベル：`DESCRIBE HISTORY`でバージョン一覧を確認し、`VERSION AS OF N`や`TIMESTAMP AS OF '2024-01-01'`で過去データを参照・ロールバック可能。(3)UPDATE/DELETE/MERGE INTO（UPSERT）をサポート。(4)Apache Iceberg・Apache Hudiと並ぶOpen Table Format（OTF）の代表的実装。AWS上ではEMR・Glueで実行可能です。"
+    },
+    {
+      "id": "DEA-128",
+      "category": "データパイプライン",
+      "question": "Amazon Kinesis Data Streams のプロビジョニングモードとオンデマンドモードの違いとして正しいのはどれか？",
+      "choices": [
+        "プロビジョニングモードはシャード数を手動管理し固定コスト、オンデマンドモードはシャード数を自動スケールし使用量ベース課金",
+        "オンデマンドモードはプロビジョニングモードより常にコストが低い",
+        "プロビジョニングモードでは1シャードあたりの書き込みスループットが2MB/sに倍増する",
+        "オンデマンドモードはシャードを使用しない全く異なるアーキテクチャ"
+      ],
+      "answers": [0],
+      "explanation": "Kinesis Data Streamsのキャパシティモード：(1)プロビジョニングモード：シャード数を手動で指定・管理します。シャード時間とデータ取得量で課金。予測可能なスループットに最適。(2)オンデマンドモード：シャード数が自動スケール（最大200シャード）。スループット量に応じた使用量ベース課金。トラフィックが予測困難な場合やスパイキーなワークロードに適しています。コストは使用量によっていずれが安くなるか変わります。シャードあたりのスループット（書き込み1MB/s・読み取り2MB/s）は変わりません。"
+    },
+    {
+      "id": "DEA-129",
+      "category": "データセキュリティ",
+      "question": "AWS Glue Data Catalogの暗号化設定として正しいのはどれか？",
+      "choices": [
+        "メタデータの暗号化（KMS）とS3への接続パスワードの暗号化（SSE-KMS）を別々に設定できる",
+        "Glue Data Catalogのメタデータは暗号化できない",
+        "Glue Data Catalogの暗号化はSSE-S3のみ対応し、KMSは使用できない",
+        "Glue Data Catalogのメタデータ暗号化はクロスアカウントアクセスを不可能にする"
+      ],
+      "answers": [0],
+      "explanation": "Glue Data Catalogの暗号化設定（Catalog Settings）では2種類の暗号化を設定できます：(1)メタデータ暗号化：カタログのデータベース・テーブル・パーティション情報をKMSキーで暗号化します。(2)接続パスワード暗号化：GlueのConnectionオブジェクト内のJDBCパスワードをKMSキーで暗号化します。両者は独立して設定でき、KMSキーはAWS管理キーまたはカスタマー管理キーを選択できます。"
+    },
+    {
+      "id": "DEA-130",
+      "category": "データ取り込み・変換",
+      "question": "Amazon EMR Serverlessの特徴として正しいものはどれか？",
+      "choices": [
+        "Spark・Hiveジョブをクラスター管理不要でSubmitでき、ジョブ実行時のみvCPUとメモリに対して課金される",
+        "EMR ServerlessはSpark 2.xのみをサポートする",
+        "EMR Serverlessはプリウォームキャパシティ（Pre-initialized capacity）を設定できない",
+        "EMR ServerlessはS3の代わりにHDFSストレージを必須とする"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EMR Serverlessはクラスターのプロビジョニング・管理が不要で、Spark・HiveジョブをSubmitするだけでAWSが自動的にリソースを割り当て実行します。使用したvCPU・メモリ・ストレージ（秒単位）のみの従量課金です。コールドスタート（ジョブ開始時のリソース割り当て時間）を削減するためプリウォームキャパシティ（minimum capacity）を設定できます。ストレージはS3（EMRFS）を使用し、HDFSは不要です。Spark 3.x系を含む最新バージョンに対応しています。"
+    },
+    {
+      "id": "DEA-131",
+      "category": "クエリ・分析",
+      "question": "Amazon Redshift QueryEditorV2の特徴として正しいのはどれか？",
+      "choices": [
+        "ブラウザベースのSQLクライアントで、Redshiftクラスター・Serverless・S3（Spectrum）に接続してクエリを実行・可視化できる",
+        "QueryEditorV2はデスクトップアプリのみで提供されWebブラウザでは使用不可",
+        "QueryEditorV2はRedshiftのみ対応しAthenaやS3には接続できない",
+        "QueryEditorV2の利用には別途ライセンス料が必要"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshift QueryEditorV2はAWSコンソール内で動作するブラウザベースのSQLクライアントです。機能：(1)Redshiftクラスター・Serverless・Redshift Spectrumへの接続。(2)クエリの保存・共有・バージョン管理。(3)グラフ・ビジュアライゼーション機能。(4)SQLテンプレートとスニペット管理。(5)複数クエリのタブ管理。追加料金なしで使用できます。専用のデスクトップアプリは不要です。"
+    },
+    {
+      "id": "DEA-132",
+      "category": "データパイプライン",
+      "question": "Amazon SageMaker Processing Jobsの説明として正しいのはどれか？",
+      "choices": [
+        "S3データのML前処理・後処理・モデル評価をコンテナ上でバッチ実行するマネージドジョブ",
+        "SageMaker Processing JobsはSageMaker Trainingより常に高速",
+        "Processing JobsはGPUインスタンスをサポートしない",
+        "Processing Jobsの結果はSageMakerの内部ストレージにのみ保存できる"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Processing Jobsは、MLパイプラインの前処理（特徴量エンジニアリング・データ変換・スケーリング）、後処理（予測結果の変換）、モデル評価をDockerコンテナで実行するマネージドサービスです。入力データはS3から取得し、出力をS3に保存します。Python（scikit-learn・Spark等）、R、カスタムコンテナをサポートします。CPUインスタンス（ml.m5等）もGPUインスタンス（ml.p3等）も使用可能です。Trainigとは独立して実行できます。"
+    },
+    {
+      "id": "DEA-133",
+      "category": "データ品質",
+      "question": "Great Expectationsをデータパイプラインに組み込む利点として正しいものはどれか？",
+      "choices": [
+        "コードでデータ品質のExpectation（期待値）を定義してパイプライン実行時に自動検証し、失敗時にアラートまたはパイプラインを停止できる",
+        "Great ExpectationsはAWSが提供するマネージドサービス",
+        "Great ExpectationsはSQLのみで記述可能でPythonは不要",
+        "Great Expectationsはリアルタイムストリーミングのデータ品質検証のみに特化"
+      ],
+      "answers": [0],
+      "explanation": "Great Expectationsはオープンソースのデータ品質フレームワークです。Expectation（「column_A is not null」「column_B is between 0 and 100」等）をPythonコードで定義し、ETLパイプライン内でValidationを実行して結果をHTMLレポートとして出力できます。Glue・Airflow・SageMaker等のパイプラインに統合可能です。失敗時にパイプラインを停止（raise exception）したり、Slack通知を送ったりすることで品質ゲートを実装できます。"
+    },
+    {
+      "id": "DEA-134",
+      "category": "データストレージ",
+      "question": "Apache Hudiの主な特徴として正しいものをすべて選べ。",
+      "choices": [
+        "S3上のデータレイクにUPDATE/DELETE/UPSERT（MERGE）機能を追加するOTF",
+        "Copy-on-Write（COW）とMerge-on-Read（MOR）の2種類のテーブルタイプを持つ",
+        "増分クエリ（Incremental Query）で変更されたレコードのみを効率的にクエリできる",
+        "AWS Glue・EMRでネイティブサポートされている"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Apache Hudiの特徴：(1)S3上のデータにUPDATE/DELETE/UPSERTを可能にするOTF。Spark・FlinkからHudiテーブルへ書き込み可能。(2)COW（Copy-on-Write）：変更時にファイル全体をコピーして書き換え（読み取り高速・書き込みコスト高）。MOR（Merge-on-Read）：デルタログを溜めて読み取り時にマージ（書き込み高速・読み取り時マージコスト）。(3)Incremental Query：最後のチェックポイント以降に変更されたレコードのみを取得（CDC的クエリ）。(4)Glue・EMRはHudiを組み込みサポートしています。"
+    },
+    {
+      "id": "DEA-135",
+      "category": "データセキュリティ",
+      "question": "Amazon S3のオブジェクトACL（Access Control List）とバケットポリシーの使い分けとして正しいのはどれか？",
+      "choices": [
+        "AWSはバケットポリシー（またはIAM）での一元管理を推奨しており、ObjectACLは新規ユースケースでは非推奨。S3 Object Ownership=Bucket owner enforcedでACLを無効化できる",
+        "オブジェクトACLはバケットポリシーより常に優先される",
+        "バケットポリシーはバケット全体にしか適用できず個別オブジェクトの制御はACLのみ",
+        "オブジェクトACLとバケットポリシーは排他的で同時に設定できない"
+      ],
+      "answers": [0],
+      "explanation": "AWSはS3のアクセス制御としてバケットポリシー（Bucket Policy）またはIAMポリシーでの一元管理を推奨しており、オブジェクトレベルACLは複雑さを増すため避けることを推奨しています。S3のBucket Ownership設定を「Bucket owner enforced」に設定するとACLが無効化され、バケットポリシー/IAMのみでアクセスを制御できます（2022年以降の新規バケットのデフォルト）。バケットポリシーはバケット全体だけでなく特定のPrefix・Objectキーにも適用できます。"
+    },
+    {
+      "id": "DEA-136",
+      "category": "データ取り込み・変換",
+      "question": "AWS Glue Elastic Viewsの後継として発表されたサービスはどれか？",
+      "choices": [
+        "Amazon Aurora Zero-ETL IntegrationとRedshift Zero-ETL Integrationでゼロコードのデータ統合が実現されている",
+        "Glue Elastic ViewsはAWS Lambdaに置き換えられた",
+        "Glue Elastic ViewsはAmazon Kinesisに統合された",
+        "Glue Elastic ViewsはGlue Studio Notebooksに統合された"
+      ],
+      "answers": [0],
+      "explanation": "AWS Glue Elastic Views（プレビューで廃止）の代わりに、AWSはZero-ETL統合を推進しています：(1)Amazon Aurora MySQL/PostgreSQL → Amazon Redshiftへのゼロ-ETL統合：Aurora DBクラスターのデータ変更がほぼリアルタイムでRedshiftにレプリケートされます。ETLパイプラインのコーディング不要。(2)Amazon DynamoDB → Amazon OpenSearch Serverless：DynamoDBのデータをOpenSearchにゼロ-ETLでレプリケーション。これらはフルマネージドでデータパイプラインの構築・管理コストを大幅削減します。"
+    },
+    {
+      "id": "DEA-137",
+      "category": "クエリ・分析",
+      "question": "Amazon Athenaのクエリ結果の再利用（Query Result Reuse）機能の説明として正しいのはどれか？",
+      "choices": [
+        "同一クエリの直近の実行結果をキャッシュして、再実行時にS3スキャンをスキップしコストとレイテンシを削減する",
+        "クエリ結果の再利用はAthena エンジンv2のみの機能",
+        "クエリ結果の再利用を有効にするとクエリが常に古いデータを返す",
+        "クエリ結果の再利用はワークグループ設定に関わらずデフォルトで全クエリに適用される"
+      ],
+      "answers": [0],
+      "explanation": "Athena Query Result Reuse（クエリ結果再利用）はAthena エンジンv3で利用できるキャッシュ機能です。同一のSQL文を再実行した場合（最大60分以内のデフォルト）、Athenaが前回の結果をS3から直接返しS3スキャンを行いません。これによりスキャンコスト（$5/TB）とレイテンシが削減されます。ワークグループの設定で有効化（デフォルトは無効）し、最大キャッシュ有効期間（最大60分）を設定します。データが更新されていないダッシュボードのクエリ等に特に有効です。"
+    },
+    {
+      "id": "DEA-138",
+      "category": "データパイプライン",
+      "question": "Amazon EventBridgeのSaaS統合（Partner Events）で対応しているサービスとして正しいものはどれか？",
+      "choices": [
+        "Salesforce・Zendesk・Datadog・PagerDuty・GitHub等のSaaSパートナーからイベントを受け取れる",
+        "EventBridgeのSaaS統合はAWSサービスのみに対応し、サードパーティSaaSには対応しない",
+        "EventBridgeパートナーイベントはHTTPSのWebhookを自社のEC2サーバーで受け取る方式",
+        "EventBridgeパートナー統合にはAWS Lambdaが必須"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EventBridgeはSaaSパートナー統合（Partner Event Sources）として、Salesforce・Zendesk・Datadog・PagerDuty・GitHub・Shopify等50以上のサービスからのイベントをパートナーイベントバス経由で受け取れます。各パートナーのポータルでAWSアカウントIDを設定するとパートナーからAWSにイベントを自動プッシュする設定が完了します。受信したイベントはEventBridgeルールでフィルタリングしてLambda・SQS・Step Functions等に転送できます。"
+    },
+    {
+      "id": "DEA-139",
+      "category": "データ変換",
+      "question": "Apache Spark でのデータスキュー（Data Skew）問題とその対策として正しいものはどれか？",
+      "choices": [
+        "特定のキーにデータが集中し一部のパーティションだけ処理が遅くなる問題で、Salt（ランダム値を追加）でキーを分散させて解消する",
+        "データスキューはSpark 3.x以降では自動的に解消されるため対策不要",
+        "データスキューはメモリを増やすことで解消できる",
+        "データスキューはGlueを使うことで自動的に検出・解消される"
+      ],
+      "answers": [0],
+      "explanation": "データスキュー（Data Skew）はSpark処理のパフォーマンスボトルネックの一つで、JOINやGROUP BYのキーに特定の値が集中すると、そのキーのパーティションだけが肥大化して処理が極端に遅くなります。対策：(1)Salting（加塩）：集中するキーにランダムな数値を付加（例：key+'_'+rand(10)）してパーティションを分散させます。(2)Broadcast JOIN：小テーブルをブロードキャストしてJOIN自体を回避。(3)Spark 3.xのAdaptive Query Execution（AQE）のSkew Join最適化：自動的にスキューパーティションを分割します。"
+    },
+    {
+      "id": "DEA-140",
+      "category": "データウェアハウス",
+      "question": "Amazon Redshift AQUAの説明として正しいのはどれか？",
+      "choices": [
+        "Advanced Query Accelerator（AQUA）はS3に近いハードウェアでクエリをオフロード処理してRedshiftに送るデータ量を削減するキャッシュレイヤー",
+        "AQUAはRedshift Spectrumの別名",
+        "AQUAはML推論をRedshiftクラスター内で実行するアクセラレーター",
+        "AQUAはRedshiftのAuto VACUUM機能の名称"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshift AQUA（Advanced Query Accelerator）はS3に近いAWSインフラに配置された分散・並列キャッシュレイヤーです。フィルタリング・集計等のデータ集約処理をS3に近いハードウェア（カスタムASIC）でオフロードして実行し、Redshiftクラスターに転送するデータ量を大幅に削減します。RA3.16xlarge・RA3.4xlargeクラスターで利用可能（デフォルトで有効）です。クラスター設定の変更なしに適用されます。"
+    },
+    {
+      "id": "DEA-141",
+      "category": "データ取り込み・変換",
+      "question": "AWS Glue の Connection タイプとして正しいものをすべて選べ。",
+      "choices": [
+        "JDBC（リレーショナルDB・RDS・Redshift）",
+        "Network（VPC内のカスタムデータストア）",
+        "Kafka（Amazon MSK・セルフマネージドKafka）",
+        "MongoDB（Amazon DocumentDB・MongoDB Atlas）"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS Glueが対応するConnectionタイプ：(1)JDBC：MySQL・PostgreSQL・Oracle・SQL Server・Redshift等（Secrets Manager統合でパスワード管理）。(2)Network：VPC内のIP/ポート指定でカスタムデータソースに接続（ElastiCache・自社DBサーバー等）。(3)Kafka：Amazon MSKまたはセルフマネージドKafkaクラスター（VPC/SASL/TLS設定）。(4)MongoDB：Amazon DocumentDB（MongoDB互換）またはMongoDB Atlas。AWS Marketplace連携のカスタムコネクターも利用可能です。"
+    },
+    {
+      "id": "DEA-142",
+      "category": "データパイプライン",
+      "question": "Amazon SageMaker Canvasの説明として正しいのはどれか？",
+      "choices": [
+        "ノーコードでCSVやS3のデータからMLモデルをトレーニングし予測を実行できる視覚的MLツール",
+        "SageMaker CanvasはSageMakerのCI/CDパイプライン可視化ツール",
+        "SageMaker CanvasはBlue/Greenデプロイのためのトラフィック制御ツール",
+        "SageMaker CanvasはSageMaker Notebookの別名"
+      ],
+      "answers": [0],
+      "explanation": "Amazon SageMaker CanvasはビジネスアナリストやデータアナリストがコーディングなしでMLモデルを構築・予測できるノーコードMLサービスです。S3・RDS・Redshift・Salesforce等からデータをインポートし、分類・回帰・予測・テキスト分析・画像分類のモデルを自動構築（AutoML）します。予測結果をCSVでエクスポートしたり、SageMaker Model Registryと統合して本番デプロイしたりできます。データエンジニアがデータを準備し、アナリストがCanvasで分析するユースケースが典型的です。"
+    },
+    {
+      "id": "DEA-143",
+      "category": "クエリ・分析",
+      "question": "Amazon Redshift Advisorの説明として正しいのはどれか？",
+      "choices": [
+        "クラスターの使用パターンを分析して、テーブル設計・ソートキー・分散スタイル・コンプレッションの最適化提案を行うツール",
+        "RedshiftのコストをAWS Cost Explorerと統合して最適化するサービス",
+        "Redshiftクラスターのセキュリティ脆弱性を検出するツール",
+        "RedshiftのMLモデルのパフォーマンスを最適化するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshift Advisorはクラスターのクエリパターン・テーブル設計・リソース使用状況を継続的に分析し、改善提案を行う組み込みツールです。提案例：(1)不適切なソートキー・分散スタイルの変更推奨、(2)VACUUMが必要なテーブルの検出、(3)コンプレッション（圧縮エンコーディング）の最適化提案、(4)WLM設定の改善提案、(5)未使用テーブルの削除推奨。Redshift コンソールの「Advisor」タブから確認できます。"
+    },
+    {
+      "id": "DEA-144",
+      "category": "データ品質",
+      "question": "データエンジニアリングにおけるSlow Changing Dimension（SCD）のType 2の説明として正しいのはどれか？",
+      "choices": [
+        "ディメンションの変更履歴を保持するために変更前のレコードをクローズ（有効期限を設定）し、新しいレコードを追加する手法",
+        "SCD Type 2は変更時に既存レコードを上書き（履歴なし）する手法",
+        "SCD Type 2は変更が発生しないディメンションに使用する",
+        "SCD Type 2は最も単純な実装で追加の列は不要"
+      ],
+      "answers": [0],
+      "explanation": "Slow Changing Dimension（SCD）はDWHでディメンションの変更を扱うパターンです。Type 2は変更履歴を保持する最も一般的な手法です：変更が発生すると既存レコードの有効終了日（expiry_date）を現在日時に更新してCLOSE状態にし、新しい値で新レコードをADD（有効開始日=現在日時・有効終了日=NULL・is_current=TRUE）します。これにより任意の時点のディメンション値を追跡できます。Type 1（上書き・履歴なし）・Type 3（変更前後の列を追加）と比較して実装が複雑ですが最も柔軟です。"
+    },
+    {
+      "id": "DEA-145",
+      "category": "データパイプライン",
+      "question": "Amazon Kinesis Video Streamsの説明として正しいのはどれか？",
+      "choices": [
+        "IoTカメラ・セキュリティカメラ等のビデオストリームをAWSに取り込み、リアルタイム分析・保存・機械学習に活用するサービス",
+        "Kinesis Video StreamsはNetflixのような動画配信（CDN）サービス",
+        "Kinesis Video StreamsはAmazon Kinesisとは全く別のサービスでストリーミングAPIに互換性がない",
+        "Kinesis Video StreamsはYouTubeのライブ配信専用のマネージドサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Kinesis Video Streamsはセキュリティカメラ・ドライブレコーダー・IoTデバイス等から動画・音声・レーダーデータをリアルタイムにAWSに取り込むサービスです。取り込んだデータはS3に永続保存され、Amazon Rekognition Video（顔認識・物体検出等）、SageMaker（カスタムMLモデル）、WebRTCによるリアルタイム双方向通信等に連携できます。工場の品質検査・スマートホーム・自動運転等のユースケースで使用されます。"
+    },
+    {
+      "id": "DEA-146",
+      "category": "データセキュリティ",
+      "question": "Amazon S3 Glacierのデータ取り出しポリシー（Retrieval Policy）として正しいものはどれか？",
+      "choices": [
+        "Free Tier Only（無料範囲のみ取り出し）・Max Retrieval Rate（毎日取り出し上限を設定）・No Retrieval Limit（上限なし）の3種類",
+        "S3 Glacierの取り出しポリシーはリクエスト速度のみを制御し課金には関係しない",
+        "Glacierのデータ取り出しは全て即時（1秒以内）で行われる",
+        "取り出しポリシーは設定後変更できない"
+      ],
+      "answers": [0],
+      "explanation": "S3 Glacier（Flexible Retrieval）の取り出し料金を管理するためにVaultロックまたはアカウントレベルのData Retrieval Policyが設定できます：(1)Free Tier Only：無料ティアの範囲内（月5%のデータ）のみ取り出しを許可し、超過する取り出しを拒否。(2)Max Retrieval Rate：1時間あたりの最大取り出しレートを設定してコストの上限を管理。(3)No Retrieval Limit：制限なし（デフォルト、コスト管理なし）。これらのポリシーはリージョンレベルで設定します。"
+    },
+    {
+      "id": "DEA-147",
+      "category": "クエリ・分析",
+      "question": "Amazon Redshift Spectrum でのクエリパフォーマンスを向上させる方法として正しいものをすべて選べ。",
+      "choices": [
+        "S3のデータをParquet/ORCの列指向フォーマットに変換する",
+        "S3データをパーティション分割してスキャン範囲を絞る",
+        "Redshiftのローカルテーブルとの結合では小テーブルをRedshift側に置く",
+        "Spectrumで使用するファイルを1GBを超える大きなファイルに統合する"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "Redshift Spectrumのパフォーマンス最適化：(1)Parquet/ORCはSpectrum層で列プルーニングが効くためスキャン量削減（最大重要）。(2)S3パーティション（年/月/日等）によりWHERE句でスキャンするファイルを絞る。(3)Spectrumとローカルテーブルの結合ではローカルテーブルが小さい場合にRedshiftが自動的にブロードキャストしてSpectrum側で結合処理を最小化。大きな単一ファイルよりも適切なサイズ（128MB〜数GB）の複数ファイルの方がSPECTRUM層の並列処理に適しています（1GB超は不適切）。"
+    },
+    {
+      "id": "DEA-148",
+      "category": "データ変換",
+      "question": "Apache Spark のAdaptive Query Execution（AQE）の特徴として正しいものをすべて選べ。",
+      "choices": [
+        "シャッフル後の実際のデータ統計を再利用して実行計画を動的に最適化する",
+        "スキューしたパーティションを自動検出して分割し、データスキューを軽減する",
+        "不要なシャッフルを自動的に検出して除去する",
+        "AQEはSpark 3.0以降でデフォルト有効"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Spark 3.0で導入されたAdaptive Query Execution（AQE）は実行時の統計情報（シャッフル後のパーティションサイズ等）を使って実行計画を動的に最適化します。具体的な最適化：(1)動的な実行計画変更：シャッフル後の実際のデータ量に基づいて最適なJOIN戦略に変更。(2)Skew Join最適化：スキューしたパーティションを自動検出して分割し並列処理。(3)Unnecessary Shuffle除去：冗長なシャッフル操作を除去。(4)動的なシャッフルパーティション結合：小さなパーティションを自動的にマージしてタスク数を削減。"
+    },
+    {
+      "id": "DEA-149",
+      "category": "データパイプライン",
+      "question": "AWS Lake Formation BlueprintsとWorkflowsの説明として正しいのはどれか？",
+      "choices": [
+        "BlueprintsはGlue Crawler・GlueジョブのテンプレートでS3へのデータ取り込みパターンを定義し、Workflowsとして実行できる",
+        "Lake Formation BlueprintsはVPCのネットワーク設計テンプレート",
+        "Blueprintsはデータカタログのスキーマ定義の自動生成のみを担当する",
+        "Lake Formation Workflowsは完全にサーバーレスでGlueクラスターを使用しない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Lake Formation Blueprintsはデータレイクのデータ取り込みワークフローを自動設定するテンプレートです。データベースのスナップショット（初回フルロード）・増分ロード（CDCまたはタイムスタンプベース）・S3ソースのBlueprintが用意されており、設定するとGlue CrawlerとGlue ETLジョブが自動的に作成されてWorkflowとして実行されます。データエンジニアがGlueジョブを手動で設定せずにデータレイクへのデータ取り込みパイプラインを構築できます。"
+    },
+    {
+      "id": "DEA-150",
+      "category": "データストレージ",
+      "question": "Amazon DynamoDBのグローバルテーブル（Global Tables）の特徴として正しいものをすべて選べ。",
+      "choices": [
+        "複数リージョンにレプリカを持つActive-Activeな設計で、どのリージョンへの書き込みも自動的に他リージョンに伝播する",
+        "レプリカ間の書き込み競合はLast Writer Wins（最後の書き込みが勝つ）で解決する",
+        "グローバルテーブルのレプリカはリードレプリカ（読み取り専用）ではなく全て書き込み可能",
+        "グローバルテーブルではDynamoDB Streamsが必須（内部的に使用）"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "DynamoDB Global Tablesの特徴：(1)Active-Active設計：各リージョンのレプリカへの書き込みが他の全レプリカに非同期でレプリケートされます（通常1秒以内）。(2)競合解決：同じアイテムへの同時書き込みはLast Writer Wins（最終書き込み時刻が新しい方が勝つ）で解決されます。(3)全レプリカで書き込み可能：読み取り専用のレプリカではなく、ユーザーは地理的に最も近いリージョンに書き込めます。(4)DynamoDB Streams（または Kinesis Data Streams for DynamoDB）をレプリケーションに内部使用しています。"
+    },
+    {
+      "id": "DEA-151",
+      "category": "クエリ・分析",
+      "question": "Amazon Athenaのストアドプロシージャとユーザー定義関数（UDF）について正しいのはどれか？",
+      "choices": [
+        "Athena UDFはLambda関数として実装し、SQLからLambdaを呼び出してカスタム処理を実行できる",
+        "AthenaはOracle・SQL Server同様のストアドプロシージャをネイティブサポートする",
+        "Athena UDFはJavaのみサポートしPythonは利用できない",
+        "Athena UDFの実行コストはAthenaのスキャン料金に含まれ追加料金は発生しない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon AthenaのUDF（User Defined Functions）はLambda関数として実装します。JavaのSDKを使ってカスタム関数をLambdaにデプロイし、SQL内で`USING FUNCTION`句で呼び出せます。使いどころ：暗号化・復号化処理、カスタムパース、ML推論の呼び出し等。Athenaはストアドプロシージャをサポートしません（Athenaはクエリエンジンでありプロシージャ保存機能を持たない）。Lambda呼び出しコストは別途発生します。Python UDFは現時点でサポートされていません。"
+    },
+    {
+      "id": "DEA-152",
+      "category": "データパイプライン",
+      "question": "Amazon SageMaker Model Registryの説明として正しいのはどれか？",
+      "choices": [
+        "トレーニング済みMLモデルのバージョン管理・メタデータ管理・本番承認ワークフローを提供するカタログ",
+        "SageMaker Model RegistryはDockerイメージのレジストリ",
+        "Model RegistryはMLモデルの推論パフォーマンスをリアルタイム監視するサービス",
+        "Model RegistryはMLモデルのトレーニングデータセットを管理するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon SageMaker Model RegistryはエンタープライズのMLモデル管理のためのモデルカタログです。機能：(1)モデルバージョン管理（同じモデルの複数バージョンを階層管理）、(2)メタデータ管理（アルゴリズム・フレームワーク・評価メトリクス・トレーニングデータ等）、(3)本番デプロイ承認ワークフロー（Pending→Approved→Rejectedステータス）、(4)CI/CDパイプライン（SageMaker Pipelines）との統合でモデルを自動登録・承認・デプロイ。MLOps基盤の中核サービスです。"
+    },
+    {
+      "id": "DEA-153",
+      "category": "データ品質",
+      "question": "データエンジニアリングにおける「Lambda Architecture」と「ELT（Extract-Load-Transform）」の違いとして正しいのはどれか？",
+      "choices": [
+        "ELTはデータをまず変換せずにDWHに直接ロードし、DWH内でSQLで変換する。Lambdaアーキテクチャはバッチ+ストリームレイヤーの設計パターン",
+        "ELTはリアルタイム処理のみに使用し、LambdaアーキテクチャはバッチETLのみに使用する",
+        "ELTとETLは全く同じで使用するツールのみが異なる",
+        "LambdaアーキテクチャはAWS Lambdaを必須とするAWS固有のパターン"
+      ],
+      "answers": [0],
+      "explanation": "ELTとETLの違い：ETL（Extract-Transform-Load）はデータを抽出後、外部の変換エンジン（Spark・Glue等）で変換してからDWHにロードします。ELT（Extract-Load-Transform）はデータをまず変換せずにDWH（Redshift・Snowflake・BigQuery等）に直接ロードし、DWH内のSQLで変換します。Redshiftの高い処理能力を活用したdbtなどのツールと組み合わせる現代的なアプローチです。LambdaアーキテクチャはNathan Marzが提唱したビッグデータ処理設計パターンで、AWS Lambdaとは無関係です。"
+    },
+    {
+      "id": "DEA-154",
+      "category": "データストレージ",
+      "question": "Amazon S3のストレージクラスの選択基準として正しいものはどれか？",
+      "choices": [
+        "高頻度アクセス→S3 Standard、低頻度アクセス（月1回程度）→S3 Standard-IA、不明なアクセス→S3 Intelligent-Tiering、長期アーカイブ→S3 Glacier",
+        "全データを常にS3 Glacierに保存するとコストが最小になる",
+        "S3 Standard-IAはS3 Standardより常に安く、同等の機能を持つ",
+        "S3 Glacierは1時間以内での取り出しは不可能"
+      ],
+      "answers": [0],
+      "explanation": "S3ストレージクラス選択ガイド：S3 Standard（頻繁アクセス・高可用性・取り出し料金なし）、S3 Intelligent-Tiering（アクセスパターン不明・自動階層化・取り出し料金なし）、S3 Standard-IA（月1回未満の低頻度アクセス・取り出し料金あり・最小30日保存）、S3 One Zone-IA（低頻度・単一AZ・再生成可能データ）、S3 Glacier Instant Retrieval（アーカイブだがミリ秒アクセス必要）、S3 Glacier Flexible（分〜時間での取り出しOK）、S3 Glacier Deep Archive（年単位アクセス・最安）。"
+    },
+    {
+      "id": "DEA-155",
+      "category": "データセキュリティ",
+      "question": "AWS IAMのデータエンジニアリングにおけるベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "最小権限の原則（Least Privilege）：必要なリソース・アクションのみを許可",
+        "GlueジョブやEMRクラスターにはIAMロールを使用し、アクセスキーはコードに含めない",
+        "本番S3バケットへの書き込み権限は開発者に直接付与せずCI/CDパイプラインのロールに付与",
+        "IAMポリシーのConditionを使ってMFAが有効な場合のみ特定の操作を許可"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "データエンジニアリングのIAMベストプラクティス：(1)最小権限：GlueジョブはS3特定バケット・Glue Data Catalogのみにアクセスできるロールを割り当てる。(2)ロールの使用：EC2/ECS/Lambda/Glue/EMRにはIAMロールを使用し、アクセスキーをコードや設定ファイルに直書きしない。(3)環境分離：本番リソースへの書き込みはCI/CDパイプラインのロールのみに制限し、開発者の直接操作を防ぐ。(4)MFA条件：重要な操作（S3オブジェクト削除・Redshiftクラスター削除等）にaws:MultiFactorAuthPresent条件を付加する。"
+    },
+    {
+      "id": "DEA-156",
+      "category": "データ取り込み・変換",
+      "question": "Amazon Aurora Zero-ETL Integration with Amazon Redshiftの特徴として正しいのはどれか？",
+      "choices": [
+        "Aurora DBの変更データがほぼリアルタイムでRedshiftに自動レプリケートされ、ETLパイプラインの構築・管理が不要になる",
+        "Zero-ETL統合にはAWS Glueジョブを別途設定する必要がある",
+        "Zero-ETL統合はAurora MySQLのみに対応しPostgreSQLは不可",
+        "Zero-ETL統合ではRedshiftのスキーマを手動で定義する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Aurora Zero-ETL Integration with Redshiftは、Aurora MySQL・Aurora PostgreSQLのデータ変更をGlue/DMSなどのパイプラインを介さずに自動的にRedshiftにレプリケートします。Aurora側でIntegrationを設定するとRedshiftに対応するデータベース・テーブルが自動作成され、変更データが数秒〜数分でRedshiftに反映されます。ETLパイプラインのコーディング・管理が不要です。Redshiftではスキーマが自動作成されるため手動定義も不要です。"
+    },
+    {
+      "id": "DEA-157",
+      "category": "クエリ・分析",
+      "question": "Amazon Athenaのコスト管理のためにスキャンデータ量を制限する方法として正しいものはどれか？",
+      "choices": [
+        "ワークグループでBytes Scanned per Query制限を設定して、閾値を超えるクエリを拒否または警告する",
+        "AthenのクエリはS3データを全てダウンロードしてから処理するため、スキャン量の制限は不可能",
+        "スキャン量制限にはAWS Cost Budgetsを使用する",
+        "スキャン量制限はLambda関数を経由してAtenaへのクエリをプロキシする場合のみ可能"
+      ],
+      "answers": [0],
+      "explanation": "AthenaワークグループのBytesScannedCutoffPerQuery設定でクエリごとのスキャン上限（バイト数）を設定できます。クエリ実行前に予測スキャン量がこの閾値を超えると、クエリを拒否（CannotRunQueryError）するか警告を出すかを選択できます。これによりコスト超過を防ぎます。CloudWatchメトリクス（BytesScannedPerQuery）でスキャン量を監視し、AWS Budgetsでコストアラートと組み合わせることが推奨されます。"
+    },
+    {
+      "id": "DEA-158",
+      "category": "データパイプライン",
+      "question": "AWS Step Functions Express Workflowsと Standard Workflowsの違いとして正しいのはどれか？",
+      "choices": [
+        "Express Workflowsは高頻度・短時間の実行（最大5分・秒間10万回）向けで低コスト。Standard Workflowsは長時間（最大1年）・Exactly-Once実行保証",
+        "Express WorkflowsはAWS Lambdaのみを呼び出せる",
+        "Standard WorkflowsはExpress Workflowsより常にコストが低い",
+        "Express WorkflowsはCloudWatch Logsへのロギングをサポートしない"
+      ],
+      "answers": [0],
+      "explanation": "Step FunctionsのWorkflowタイプ比較：Standard Workflows：最大1年の実行時間、Exactly-Once実行保証、実行履歴をStep Functionsコンソールで確認可能、状態遷移数ベースの課金（$0.025/1000状態遷移）。Express Workflows：最大5分、At-Least-Once実行（重複実行の可能性）、高スループット（秒間10万回以上）、実行時間ベースの課金（非常に安価）、実行履歴はCloudWatch Logsで確認。Kinesisイベント処理・IoTルール・高頻度マイクロサービスにはExpressが適しています。"
+    },
+    {
+      "id": "DEA-159",
+      "category": "データ品質",
+      "question": "ETLパイプラインの監視とアラートのベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "CloudWatch MetricsでGlueジョブのglue.driver.aggregate.recordsRead等のメトリクスを監視する",
+        "Glueジョブの失敗をEventBridge経由でSNS通知する",
+        "データ品質のKPI（レコード数・NULL率・処理時間等）をカスタムCloudWatchメトリクスとして記録する",
+        "CloudWatch Dashboard でパイプライン全体の健全性を可視化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ETLパイプライン監視のベストプラクティス：(1)CloudWatch MetricsによるGlueメトリクス（glue.driver.aggregate.recordsRead・recordsWritten・numPartitions等）の監視とアラーム設定。(2)EventBridge（Glue Job State Change）→SNS/PagerDutyでジョブ失敗の即時通知。(3)データ品質KPI（処理レコード数の前日比・NULL率の閾値超過等）をカスタムメトリクスとしてPutMetricData APIで記録。(4)CloudWatch Dashboardで複数ジョブ・クエリパフォーマンスを一元可視化してパイプライン全体の健全性を把握。"
+    },
+    {
+      "id": "DEA-160",
+      "category": "データパイプライン",
+      "question": "Amazon DataZoneのデータアセット（Data Asset）のサブスクリプションワークフローの説明として正しいのはどれか？",
+      "choices": [
+        "データコンシューマーがDataZoneポータルでデータアセットへのアクセスをリクエストし、データオーナーが承認するとLake FormationやIAMのアクセス権限が自動的に付与される",
+        "DataZoneのサブスクリプションはデータをコンシューマーのS3バケットにコピーする",
+        "DataZoneはAWS Organizations内の全アカウントに自動的にアクセスを付与する",
+        "サブスクリプション承認後、コンシューマーはRedshiftにのみアクセスできる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon DataZoneのサブスクリプションワークフロー：(1)データコンシューマーがDataZoneのビジネスカタログでデータアセット（S3テーブル・Redshiftスキーマ等）を検索してアクセスリクエストを送信。(2)データオーナー（プロデューサー）がリクエストを確認して承認または却下。(3)承認されるとDataZoneがLake Formation・IAM・Redshift等のアクセス権限を自動的に付与します（コンシューマーのAWSアカウントへのクロスアカウント権限も含む）。データはコピーされず、アクセス権のみが付与されます。"
     }
   ]
 }
