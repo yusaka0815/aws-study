@@ -291,6 +291,24 @@ test.describe('MLA試験', () => {
 });
 
 // ============================================================
+// DVA試験
+// ============================================================
+test.describe('DVA試験', () => {
+  test('DVA が試験一覧に表示される', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await expect(page.locator('.exam-card').filter({ hasText: 'DVA' })).toBeVisible();
+  });
+
+  test('DVA選択後に問題が表示される', async ({ page }) => {
+    await selectExam(page, 'DVA');
+    await expect(page.locator('#screen-study')).toBeVisible();
+    const questionText = await page.locator('#question-text').textContent();
+    expect(questionText.length).toBeGreaterThan(10);
+  });
+});
+
+// ============================================================
 // 統計画面
 // ============================================================
 test.describe('統計画面', () => {

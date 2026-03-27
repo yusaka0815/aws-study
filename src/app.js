@@ -40,6 +40,11 @@ export const EXAM_LIST = [
     examName: 'AWS Certified Machine Learning Engineer - Associate',
     file: 'data/mla.json',
   },
+  {
+    examCode: 'DVA',
+    examName: 'AWS Certified Developer - Associate',
+    file: 'data/dva.json',
+  },
 ];
 
 // ============================================================

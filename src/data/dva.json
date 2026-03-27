@@ -1,0 +1,607 @@
+{
+  "examCode": "DVA",
+  "examName": "AWS Certified Developer - Associate",
+  "version": "1.0.0",
+  "questions": [
+    {
+      "id": "DVA-001",
+      "category": "Lambda",
+      "difficulty": 1,
+      "question": "AWS Lambda の同期呼び出し（Synchronous Invocation）と非同期呼び出し（Asynchronous Invocation）の違いとして正しいものはどれですか？",
+      "choices": [
+        "同期呼び出しは呼び出し元がレスポンスを待機し（API Gateway・ALB・SDK等）エラー時は呼び出し元が処理、非同期呼び出しは即座にAckを返しLambdaが内部キューで処理し失敗時は最大2回リトライ後DLQに送信",
+        "非同期呼び出しは同期呼び出しより常に高速に処理される",
+        "Lambda の非同期呼び出しは SQS キューを明示的に作成する必要がある",
+        "同期呼び出しはAPI Gatewayからのみ可能でSDKからは使用できない"
+      ],
+      "answers": [0],
+      "explanation": "Lambda呼び出しモデル：■同期（Synchronous）：①呼び出し元がレスポンスを待機（ブロッキング）②エラーはそのまま呼び出し元に返却③自動リトライなし（呼び出し元責任）④サービス：API GW・ALB・Cognito・CloudFront・Lex・Alexa・Kinesis Data Firehose・SDKのRequestResponse ■非同期（Asynchronous）：①即座にHTTP 202を返却②Lambda内部イベントキューに格納③エラー時：自動的に最大2回リトライ（デフォルト）④3回失敗でDead Letter Queue（SQS/SNS）に送信⑤サービス：S3イベント・SNS・SES・CloudWatch Events・EventBridge・CodeCommit ■ストリーム（Event Source Mapping）：SQS・Kinesis・DynamoDB Streams・MSK等のポーリングベース。",
+      "tags": ["Lambda", "呼び出しモデル", "非同期", "同期"]
+    },
+    {
+      "id": "DVA-002",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "AWS Lambda の Provisioned Concurrency と Reserved Concurrency の違いとして正しいものはどれですか？",
+      "choices": [
+        "Reserved Concurrencyは特定Lambdaが使用できる最大同時実行数の上限設定（スロットリング制御）、Provisioned Concurrencyは指定数の実行環境を事前ウォームアップして維持しコールドスタートを排除する",
+        "Provisioned ConcurrencyとReserved Concurrencyは同一の機能で名前が違うだけ",
+        "Reserved Concurrencyを設定するとコールドスタートが自動的に解消される",
+        "Provisioned Concurrencyは全てのLambda関数に自動的に適用される無料機能"
+      ],
+      "answers": [0],
+      "explanation": "Lambda同時実行制御の2種類：■Reserved Concurrency（予約済み同時実行）：①アカウントのスロットルからN個のスロットをこの関数専用に予約②他の関数がこのスロットを使用不可（リソース保護）③この関数はReserved数を超えるとスロットリング④Concurrency 0設定でLambdaを完全無効化可能⑤コスト追加なし ■Provisioned Concurrency（プロビジョンド同時実行）：①指定した数の実行環境を事前に初期化・維持②初期化済みのため即座に応答（コールドスタート排除）③ALB/API GW経由のリアルタイムAPIでP99レイテンシー要件がある場合に使用④Auto Scaling対応（スケジュール・ターゲットトラッキング）⑤追加コスト（プロビジョンド実行環境の時間課金）。",
+      "tags": ["Lambda", "Provisioned Concurrency", "Reserved Concurrency", "コールドスタート"]
+    },
+    {
+      "id": "DVA-003",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "DynamoDB のパーティションキーを設計する際の最も重要な考慮事項として正しいものはどれですか？",
+      "choices": [
+        "パーティションキーはカーディナリティが高く値が均等分散する属性を選択し、ホットパーティション（特定パーティションへのアクセス集中）を避けることが最重要。必要に応じてランダムサフィックスの追加やwrite sharding（書き込みシャーディング）を実施する",
+        "パーティションキーには日付（YYYY-MM-DD）を使用することがDynamoDBのベストプラクティス",
+        "DynamoDBは全パーティションキーで均等なスループットを保証するためパーティション設計は重要でない",
+        "パーティションキーは小さな値（0-100等）を使用することで効率が最大化される"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDBパーティション設計原則：■ホットパーティション問題：特定のパーティションキー値へのアクセスが集中→そのパーティションのスループット上限（最大3000 RCU・1000 WCU）を超えてスロットリング ■ベストプラクティス：①高カーディナリティ：UserID（UUID）・OrderID等の一意値②均等分散：特定の値に偏らない属性選択③時刻+ID：タイムスタンプのみは書き込みがホットになる→UUID+タイムスタンプのソートキーが有効 ■ホットパーティション対策：①Write Sharding：パーティションキーに1-N のランダムサフィックス追加（partition_key + '_' + rand(1,10)）②読み込み時に1〜Nのサフィックス全てクエリして結果マージ③DAX（DynamoDB Accelerator）：読み込みキャッシュで読み取りホットスポット緩和。",
+      "tags": ["DynamoDB", "パーティション設計", "ホットパーティション", "カーディナリティ"]
+    },
+    {
+      "id": "DVA-004",
+      "category": "API Gateway",
+      "difficulty": 2,
+      "question": "Amazon API Gateway の REST API・HTTP API・WebSocket API の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "REST APIは豊富な機能（WAF統合・キャッシュ・使用量プラン・変換・Mock統合等）を持つ完全機能版、HTTP APIは低コスト・低レイテンシーの軽量版（OIDC/OAuth2のみ）、WebSocket APIは双方向リアルタイム通信（チャット・ゲーム・ダッシュボード）向け",
+        "HTTP APIとREST APIは全く同一の機能を持つ",
+        "WebSocket APIはHTTPプロトコルの拡張でREST APIでも代替できる",
+        "REST APIはWebSocketのみに対応しHTTP通信には使用できない"
+      ],
+      "answers": [0],
+      "explanation": "API Gateway 3タイプ比較：■REST API：①最も多機能②リクエスト/レスポンス変換（マッピングテンプレートVTL）③キャッシュ（0.5GB〜237GB）④使用量プランとAPIキー⑤WAF統合（Web Application Firewall）⑥Mock統合（バックエンドなし）⑦適合：本番API・変換が必要な場合・従来型エンタープライズ ■HTTP API：①最大71%低コスト・60%低レイテンシー（REST API比）②OIDC・OAuth 2.0認証に特化③Lambda統合・Proxy統合③VPCリンク対応④キャッシュ・使用量プランなし⑤適合：シンプルなLambdaプロキシAPI・コスト重視 ■WebSocket API：①クライアント-サーバー間の永続的双方向接続②接続管理（$connect/$disconnect/$default）③RouteSelectionExpression③バックエンド：Lambda・HTTP・AWS Services④適合：リアルタイムダッシュボード・チャット・ライブ更新。",
+      "tags": ["API Gateway", "REST API", "HTTP API", "WebSocket"]
+    },
+    {
+      "id": "DVA-005",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "AWS Lambda のデプロイパッケージのサイズ制限と、大きなMLモデルや依存関係を含む場合の対処方法として正しいものはどれですか？",
+      "choices": [
+        "Lambda Layerを使用して共通依存関係を最大5つのLayerに分割して再利用し、250MB（解凍後）のサイズ上限を緩和。さらに大きい場合はContainer Image（最大10GB）を使用してDockerイメージとしてデプロイする",
+        "Lambdaのデプロイパッケージに上限はなく任意のサイズを使用できる",
+        "Lambda Layerは1つしか指定できないためサイズ分散には限界がある",
+        "大きなMLモデルはLambdaでは実行できずECSを必ず使用する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "Lambdaデプロイパッケージ制限と対策：■サイズ制限：①ZIP直接アップロード：50MB（圧縮）②ZIPのS3アップロード：250MB（解凍後）③Container Image：最大10GB（ECRに保存） ■Lambda Layer：①共通ライブラリ（numpy・pandas・SDK等）を独立したLayerとして管理②最大5 Layerを関数にアタッチ可能③Layerのサイズ：250MB（解凍後、Layerと関数の合計）④アカウント・リージョン・他アカウントとの共有が可能⑤利点：複数関数で依存関係を再利用→デプロイ高速化・バージョン管理 ■Container Image：①任意のDockerイメージ（10GB以下）②Lambda Runtime Interface Client（RIC）が必要③Lambda Runtime Interface Emulator（RIE）でローカルテスト可能④起動時間はZIPより長め（コールドスタート大きめ）。",
+      "tags": ["Lambda", "Lambda Layer", "Container Image", "デプロイ"]
+    },
+    {
+      "id": "DVA-006",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "DynamoDB の Global Secondary Index（GSI）と Local Secondary Index（LSI）の違いとして正しいものはどれですか？",
+      "choices": [
+        "GSIはテーブル作成後も追加でき別のパーティションキーを持ちスループットを独自に設定、LSIはテーブル作成時のみ作成でき同一パーティションキーで異なるソートキーを使用しテーブルのスループットを共有する",
+        "GSIとLSIは同一の機能で作成タイミングのみが異なる",
+        "LSIはテーブル作成後に自由に追加・削除できる",
+        "GSIはパーティションキーを変更できないためテーブルと同じパーティションキーを使用する"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDB インデックス比較：■GSI（Global Secondary Index）：①任意の属性をパーティションキー+オプションソートキーに指定可能②テーブル作成後にいつでも追加/削除③独自のRead/Write Capacity Units設定③更新ラグあり（非同期レプリケーション）④最大20 GSI/テーブル⑤適合：異なるアクセスパターン（注文テーブルにcustomerID GSI等）⑥Eventually Consistent読み取りのみ ■LSI（Local Secondary Index）：①テーブルと同じパーティションキー・異なるソートキーを使用②テーブル作成時にのみ作成可能（後から追加不可）③テーブルのRCU/WCUを共有（独自設定なし）④Strongly Consistent読み取り対応⑤1パーティションに最大10GB制限（テーブルのパーティション制限と共有）⑥最大5 LSI/テーブル⑦適合：同一ユーザーの注文を日付・金額等でソート。",
+      "tags": ["DynamoDB", "GSI", "LSI", "インデックス"]
+    },
+    {
+      "id": "DVA-007",
+      "category": "SQS",
+      "difficulty": 2,
+      "question": "Amazon SQS の Visibility Timeout と Dead Letter Queue（DLQ）の連携として正しい説明はどれですか？",
+      "choices": [
+        "Visibility Timeoutはメッセージを取得した際に他のコンシューマーからそのメッセージを隠す時間で、処理完了前にタイムアウトするとメッセージが再表示され再処理される。maxReceiveCount超過後に失敗メッセージがDLQに移動する",
+        "DLQはキューに届かなかったメッセージを保存するためのストレージサービス",
+        "Visibility Timeoutは1分未満に設定する必要があり長い処理には対応していない",
+        "DLQに移動したメッセージは自動的に元のキューに再送信されて処理される"
+      ],
+      "answers": [0],
+      "explanation": "SQS Visibility Timeout と DLQ：■Visibility Timeout：①コンシューマーがメッセージを受信した時点からそのメッセージを他コンシューマーから不可視にする時間②デフォルト30秒・最大12時間③処理が完了したら DeleteMessage APIで削除④Visibility Timeout内に削除しないとメッセージが再表示（少なくとも1回配信保証）⑤長い処理：ChangeMessageVisibility APIでTimeout延長可能 ■Dead Letter Queue（DLQ）：①Source QueueのredrivePolicy：maxReceiveCount（処理試行回数上限）を設定②指定回数を超えた失敗メッセージをDLQに移動③DLQはメッセージを保持（デバッグ・再処理用）④DLQ Redriveで修正後に元のキューに再送信可能⑤メトリクスアラート：DLQのメッセージ数でCloudWatch Alarm設定。",
+      "tags": ["SQS", "Visibility Timeout", "DLQ", "デッドレターキュー"]
+    },
+    {
+      "id": "DVA-008",
+      "category": "Lambda",
+      "difficulty": 3,
+      "question": "AWS Lambda のイベントソースマッピング（Event Source Mapping）でSQSをトリガーとして使用する際の正しい動作として適切なものはどれですか？",
+      "choices": [
+        "LambdaがSQSをポーリングしてバッチ（最大10,000メッセージ）を取得して関数実行。成功時はメッセージを自動削除、失敗時はバッチ全体が再処理されるためBatch Item Failuresを使用して部分失敗を報告するとエラーメッセージのみDLQに送れる",
+        "SQSトリガーではLambdaはメッセージを1件ずつ処理しバッチ処理はできない",
+        "SQSトリガーでLambdaが失敗した場合、そのバッチのメッセージは自動的にDLQに送信される",
+        "SQS EventSourceMappingはFIFOキューのみサポートし標準キューには対応していない"
+      ],
+      "answers": [0],
+      "explanation": "Lambda + SQS Event Source Mapping詳細：■動作：①LambdaがSQSをロングポーリング（内部管理・ユーザー不要）②バッチ（BatchSize：1〜10,000・デフォルト10・Standard/1〜10 FIFOキュー）でメッセージ取得③関数成功：バッチ内全メッセージを削除④関数失敗：バッチ全体がVisibilityTimeout後に再表示→再処理 ■Batch Item Failures（部分成功報告）：①関数がbatchItemFailuresフォーマットで失敗したメッセージIDのみを返却②成功メッセージは削除、失敗メッセージのみ再処理③maxReceiveCount超過でDLQに移動（個別メッセージ単位） ■設定パラメータ：BatchSize・MaximumBatchingWindowInSeconds（メッセージを集める待機時間）・FunctionResponseTypes=['ReportBatchItemFailures']。",
+      "tags": ["Lambda", "SQS", "Event Source Mapping", "Batch Item Failures"]
+    },
+    {
+      "id": "DVA-009",
+      "category": "Cognito",
+      "difficulty": 2,
+      "question": "Amazon Cognito User Pool と Identity Pool の違いとして正しいものはどれですか？",
+      "choices": [
+        "User Poolはユーザー認証（ユーザー名/パスワード・MFA・ソーシャルサインイン）でJWTトークンを発行するIDプロバイダー、Identity PoolはJWT等の認証情報をAWS一時認証情報（IAMロール）に変換してAWSリソースへの直接アクセスを付与する",
+        "User PoolとIdentity Poolは同一のサービスでどちらを使用しても結果は変わらない",
+        "Identity Poolはユーザーのパスワードを管理するサービスでUser Poolより古い",
+        "User Poolで発行されたJWTはAWS APIの直接認証に使用できる"
+      ],
+      "answers": [0],
+      "explanation": "Cognito コンポーネント詳細：■User Pool（ユーザープール）：①完全マネージドユーザーディレクトリ②ユーザー名/パスワード・MFA・パスワードポリシー管理③ソーシャルサインイン：Google・Facebook・Apple・Amazon④SAML/OIDC IdP連携（企業SSO）⑤発行トークン：ID Token（JWT・ユーザー属性）・Access Token（スコープ）・Refresh Token⑥App Clientでアプリ登録 ■Identity Pool（Federated Identities）：①認証済みのJWT（Cognito User Pool・Google・SAML等）またはゲストを受け取り②STS AssumeRoleWithWebIdentityでIAMロールの一時認証情報を取得③認証済みロール・未認証（ゲスト）ロールを別途設定④S3・DynamoDB・Lambda等への直接アクセスに使用 ■典型的組み合わせ：User Pool（認証）→IDトークン→Identity Pool→AWS一時証明書→S3直接アップロード。",
+      "tags": ["Cognito", "User Pool", "Identity Pool", "認証"]
+    },
+    {
+      "id": "DVA-010",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "AWS CloudFormation のドリフト検出（Drift Detection）と変更セット（Change Set）の違いとして正しいものはどれですか？",
+      "choices": [
+        "Change Setはスタック更新前に変更内容をプレビューして意図しない変更を防ぐ事前検証ツール、Drift Detectionはコンソール/CLI等の手動変更によってCloudFormationテンプレートと実際のリソースの差異を検出する事後確認ツール",
+        "Change SetとDrift Detectionは同一の機能で実行タイミングのみが異なる",
+        "Drift Detectionはスタック更新のたびに自動的に実行される",
+        "Change Setを実行するとリソースが即座に変更されるため注意が必要"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormation 変更管理ツール：■Change Set（変更セット）：①更新前のプレビュー：新しいテンプレートとパラメータでどのリソースが追加/変更/削除されるかを確認②実際の変更はなし（Read-Only Preview）③Replacement（置き換え）が発生するリソースを事前特定→データ損失回避④承認後にExecute Change Setで実際の更新を適用⑤複数の変更セットを比較可能 ■Drift Detection（ドリフト検出）：①CloudFormation管理外での変更（コンソール手動変更・CLI・他ツール）を検出②スタック・リソース単位でドリフト状態を確認③DriftedリソースのプロパティとExpected値の差異を表示④修正：ドリフトしたリソースをCloudFormationテンプレートに手動反映またはインポート・削除して再作成 ■推奨フロー：Change Set→レビュー→承認→Execute。",
+      "tags": ["CloudFormation", "Change Set", "Drift Detection", "インフラ管理"]
+    },
+    {
+      "id": "DVA-011",
+      "category": "X-Ray",
+      "difficulty": 2,
+      "question": "AWS X-Ray を使用して分散アプリケーションのパフォーマンスを監視する際に、適切に設定するための必須コンポーネントとして正しいものはどれですか？",
+      "choices": [
+        "X-Ray SDK（アプリコードに組み込みHTTPクライアント・DB・AWSサービス呼び出しをインストルメント）とX-Ray Daemon（UDP 2000ポートでセグメントデータを受信しX-Ray APIに転送するプロセス）の両方が必要",
+        "X-Ray Daemonは不要でSDKが直接X-Ray APIにデータを送信できる",
+        "X-Ray SDKなしでもX-Rayは自動的に全てのトレースを収集できる",
+        "X-RayはLambdaでのみ動作しEC2やECSには対応していない"
+      ],
+      "answers": [0],
+      "explanation": "AWS X-Ray アーキテクチャ：■X-Ray SDK：①アプリケーションコードに統合②インストルメント対象：HTTPリクエスト（インバウンド・アウトバウンド）・AWSサービス呼び出し（S3・DynamoDB等）・SQLクエリ③セグメント（Segment）を生成・サブセグメント（Subsegment）で詳細記録④Sampling Rules：全トレースを取得すると高コスト→サンプリング率設定（デフォルト：5%+1req/秒）⑤Annotations：Key-Valueのインデックス付きメタデータ（フィルタリング可能）⑥Metadata：非インデックスのデータ（大容量データ）⑦対応言語：Java・Node.js・Python・Go・Ruby・.NET ■X-Ray Daemon：①UDP 2000ポートでSDKからセグメントを受信②バッファリングしてHTTPS経由でX-Ray APIに転送③EC2：手動インストール、Lambda：管理オプション、ECS：サイドカーコンテナ。",
+      "tags": ["X-Ray", "SDK", "Daemon", "分散トレーシング"]
+    },
+    {
+      "id": "DVA-012",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "AWS Lambda Function URL を使用してLambdaを直接HTTPエンドポイントとして公開する際の適切なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "API Gatewayなしに単一のLambda関数を直接HTTPS URLとして公開でき、シンプルなWebhookエンドポイント・開発テスト・プロトタイプに適しているが、スロットリング・キャッシュ・使用量プラン等のAPI GW機能は使用できない",
+        "Function URLはAPI Gatewayと完全に同一の機能を提供するため置き換えとして使用できる",
+        "Function URLを使用するとLambdaの同時実行制限がなくなる",
+        "Function URLはVPC内のリソースからのみアクセス可能でパブリックアクセスはできない"
+      ],
+      "answers": [0],
+      "explanation": "Lambda Function URL詳細：■概要：Lambda関数に専用のHTTPS URL（https://<id>.lambda-url.<region>.on.aws）を付与 ■認証オプション：①AWS_IAM：SigV4署名が必要→セキュアだがリクエスト側にAWSクレデンシャル必要②NONE：パブリック（認証なし）→Webhookに適切 ■CORS設定：Cross-Origin Resource Sharingの設定をFunction URL単体で設定可能 ■リソースポリシー：FunctionURLResourceBasedPolicyで特定VPCやIAMプリンシパルに制限 ■機能比較（vs API GW REST API）：Function URL（シンプル・低コスト・Webhookに最適）、API GW（スロットリング・使用量プラン・キャッシュ・WAF・カスタムドメイン・変換等の高度機能） ■Streaming応答：AWS Lambda Response Streamingでchunked transferをサポート（最大20MBのレスポンス）。",
+      "tags": ["Lambda", "Function URL", "HTTPS", "Webhook"]
+    },
+    {
+      "id": "DVA-013",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "DynamoDB Streams と DynamoDB Transactions の適切な使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Streamsはテーブルの変更（INSERT/MODIFY/REMOVE）をリアルタイムでキャプチャして後処理（Lambda連携・別テーブルレプリケーション等）に使用、TransactionsはACID準拠の複数テーブル/アイテムの一括更新（TransactWriteItems）でバンキング・在庫管理等の整合性必須処理に使用",
+        "StreamsとTransactionsは同一の機能で異なるユースケースへの適用はできない",
+        "DynamoDB Transactionsは単一テーブルの1アイテム更新にのみ対応している",
+        "DynamoDB Streamsはデータを永久保持するアーカイブサービス"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDB Streams vs Transactions：■DynamoDB Streams：①Kinesis Data Streams互換のChange Data Capture②変更記録タイプ：KEYS_ONLY・NEW_IMAGE・OLD_IMAGE・NEW_AND_OLD_IMAGES③保持期間：24時間④シャード：テーブルのパーティション数と同等⑤Lambda統合：Event Source Mappingで変更を自動処理⑥ユースケース：ElasticSearchへの同期・別リージョンレプリケーション・集計テーブル更新・通知 ■DynamoDB Transactions：①TransactWriteItems：最大100アイテム・最大4MB・複数テーブル横断のAll-or-Nothingのwrite②TransactGetItems：最大100アイテムのConsistent read③アイドル料：通常の2倍のRCU/WCU消費④条件式：ConditionCheckで前提条件検証 ■Global Tables：マルチリージョンの自動レプリケーション（Streams基盤）⑤DynamoDB Export to S3：Streams不使用で特定時点のスナップショット。",
+      "tags": ["DynamoDB", "Streams", "Transactions", "ACID"]
+    },
+    {
+      "id": "DVA-014",
+      "category": "CodeDeploy",
+      "difficulty": 2,
+      "question": "AWS CodeDeploy でEC2/オンプレミスインスタンスへのデプロイ戦略として正しい組み合わせはどれですか？",
+      "choices": [
+        "All-at-Once（全インスタンス同時・最速・ダウンタイムあり）、Rolling（インスタンスをバッチに分けて段階的更新・短時間のキャパシティ低下）、Rolling with additional batch（追加インスタンスを起動してローリング・キャパシティ維持）、Blue/Green（新環境構築後にトラフィック切り替え・ロールバック容易）の4種類",
+        "CodeDeployはBlue/Greenデプロイのみをサポートし他の戦略は利用できない",
+        "Rollingデプロイでは全インスタンスを同時に更新するためダウンタイムが発生する",
+        "CodeDeployのデプロイ戦略はLambdaにのみ適用可能でEC2には使用できない"
+      ],
+      "answers": [0],
+      "explanation": "CodeDeployデプロイ戦略詳細：■EC2/オンプレミス：①In-Place（AllAtOnce/Rolling/Rolling with additional batch）：同一インスタンスを更新②Blue/Green：新インスタンスセットを作成してELBで切り替え ■Lambda用デプロイ戦略：①Canary（カナリア）：最初に10%→待機後100%（例：Canary10Percent5Minutes）②Linear（線形）：指定%ずつ段階的に移行（例：Linear10PercentEvery1Minute）③AllAtOnce：即座に全量切り替え ■ECS用デプロイ：①Blue/Greenのみ（ALBターゲットグループ切り替え）②Canary・Linearも設定可能 ■AppSpec.yml：デプロイ設定ファイル・フック（BeforeInstall/AfterInstall/AfterAllowTestTraffic等）で検証スクリプト実行・ロールバックトリガー設定 ■Deployment Group：デプロイ対象EC2インスタンス（タグフィルター・ASG）・デプロイ設定・ロールバック設定を管理。",
+      "tags": ["CodeDeploy", "デプロイ戦略", "Rolling", "Blue/Green"]
+    },
+    {
+      "id": "DVA-015",
+      "category": "Elastic Beanstalk",
+      "difficulty": 2,
+      "question": "AWS Elastic Beanstalk のデプロイポリシーとして「Immutable Deployment」を使用する利点として正しいものはどれですか？",
+      "choices": [
+        "既存インスタンスを変更せず、完全に新しいインスタンスセットに新バージョンをデプロイしてヘルスチェック後にトラフィックを切り替えるため、問題発生時のロールバックが最も速く安全（旧インスタンスをそのまま戻すだけ）",
+        "Immutable Deploymentは既存のインスタンスを段階的に更新するため最も高速",
+        "Immutable Deploymentでは追加インスタンスが作成されないためコストが最も低い",
+        "Immutable Deploymentは Traffic Splitting と同一の機能"
+      ],
+      "answers": [0],
+      "explanation": "Elastic Beanstalkデプロイポリシー比較：■All at Once：①全インスタンス同時更新②最速・最安価③短時間のダウンタイムあり④開発/テスト環境向き ■Rolling：①インスタンスをバッチで順次更新②一部インスタンスが旧バージョン→短時間の混在状態③キャパシティ一時低下 ■Rolling with additional batch：①新しいインスタンスを追加してローリング②フルキャパシティ維持③Rolling比でコスト高 ■Immutable：①完全新規ASGとインスタンスを作成②新インスタンスにデプロイ+ヘルスチェック③問題なければ既存ASGに追加して古いASGを削除④最も安全なロールバック（古いインスタンスは削除前に待機）⑤コスト最大（一時的に2倍のインスタンス） ■Traffic Splitting（カナリア）：①一部トラフィック（例：10%）を新バージョンにルーティング②A/Bテスト・段階的展開 ■BlueGreen：DNSスワップで完全切り替え。",
+      "tags": ["Elastic Beanstalk", "デプロイ", "Immutable", "ロールバック"]
+    },
+    {
+      "id": "DVA-016",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "Amazon CloudWatch の EMF（Embedded Metric Format）を使用してLambdaからカスタムメトリクスを効率的に発行する方法として正しいものはどれですか？",
+      "choices": [
+        "EMFはJSON形式の標準出力（stdout）にメトリクスをエンコードして出力するだけで、CloudWatch Logs → CloudWatch Metricsへの自動変換が行われ、PutMetricData APIコールなしにカスタムメトリクスを低コストで発行できる",
+        "EMFはCloudWatchにメトリクスを送信するためのSDKライブラリであり標準出力とは無関係",
+        "LambdaのカスタムメトリクスはPutMetricData APIのみで発行可能でEMFは使用できない",
+        "EMFはEC2でのみ利用可能でLambdaでは使用できない"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Embedded Metric Format（EMF）詳細：■仕組み：①JSON構造体をstdout（またはCloudWatch Logsに）に出力②CloudWatch Logs エージェントまたはLambdaランタイムが自動検出③CloudWatch Metricsに変換（非同期・バックグラウンド） ■EMFのJSON形式：{\"_aws\": {\"Timestamp\": 1234567890, \"CloudWatchMetrics\": [{\"Namespace\": \"MyApp\", \"Dimensions\": [[\"FunctionName\"]], \"Metrics\": [{\"Name\": \"ColdStart\", \"Unit\": \"Count\"}]}]}, \"FunctionName\": \"my-function\", \"ColdStart\": 1} ■利点：①PutMetricData APIコール不要→Lambda実行時間短縮・コスト削減②高解像度メトリクス（1秒粒度）にも対応③ライブラリ：aws-embedded-metrics（Python/Node.js/Java/Go）④Container Insights・Lambda Insights はEMFを使用 ■vs PutMetricData：PutMetricDataは同期API呼び出し・コスト高（$0.01/1000メトリクス）・スロットリングリスク。",
+      "tags": ["CloudWatch", "EMF", "カスタムメトリクス", "Lambda"]
+    },
+    {
+      "id": "DVA-017",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "Amazon S3 Presigned URL の仕組みと適切なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "Presigned URLはIAMクレデンシャルで署名された一時的なURL（有効期限付き）で、認証なしでも特定のS3オブジェクトへのGET（ダウンロード）またはPUT（アップロード）を可能にする。サーバーを経由しないダイレクトアップロードやプライベートコンテンツへの一時共有に使用",
+        "Presigned URLは誰でも永続的にアクセスできるため機密データには使用できない",
+        "Presigned URLを使用してS3へのアップロードを行う場合、バケットをパブリックに設定する必要がある",
+        "Presigned URLはダウンロードにのみ対応しアップロードには使用できない"
+      ],
+      "answers": [0],
+      "explanation": "S3 Presigned URL詳細：■生成：generate_presigned_url()（boto3）またはGetSignedUrl（SDKs）でURL生成時に署名者のIAM権限が必要 ■有効期限：秒単位で指定（デフォルト3600秒・最大7日間・IAMロールの場合は最大36時間） ■用途：①GET（ダウンロード）：プライベートS3コンテンツへの一時的な共有リンク②PUT（アップロード）：クライアントがサーバーを経由せずS3に直接アップロード（大容量ファイルのサーバー負荷軽減）③Multipart Upload：Presigned URLとマルチパートアップロードの組み合わせで大容量ファイルを直接S3にアップロード ■セキュリティ考慮：①URLを持つ全員がアクセス可能（署名検証のみ）②有効期限を短く設定②HTTPS必須③ログイン済みユーザーへのURL配布 ■Presigned POST：HTMLフォームからの直接アップロードに使用（フィールド条件でサイズ制限等を設定可能）。",
+      "tags": ["S3", "Presigned URL", "一時URL", "ダイレクトアップロード"]
+    },
+    {
+      "id": "DVA-018",
+      "category": "Step Functions",
+      "difficulty": 2,
+      "question": "AWS Step Functions の Standard Workflow と Express Workflow の違いとして正しいものはどれですか？",
+      "choices": [
+        "Standard Workflowは最大1年の長期実行・Exactly Once実行・完全な実行履歴保存でコスト高め、Express Workflowは最大5分の高頻度・短時間処理でAT-LEAST-ONCEセマンティクス・低コスト（ストリーミングデータ処理・IoTイベント等に適合）",
+        "Express WorkflowはStandard Workflowより長い最大7年のワークフロー実行に対応",
+        "Standard WorkflowはExpress Workflowと比較してコストが常に低い",
+        "Express WorkflowはExactly Onceが保証されStandard Workflowより信頼性が高い"
+      ],
+      "answers": [0],
+      "explanation": "Step Functions Workflow比較：■Standard Workflow：①最大実行時間：1年②実行セマンティクス：Exactly-Once③実行履歴：最大90日間保持・完全監査可能④CloudWatch Logs連携：オプション⑤料金：状態遷移回数（$0.025/1000遷移）⑥適合：注文処理・デジタルトランスフォーメーション・長期人間承認ワークフロー ■Express Workflow：①最大実行時間：5分②実行セマンティクス：At-Least-Once（重複処理の可能性あり）③実行履歴：CloudWatch Logsに出力（独自保存なし）④Synchronous（同期）とAsynchronous（非同期）の2サブタイプ⑤料金：実行時間+メモリ（~$1/100万実行）で大量実行に安価⑥適合：IoTデータパイプライン・ストリーミング処理・マイクロサービスオーケストレーション・高頻度処理 ■ASL（Amazon States Language）：JSON形式でワークフロー定義（両タイプ共通）。",
+      "tags": ["Step Functions", "Standard Workflow", "Express Workflow", "オーケストレーション"]
+    },
+    {
+      "id": "DVA-019",
+      "category": "ElastiCache",
+      "difficulty": 2,
+      "question": "Amazon ElastiCache Redis のキャッシュ戦略として Cache-Aside（Lazy Loading）と Write-Through の違いと使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Cache-Aside（Lazy Loading）はキャッシュミス時のみDBからデータを取得してキャッシュに書き込む（読み取り専用キャッシュ・古いデータの可能性あり）、Write-Throughは書き込み時に常にDB+キャッシュを同時更新（最新データ保証・無駄なキャッシュデータ増加）",
+        "Write-ThroughはCache-Asideより常に高速でありキャッシュ戦略の最善解",
+        "Cache-Asideではキャッシュが常に最新のデータを保持することが保証される",
+        "Write-Throughは読み取りが多いワークロードに最適なキャッシュ戦略"
+      ],
+      "answers": [0],
+      "explanation": "ElastiCache キャッシュ戦略詳細：■Cache-Aside（Lazy Loading）：①読み取り：キャッシュHIT→キャッシュから返却、MISS→DB読み取り→キャッシュに保存→返却②更新：DBのみ更新（キャッシュは更新しない）→TTL期限切れまたは次回のMISS時に最新化③利点：必要なデータのみキャッシュ・キャッシュ障害でもDBで対応④欠点：初回リクエストは遅い（cold miss）・TTL内は古いデータを返す可能性（Stale Data） ■Write-Through：①書き込み時：DB + キャッシュ両方を同時更新②読み取り：常にキャッシュHIT（原則として）③利点：データが常に最新・Read Miss少ない④欠点：書き込みが2倍の操作（レイテンシー増加）・使われないデータもキャッシュ→メモリ浪費 ■TTL（Time-To-Live）：両戦略で適切なTTLを設定してStaleデータを定期的に削除することが重要。",
+      "tags": ["ElastiCache", "Cache-Aside", "Write-Through", "キャッシュ戦略"]
+    },
+    {
+      "id": "DVA-020",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "Lambda 関数のエラーハンドリングとして Destination（宛先）を使用する場合、正しい設定方法はどれですか？",
+      "choices": [
+        "非同期呼び出しのLambdaにOnSuccess（SQS/SNS/EventBridge/Lambda）とOnFailure（SQS/SNS/EventBridge/Lambda）の宛先を設定することで、DLQより詳細な実行コンテキスト（リクエスト・レスポンス・エラー情報）を下流に渡せる",
+        "Destinationは同期呼び出しにのみ使用できる機能",
+        "DestinationはDLQと完全に同一の機能でどちらを使用しても結果は変わらない",
+        "Destinationの宛先にはSQSのみが指定可能"
+      ],
+      "answers": [0],
+      "explanation": "Lambda Destinations（宛先）詳細：■対象：非同期呼び出し・Event Source Mapping（SQS/Kinesis/DynamoDB Streams） ■設定：非同期→OnSuccess・OnFailure、ESM→OnFailure ■宛先として指定可能なサービス：SQS・SNS・EventBridge Event Bus・別のLambda関数 ■Destinationsのペイロード（DLQより情報豊富）：①requestContext：実行ARN・リクエストID・関数ARN・コンディション（Success/Failure/RetriesExhausted）②requestPayload：元の入力イベント③responseContext：ステータスコード③responsePayload：レスポンスまたはエラー詳細（スタックトレース含む） ■DLQ vs Destinations：①DLQ：失敗のみ・SNSまたはSQS・元のメッセージのみ転送②Destinations：成功/失敗の両方・4サービスに転送・豊富なコンテキスト情報 ■実用：OnSuccess→次のLambdaの連鎖（Step Functionsなし）・OnFailure→alertingシステム。",
+      "tags": ["Lambda", "Destinations", "エラーハンドリング", "非同期"]
+    },
+    {
+      "id": "DVA-021",
+      "category": "SAM",
+      "difficulty": 2,
+      "question": "AWS SAM（Serverless Application Model）テンプレートの AWS::Serverless::Function リソースの必須プロパティと transform 宣言として正しいものはどれですか？",
+      "choices": [
+        "テンプレート先頭に Transform: AWS::Serverless-2016-10-31 を宣言し、AWS::Serverless::Function にCodeUri（コードパス）・Handler（ハンドラー関数）・Runtime（ランタイム）を指定。sam deploy でCloudFormationテンプレートに自動変換される",
+        "SAMテンプレートはCloudFormationと全く別の形式でcloudformationとの関連はない",
+        "SAMのTransform宣言は省略可能でなくても動作する",
+        "SAMはLambdaのみをサポートしAPI GatewayやDynamoDBは別途CloudFormationで定義する"
+      ],
+      "answers": [0],
+      "explanation": "AWS SAMテンプレート構造：■Transform宣言：AWSTemplateFormatVersion: '2010-09-09'→Transform: AWS::Serverless-2016-10-31（必須：SAMをCFnに変換するマクロ宣言） ■AWS::Serverless::Function：{FunctionName: MyFunction, CodeUri: src/, Handler: app.lambda_handler, Runtime: python3.12, MemorySize: 256, Timeout: 30, Environment: {Variables: {TABLE_NAME: !Ref MyTable}}, Events: {ApiEvent: {Type: Api, Properties: {Path: /hello, Method: get}}}} ■他のSAMリソース型：AWS::Serverless::Api（API GW）・AWS::Serverless::SimpleTable（DynamoDB）・AWS::Serverless::StateMachine（Step Functions） ■sam CLIコマンド：sam init（プロジェクト作成）・sam build（ビルド）・sam local invoke（ローカル実行）・sam local start-api（ローカルAPI GW）・sam deploy（--guided オプションで対話的設定）。",
+      "tags": ["SAM", "Serverless", "テンプレート", "CloudFormation"]
+    },
+    {
+      "id": "DVA-022",
+      "category": "KMS",
+      "difficulty": 2,
+      "question": "AWS KMS のエンベロープ暗号化（Envelope Encryption）の仕組みとして正しいものはどれですか？",
+      "choices": [
+        "平文データをData Encryption Key（DEK）で暗号化し、そのDEKをKMSのCustomer Master Key（CMK）で暗号化（ラップ）して保存。復号時はKMSでDEKを復号してからデータを復号する2段階の仕組みで、大容量データをKMSに直接送らずに済む",
+        "エンベロープ暗号化はKMSキーで全データを直接暗号化する標準的な暗号化手法",
+        "DEKはKMSに保存されKMSなしでデータを復号できないよう設計されている",
+        "エンベロープ暗号化では平文のDEKをS3に保存することが推奨されている"
+      ],
+      "answers": [0],
+      "explanation": "KMS エンベロープ暗号化詳細：■問題：KMSのEncrypt/Decrypt APIはデータサイズ制限4KB・ネットワーク往復コスト・スロットリングリスク ■エンベロープ暗号化フロー：①KMS GenerateDataKey APIを呼び出し→平文DEK（Data Encryption Key）+暗号化済みDEK（CMKで暗号化）を取得②平文DEKでアプリケーション内のデータをローカル暗号化③平文DEKをメモリから削除（重要）④暗号化データ+暗号化済みDEKをS3等に保存 ■復号フロー：①暗号化済みDEKをKMS Decrypt APIで復号→平文DEK取得②平文DEKでデータをローカル復号③平文DEKをメモリから削除 ■利点：①大容量データをKMSに送信不要→高速・低コスト②DEK（AES-256等）でローカル暗号化→スロットリング回避③CMKのローテーション：DEK→古いCMKで復号→新CMKで再暗号化のみでOK（データの再暗号化不要） ■AWS SDKのS3クライアント・DynamoDB Encryption Clientが自動的にエンベロープ暗号化を実装。",
+      "tags": ["KMS", "エンベロープ暗号化", "DEK", "CMK"]
+    },
+    {
+      "id": "DVA-023",
+      "category": "SNS",
+      "difficulty": 2,
+      "question": "Amazon SNS のメッセージフィルタリングポリシー（Message Filtering Policy）の使い方として正しいものはどれですか？",
+      "choices": [
+        "SNSサブスクリプションにフィルターポリシー（JSON）を設定することで、メッセージ属性（MessageAttributes）の値に基づいて特定のサブスクライバーのみにメッセージを配信し、SQSやLambdaのコンシューマーが不要なメッセージを受信しなくなる",
+        "SNSはメッセージフィルタリングに対応しておらず全てのサブスクライバーにメッセージが送信される",
+        "フィルターポリシーはSNSトピック全体に対して設定するためサブスクライバー別の設定はできない",
+        "メッセージフィルタリングはFIFOトピックのみで使用可能でStandardトピックには非対応"
+      ],
+      "answers": [0],
+      "explanation": "SNS Message Filteringの詳細：■仕組み：①パブリッシャーはメッセージ+MessageAttributes（例：{\"event_type\": {\"DataType\": \"String\", \"StringValue\": \"order_placed\"}}）を送信②各サブスクリプションにFilterPolicy（JSON）を設定：{\"event_type\": [\"order_placed\", \"order_shipped\"]}③フィルターに一致するメッセージのみそのサブスクライバーに配信 ■FilterPolicyScope：①MessageAttributes（デフォルト）：属性キーと値でフィルタリング②MessageBody（新機能）：メッセージ本文のJSONフィールドでフィルタリング ■フィルター条件：文字列（完全一致・プレフィックス・サフィックス）・数値（範囲）・Anything-but（否定）・EXISTS（属性存在確認）■ユースケース：①異なるリージョンのSQSへのルーティング②イベント種別毎のLambda処理③不要なメッセージのフィルタでSQS/Lambda処理コスト削減。",
+      "tags": ["SNS", "メッセージフィルタリング", "サブスクリプション", "ファンアウト"]
+    },
+    {
+      "id": "DVA-024",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "DynamoDB の Conditional Writes（条件付き書き込み）の仕組みと楽観的排他制御への活用として正しいものはどれですか？",
+      "choices": [
+        "ConditionExpression を使用してアイテムの現在の状態（attribute_not_exists・attribute_exists・比較演算等）を条件として指定し、条件を満たさない場合はConditionalCheckFailedExceptionを返してアイテムの更新を拒否することで競合状態を防げる",
+        "Conditional WritesはPut操作にのみ対応しUpdate・Delete操作には使用できない",
+        "ConditionExpressionが失敗した場合、DynamoDBは自動的に成功するまでリトライする",
+        "楽観的排他制御には必ずDynamoDB TransactionsのConditionCheckを使用する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDB Conditional Writes（条件付き書き込み）：■主な条件式：①attribute_not_exists(pk)：アイテムが存在しない場合のみ書き込み（重複防止）②attribute_exists(pk)：アイテムが存在する場合のみ更新③attribute_type(field, 'N')：属性の型確認④size(list_attr) < 5：コレクションサイズ制限⑤version = :expected_version：楽観的排他制御（Version番号チェック） ■楽観的排他制御パターン：①アイテム読み込み時にversion番号を記録②更新時：ConditionExpression='version = :v'・ExpressionAttributeValues={':v': current_version}③更新成功：SET version = version + 1④ConditionalCheckFailedException：別プロセスが先に更新→読み直して再試行 ■vs DynamoDB Transactions：単一アイテムの軽量な排他制御→Conditional Writes（コスト低・シンプル）、複数アイテム横断の一貫性→Transactions。",
+      "tags": ["DynamoDB", "Conditional Writes", "楽観的排他制御", "ConditionExpression"]
+    },
+    {
+      "id": "DVA-025",
+      "category": "Lambda",
+      "difficulty": 3,
+      "question": "Lambda のコールドスタートを最小化するためのベストプラクティスとして正しいものはどれですか？",
+      "choices": [
+        "Provisioned Concurrencyで事前ウォームアップ、Lambdaハンドラー外での初期化（DB接続・SDK初期化）、Lambdaパッケージサイズ削減（不要な依存関係除去・tree shaking）、Alpine Linux等の軽量ベースイメージ、X86からARM（Graviton2）への移行を組み合わせる",
+        "コールドスタートはメモリを増やすことのみで解決できる",
+        "Lambda をVPC内に配置するとコールドスタートが改善される",
+        "Lambdaのランタイムを古いバージョン（Node 12等）にすることでコールドスタートが短縮される"
+      ],
+      "answers": [0],
+      "explanation": "Lambda コールドスタート最適化：■コールドスタートの構成：①インスタンス起動②ランタイム初期化③デプロイパッケージダウンロード・展開④ハンドラー外のinit処理（グローバルスコープ） ■最適化戦略：①Provisioned Concurrency：事前初期化で実質コールドスタートなし（追加コスト）②パッケージサイズ削減：未使用依存関係の除去・webpack/esbuildによるバンドル最小化③ハンドラー外初期化：DB接続・APIクライアント・設定読み込みはグローバルスコープに（warm再利用）④メモリサイズ：メモリが多いほどCPU比例割り当て→初期化が速い⑤ARM（Graviton2）：x86比でコールドスタート短縮例あり⑥Container Image：ECRのキャッシュ活用で起動高速化（Provisioned Concurrencyと組み合わせ）⑦VPCは古くは問題だったが現在はENI事前作成でほぼ解消。",
+      "tags": ["Lambda", "コールドスタート", "Provisioned Concurrency", "パフォーマンス"]
+    },
+    {
+      "id": "DVA-026",
+      "category": "Kinesis",
+      "difficulty": 2,
+      "question": "Amazon Kinesis Data Streams でシャード数を適切に決定するための計算式として正しいものはどれですか？",
+      "choices": [
+        "必要なシャード数 = max(データ書き込みMB/s ÷ 1MB/s, データ書き込みレコード数/s ÷ 1000/s, 読み取りMB/s ÷ 2MB/s)。各シャードは1MB/s書き込み・2MB/s読み取り・1000レコード/sの上限があり、超過時はProvisionedThroughputExceededException",
+        "Kinesisシャード数は5に固定されており変更できない",
+        "データ量が増えてもシャード数は変更不要でKinesisが自動的にスケールする",
+        "シャード数はリージョンの上限により最大10シャードまでしか設定できない"
+      ],
+      "answers": [0],
+      "explanation": "Kinesis Data Streams シャード設計：■シャードあたりの制限：①書き込み：最大1MB/s・最大1000レコード/秒②読み取り：最大2MB/秒（GetRecords）・5トランザクション/秒③Enhanced Fan-out（EFO）：コンシューマー毎に独立した2MB/秒の読み取り帯域（コンシューマー間の帯域争いなし） ■シャード数計算例：①書き込み5MB/s → 5シャード（書き込み制限）②800レコード/秒 × 5KB/レコード = 4MB/s → 4シャード③コンシューマー3つでそれぞれ1.5MB/s読み取り = 4.5MB/s合計→通常：3シャード（2×3=6>4.5）・EFOなら各コンシューマーに2MB/s独立帯域 ■スケーリング：①Shard Split：1シャード→2シャード（コスト・スループット倍増）②Shard Merge：2シャード→1シャード③On-demand Mode：自動スケーリング（ピークスループットに基づく自動調整）。",
+      "tags": ["Kinesis", "シャード", "スケーリング", "設計"]
+    },
+    {
+      "id": "DVA-027",
+      "category": "IAM",
+      "difficulty": 2,
+      "question": "AWS IAM ポリシーの評価ロジックで Explicit Deny・Allow・Implicit Deny の優先順位として正しいものはどれですか？",
+      "choices": [
+        "評価順序：① Explicit Deny（明示的拒否）が最優先でどのAllowも上書きできる → ② Explicit Allow（明示的許可）が適用 → ③ いずれも該当しない場合はImplicit Deny（暗黙の拒否）がデフォルト",
+        "AllowとDenyが競合する場合はAllowが常に優先される",
+        "IAMポリシーにDenyを記述しても実際にはアクセスを拒否できない",
+        "全てのAWSアクションはデフォルトで許可されており明示的なDenyのみが制限を設ける"
+      ],
+      "answers": [0],
+      "explanation": "IAMポリシー評価ロジック（完全版）：■評価ステップ：①Explicit Deny確認：全ポリシー（アイデンティティ・リソース・SCP・Session）のいずれかにDenyがあれば即時拒否②Principal確認：STS AssumeRoleの場合はTrustポリシーチェック③SCP確認：AWS Organizationsの制御（AdministratorAccessでもSCPでDenyなら拒否）④Resource-based Policy確認（S3バケットポリシー・Lambda Resource Policy等）⑤アイデンティティポリシー（ユーザー/グループ/ロールポリシー）のExplicit Allow確認⑥Permissions Boundary確認（Allowかつ範囲内か）⑦Session Policy確認（STS AssumeRole時のScope down policy）⑧全てにAllow→アクセス許可 ■覚え方：「明示的Deny > 明示的Allow > 暗黙Deny」。Cross-accountアクセスは両アカウントにAllow必要（Resource Policy + Identity Policy）。",
+      "tags": ["IAM", "ポリシー評価", "Explicit Deny", "Implicit Deny"]
+    },
+    {
+      "id": "DVA-028",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "AWS CloudFormation のスタック間でリソースを共有する方法として正しいものはどれですか？",
+      "choices": [
+        "Export（エクスポート）でVPCID等の値を名前付きでスタックから公開し、他スタックでFn::ImportValue（クロススタック参照）で参照することでスタック間の疎結合な依存関係を実現できる",
+        "CloudFormationスタック間でリソースを共有するには必ずカスタムリソース（Lambda）が必要",
+        "ImportValueで参照中のスタックを削除することは可能でエラーは発生しない",
+        "スタック間のリソース共有はSSM Parameter Storeのみで実現でき、Exportは古い機能"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormation スタック間連携：■Cross-Stack Reference（クロススタック参照）：①ソーススタック：OutputsセクションにExport: {Name: !Sub '${AWS::StackName}-VpcId'}でリソースID等を公開②参照スタック：Fn::ImportValue: !Sub '${SomeStack}-VpcId'で値を取得 ■制約：①同一リージョン・アカウント内のみ②参照されているエクスポートを削除不可（DeleteStack→エラー）→削除前に参照スタックを先に削除必要③エクスポート名は一意 ■Nested Stack（ネストスタック）：①AWS::CloudFormation::Stack リソースで子スタックを作成②テンプレートの再利用・分割管理③一つのデプロイでネスト全体を管理 ■Stack Sets：複数アカウント・リージョンへの一括デプロイ ■SSM Parameter Storeとの比較：SSMはクロスリージョン・クロスアカウント参照が可能で動的に更新可能。",
+      "tags": ["CloudFormation", "Export", "ImportValue", "クロススタック参照"]
+    },
+    {
+      "id": "DVA-029",
+      "category": "API Gateway",
+      "difficulty": 2,
+      "question": "API Gateway の Lambda オーソライザー（Lambda Authorizer）とCognito オーソライザーの違いとして正しいものはどれですか？",
+      "choices": [
+        "Lambda Authorizerはカスタム認証ロジック（JWT・OAuth・LDAP・DB参照等）をLambda関数で実装してIAMポリシーを返すフレキシブルな方式、Cognito AuthorizerはCognito User PoolのJWTトークンをAPI GWが自動検証する簡易設定方式",
+        "Cognito AuthorizerはLambda Authorizerより常に高い精度でアクセス制御を提供する",
+        "Lambda AuthorizerはCognito User Poolのトークン検証にのみ使用できる",
+        "Cognito AuthorizerはAPI GatewayのHTTP APIでのみ使用可能"
+      ],
+      "answers": [0],
+      "explanation": "API Gatewayオーソライザー比較：■Lambda Authorizer：①TOKEN型：AuthorizationヘッダーのBearer TokenをLambdaに渡す②REQUEST型：ヘッダー・クエリ・ステージ変数等全てをLambdaに渡す③Lambda関数がIAMポリシー（allow/deny+context）を返却④ポリシーキャッシュ：TTL設定で同一トークンのLambda呼び出しをスキップ（0〜3600秒）⑤適合：社内LDAPや任意のJWT/OAuthプロバイダー・カスタム認可ロジック ■Cognito Authorizer（ユーザープールオーソライザー）：①Cognito User PoolのIDトークン・アクセストークンをAPI GWが直接検証②Lambda呼び出しなし（低レイテンシー）③CognitoのJWKS（JSON Web Key Set）でシグネチャ検証④スコープベースの認可：アクセストークンのOAuth 2.0スコープ検証⑤適合：Cognitoでユーザー管理している場合・標準的なJWT認証 ■REST vs HTTP API：HTTP APIはCognito JWT・Lambda Authorizerどちらも対応。",
+      "tags": ["API Gateway", "Lambda Authorizer", "Cognito Authorizer", "認証"]
+    },
+    {
+      "id": "DVA-030",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "DynamoDB の単一テーブル設計（Single-Table Design）の利点と実装パターンとして正しいものはどれですか？",
+      "choices": [
+        "異なるエンティティタイプ（User・Order・Product等）を一つのテーブルに格納し、PKプレフィックス（USER#id・ORDER#id等）とGSIで多様なアクセスパターンをサポートしてDynamoDBの1回クエリで複数エンティティを取得できる高効率設計",
+        "単一テーブル設計は小規模アプリにのみ適しており大規模本番環境には不向き",
+        "DynamoDBは必ずエンティティタイプごとにテーブルを分割する必要がある",
+        "単一テーブル設計ではJOINが必要になるためRDSより複雑になる"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDB Single-Table Designパターン：■コンセプト：リレーショナルDBの正規化とは逆に、全エンティティを1テーブルに非正規化して格納 ■実装パターン：①PK/SK設計：PK=USER#userId・SK=PROFILE、PK=USER#userId・SK=ORDER#orderId（1ユーザーの全注文をQueryで取得）②Type属性：エンティティ種別を識別③Access Pattern Mapping：全アクセスパターンを事前定義して設計 ■利点：①1クエリで関連エンティティを全取得（コレクション問題なし）②クロスエンティティトランザクションが同一テーブル内で高効率③スループット共有でテーブル数削減→管理簡素化④GSI Overloading：GSIの汎用的な利用 ■欠点：①設計が複雑・Learning Curve高い②テーブル構造が直感的でない③adhocクエリが困難（全スキャン等）④データモデリングツール：NoSQL Workbench for Amazon DynamoDB。",
+      "tags": ["DynamoDB", "Single-Table Design", "データモデリング", "アクセスパターン"]
+    },
+    {
+      "id": "DVA-031",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "Amazon CloudWatch Logs Insights で特定の時間範囲のLambdaエラーを効率的に分析するクエリパターンとして正しいものはどれですか？",
+      "choices": [
+        "fields @timestamp, @message | filter @message like /ERROR/ | sort @timestamp desc | limit 50 のようなCloudWatch Logs Insights SQL風クエリ言語で、fields・filter・stats・sort・limit・parse等のコマンドを組み合わせてロググループをインタラクティブに分析できる",
+        "CloudWatch Logs InsightsはSQLのSELECT/FROM/WHERE構文を使用する",
+        "CloudWatch Logs InsightsはLambdaのログにのみ対応し他のサービスのログは分析できない",
+        "Logs Insightsのクエリは同時に1ロググループのみをクエリできる"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Logs Insights クエリ言語詳細：■コマンド：①fields：表示フィールドの選択・計算フィールドの定義（@timestamp・@message・@logStream・@requestId等の組み込みフィールド）②filter：条件フィルタ（like/=!/regexp・比較演算子）③stats：集計関数（count・sum・avg・max・min・percentile・count_distinct）④sort：ソート⑤limit：結果件数制限⑥parse：テキストからのフィールド抽出（glob/regex）⑦dedup：重複除去 ■Lambdaログの典型クエリ：stats count(*) as errorCount by bin(5m) | filter @message like /ERROR/ ■コスト：スキャンデータ量課金（$0.005/GB）→時間範囲・ロググループを絞ることでコスト削減 ■複数ロググループ：最大50ロググループを同時にクエリ可能（--log-group-nameパターンでワイルドカード） ■Contributor Insights：パターン分析・上位N件のログ貢献者の特定。",
+      "tags": ["CloudWatch", "Logs Insights", "クエリ言語", "ログ分析"]
+    },
+    {
+      "id": "DVA-032",
+      "category": "Secrets Manager",
+      "difficulty": 2,
+      "question": "AWS Secrets Manager と AWS Systems Manager Parameter Store の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Secrets Managerはデータベース認証情報等のシークレットを管理・自動ローテーション（RDS/Redshift/DocumentDB/カスタムLambdaで対応）に特化した有償サービス、Parameter Storeはパラメータ・設定値・暗号化/非暗号化の混在管理が可能な低コスト（Standard Tier無料）のサービス",
+        "Parameter StoreはSecrets Managerより高コストで高機能なため常にSecrets Managerを使用する",
+        "Secrets Managerは自動ローテーションを行わずユーザーが手動でシークレットを更新する必要がある",
+        "Parameter StoreとSecrets Managerは同一のサービスで保存できる情報の種類のみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "Secrets Manager vs Parameter Store比較：■Secrets Manager：①シークレット特化（パスワード・APIキー・OAuthトークン等）②自動ローテーション：Lambda関数で定期的にシークレットを自動更新（RDS：Native対応・カスタム：任意Lambda）③クロスアカウント共有：Resource-based Policy④バージョン管理（AWSCURRENT・AWSPREVIOUS等のステージラベル）⑤コスト：$0.40/シークレット/月 ■Systems Manager Parameter Store：①Standard Tier（無料）：10,000パラメータ・4KBサイズ制限・スタンダード取得API②Advanced Tier（有料）：100,000パラメータ・8KB・パラメータポリシー・Higher throughput③String・StringList・SecureString（KMS暗号化）④設定値の階層管理（/app/prod/db-url等のパス形式）⑤自動ローテーションなし⑤CloudFormation動的参照（{{resolve:ssm:パス}}）⑥コスト：Standard無料・Advanced $0.05/パラメータ/月。",
+      "tags": ["Secrets Manager", "Parameter Store", "シークレット管理", "設定管理"]
+    },
+    {
+      "id": "DVA-033",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "Lambda 関数のべき等性（Idempotency）を実装する必要性と方法として正しいものはどれですか？",
+      "choices": [
+        "Lambdaの非同期呼び出しや障害時のリトライで関数が複数回実行される可能性があるため、冪等キー（requestID・SQSメッセージID等）をDynamoDBに保存して重複実行を検出するか、AWS Lambda Powertools Idempotencyライブラリを使用して実装する",
+        "Lambdaは常にExactly Onceで実行されるため冪等性の実装は不要",
+        "冪等性はSQS FIFOキューを使用することでLambda関数のコード変更なしに自動保証される",
+        "冪等性の実装にはStep Functionsを必ず使用する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "Lambda 冪等性（Idempotency）：■必要性：①非同期呼び出し：最大2回リトライ（At-Least-Once）②Event Source Mapping（Kinesis/DynamoDB Streams）：チェックポイント更新前の障害で再処理③ネットワーク障害：クライアントが再送信④SQS：Visibility Timeout超過で再表示 ■実装パターン：①DynamoDB冪等キーテーブル：idempotency_keyをPK・TTL・statusを管理、関数実行前に「PROCESSING」としてPut（condition: attribute_not_exists）、成功後「COMPLETED」に更新②条件付き書き込みと組み合わせ ■AWS Lambda Powertools for Python/TypeScript：①@idempotent デコレーター：DynamoDBバックエンドで自動管理②設定：IdempotencyConfig（event_key_jmespath・expires_after_seconds）③インプログレス状態のTTLで並行実行防止③ペイロードのハッシュをキーとして使用。",
+      "tags": ["Lambda", "冪等性", "Idempotency", "Lambda Powertools"]
+    },
+    {
+      "id": "DVA-034",
+      "category": "ECS",
+      "difficulty": 2,
+      "question": "Amazon ECS（Elastic Container Service）のタスク定義（Task Definition）において、シークレットを安全に渡す方法として正しいものはどれですか？",
+      "choices": [
+        "タスク定義のcontainerDefinitions[].secretsでSecretsManager ARNまたはParameter Store名を参照し、ECSがタスク起動時に動的にシークレット値を取得してコンテナの環境変数として注入する（コードにシークレットをハードコードしない）",
+        "ECSコンテナへのシークレット渡しには必ず環境変数に直接ハードコードする必要がある",
+        "SecretsManagerのシークレットはECSタスクから直接SDKでのみアクセス可能",
+        "ECSでのシークレット管理にはKMSのみが使用可能でSecretsManagerとの統合はない"
+      ],
+      "answers": [0],
+      "explanation": "ECS Secrets Integration：■タスク定義設定：{\"secrets\": [{\"name\": \"DB_PASSWORD\", \"valueFrom\": \"arn:aws:secretsmanager:region:account:secret:my-db-pass-xxxxxx\"}, {\"name\": \"API_KEY\", \"valueFrom\": \"arn:aws:ssm:region:account:parameter/my-api-key\"}]} ■動作：①タスク起動時（コンテナ実行前）にECSエージェントがSecretsManager/SSMからシークレットを取得②コンテナの環境変数として注入③コードは通常の環境変数として読み取るだけ ■IAM権限：タスク実行ロール（ecsTaskExecutionRole）にsecretmanager:GetSecretValue・ssm:GetParameters権限が必要（タスクロールとは別） ■シークレットのバージョン・ステージ指定：valueFromのARNに:::VersionId/StageName を追加可能 ■他の方法：①AWS SSM Session Manager＋環境変数②Vault等のサードパーティシークレット管理ツールのサイドカーパターン③KMS暗号化ファイルのS3参照。",
+      "tags": ["ECS", "シークレット管理", "Secrets Manager", "Parameter Store"]
+    },
+    {
+      "id": "DVA-035",
+      "category": "API Gateway",
+      "difficulty": 2,
+      "question": "API Gateway のリソースポリシー（Resource Policy）を使用してAPIへのアクセスを特定のIPアドレスやVPCに制限する方法として正しいものはどれですか？",
+      "choices": [
+        "API Gatewayのリソースポリシーで特定のIPレンジ（aws:SourceIp）またはVPCエンドポイント（aws:SourceVpce）からのリクエストのみを許可し、プライベートAPIエンドポイントタイプと組み合わせることで社内VPCからのみアクセス可能なAPIを実現できる",
+        "API Gatewayへのアクセス制限にはWAFのみが対応しリソースポリシーは使用できない",
+        "リソースポリシーはRESTAPIのみで使用可能でHTTP APIには対応していない",
+        "IP制限は全てのAPIリクエストに自動的に適用されるためリソースポリシー設定は不要"
+      ],
+      "answers": [0],
+      "explanation": "API Gateway リソースポリシー：■IPアドレス制限（例）：{\"Statement\": [{\"Effect\": \"Allow\", \"Principal\": \"*\", \"Action\": \"execute-api:Invoke\", \"Resource\": \"arn:aws:execute-api:.../*/*/*\", \"Condition\": {\"IpAddress\": {\"aws:SourceIp\": [\"203.0.113.0/24\"]}}}]} ■VPC制限（プライベートAPIと組み合わせ）：Condition: {\"StringEquals\": {\"aws:SourceVpce\": \"vpce-xxxx\"}} ■エンドポイントタイプ：①EDGE：CloudFront経由（グローバル）②REGIONAL：同一リージョン③PRIVATE：VPC内からのみ（PrivateLink必須）→リソースポリシーでVPCエンドポイント指定が必要 ■評価：IAMオーソライザー使用時はリソースポリシーとIAMポリシーの両方がALLOWの場合のみアクセス許可（ANDロジック） ■WAFとの違い：WAFはSQLインジェクション・XSS等の攻撃防御・レートリミット、リソースポリシーはアクセス元の制御。",
+      "tags": ["API Gateway", "リソースポリシー", "VPC", "IP制限"]
+    },
+    {
+      "id": "DVA-036",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "DynamoDB のバッチ操作（BatchWriteItem・BatchGetItem）の特徴と制限として正しいものはどれですか？",
+      "choices": [
+        "BatchWriteItemは最大25アイテムの一括Put/Delete・最大16MB。BatchGetItemは最大100アイテムの一括Get・最大16MB。ただしバッチ操作はトランザクション保証なし（部分的成功あり）でUnprocessedItemsを適切にリトライする必要がある",
+        "BatchWriteItemはトランザクション保証があり全アイテムが成功または全て失敗する",
+        "BatchGetItemの結果は取得したアイテムが常に最新状態を保証する強整合性読み取りのみ",
+        "BatchWriteItemはUpdate操作も含め全てのDynamoDB書き込みタイプをサポートする"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDB バッチ操作詳細：■BatchWriteItem：①最大25アイテム・16MB②PutItemとDeleteItemのみ対応（UpdateItemは不可）③複数テーブルをまたいで同時に操作可能④トランザクション保証なし（部分失敗あり）⑤UnprocessedItems：処理されなかったアイテム→指数バックオフでリトライ推奨 ■BatchGetItem：①最大100アイテム・16MB②デフォルトはEventually Consistent（ConsistentReadで強整合性も可）③UnprocessedKeys：処理されなかったキー→リトライ推奨 ■トランザクション vs バッチ：トランザクション（TransactWriteItems/TransactGetItems）はAll-or-Nothing・Exactly-Once・高一貫性が必要な場合（在庫管理・金融取引等）、バッチは高スループット・部分失敗許容（データロード・大量読み取り）の場合 ■ページネーション：BatchGetItemは自動ページネーションなし→UnprocessedKeysが返ったら手動で再クエリ。",
+      "tags": ["DynamoDB", "BatchWriteItem", "BatchGetItem", "バッチ操作"]
+    },
+    {
+      "id": "DVA-037",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "AWS Lambda のランタイム環境のライフサイクルにおいて、初期化フェーズ（Init Phase）で実行されるコードとハンドラーフェーズで実行されるコードの違いとして正しいものはどれですか？",
+      "choices": [
+        "Init Phaseはコールドスタート時のみ実行されグローバルスコープ（ハンドラー関数外）のコードが対象。ハンドラーコードは各呼び出し毎に実行。DB接続・SDK初期化・設定読み込みはInit Phaseで行うことでWarm実行時のレイテンシーを削減できる",
+        "グローバルスコープのコードは全ての呼び出しで毎回実行される",
+        "Init Phaseで初期化されたDB接続はウォームインスタンスでも毎回再作成される",
+        "Lambdaのランタイムコンテキストは全呼び出しで完全に独立しておりウォームアップは存在しない"
+      ],
+      "answers": [0],
+      "explanation": "Lambda実行環境ライフサイクル詳細：■フェーズ1 - INIT（初期化・コールドスタート時のみ）：①Extension Initフェーズ：Lambda Extensionsが初期化②Runtime Initフェーズ：ランタイム（Node.js・Python等）の起動③Function Initフェーズ：グローバルスコープのコード実行（import文・グローバル変数初期化・DB接続等） ■フェーズ2 - INVOKE（ハンドラー実行・毎回）：①Extensionsのハンドラー実行前処理②ハンドラー関数の実行（event・context受け取り）③ハンドラー後の処理④レスポンス返却 ■フェーズ3 - SHUTDOWN：一定時間アイドル後に実行環境が削除 ■ベストプラクティス（Init Phaseの活用）：```python # グローバルスコープ（Init Phaseで実行）\nimport boto3\nddb = boto3.resource('dynamodb')  # 再利用\n\ndef handler(event, context):\n    # ハンドラー内（毎回実行）\n    return ddb.Table('...').get_item(...)``` ■ /tmp：最大512MB（10GBオプション）の一時ストレージ（ウォームインスタンス間で共有される可能性）。",
+      "tags": ["Lambda", "ライフサイクル", "Init Phase", "グローバルスコープ"]
+    },
+    {
+      "id": "DVA-038",
+      "category": "EventBridge",
+      "difficulty": 2,
+      "question": "Amazon EventBridge ルールでカスタムイベントパターンを使用してS3バケット特定プレフィックスへのオブジェクト作成イベントをフィルタリングする方法として正しいものはどれですか？",
+      "choices": [
+        "EventBridgeルールのイベントパターンでdetail.bucket.name・detail.object.key（プレフィックスマッチングにprefix演算子）を指定することで、S3 EventBridge通知と組み合わせて特定バケット・プレフィックスのイベントのみをターゲット（Lambda・SQS・StepFunctions等）に転送できる",
+        "EventBridgeは特定のS3プレフィックスによるフィルタリングに対応していない",
+        "S3イベントをEventBridgeで処理するにはEventBridgeとS3の間にKinesisが必要",
+        "EventBridgeのイベントパターンはexact matchのみでprefix matchはサポートしていない"
+      ],
+      "answers": [0],
+      "explanation": "EventBridge イベントパターンとS3統合：■S3 EventBridge通知の有効化：バケットプロパティでAmazon EventBridge通知をONにしてaws.s3イベントをデフォルトイベントバスに送信 ■イベントパターン例：{\"source\": [\"aws.s3\"], \"detail-type\": [\"Object Created\"], \"detail\": {\"bucket\": {\"name\": [\"my-bucket\"]}, \"object\": {\"key\": [{\"prefix\": \"images/\"}]}}} ■パターンマッチング演算子：①prefix：文字列の前方一致②suffix：後方一致③exists：属性の存在確認④anything-but：否定一致⑤numeric：数値範囲（[\"=\",5]・[\">=\",5,\"<\",10]）⑥wildcard：ワイルドカードパターン（*） ■vs S3イベント通知：①S3イベント通知：SQS/SNS/Lambda直接・シンプル②EventBridge：豊富なフィルタリング・複数ターゲット・スキーマレジストリ・クロスアカウント対応・より柔軟。",
+      "tags": ["EventBridge", "イベントパターン", "S3", "フィルタリング"]
+    },
+    {
+      "id": "DVA-039",
+      "category": "CodePipeline",
+      "difficulty": 2,
+      "question": "AWS CodePipeline で GitHub（CodeStar Connections）・CodeBuild・CodeDeploy を組み合わせた CI/CD パイプラインを構築する際のベストプラクティスとして正しいものはどれですか？",
+      "choices": [
+        "Source（GitHub via CodeStar Connections）→Build（CodeBuild：ユニットテスト・統合テスト・Dockerイメージビルド・ECRプッシュ）→Deploy（CodeDeploy/ECS/Beanstalk：本番デプロイ）の各ステージでApproval Actionを挟んで本番デプロイ前のレビューを実装",
+        "CodePipelineはGitHubと直接統合できないためCodeCommitへの手動コピーが必要",
+        "CodeBuildとCodeDeployの間には必ずManual Approvalを設定する必要がある",
+        "一つのCodePipelineで複数のデプロイ先（EC2・Lambda・ECS）を同時にデプロイすることはできない"
+      ],
+      "answers": [0],
+      "explanation": "CodePipeline CI/CD ベストプラクティス：■Source Stage：①GitHub Actions連携：CodeStar Connectionsでリポジトリをウェブフックで監視②CodeCommit：ネイティブ統合③S3：オブジェクト変更でトリガー ■Build Stage（CodeBuild）：①buildspec.yml：フェーズ（install/pre_build/build/post_build）②テスト：pytest・jest・JUnit実行③セキュリティスキャン：Trivy・SonarQube④Dockerビルド・ECRプッシュ⑤テストレポート：JUnit XML→CodeBuildレポートグループ ■Deploy Stage：①ECS Blue/Green（CodeDeployデプロイ）②Lambda Deployment（Canary/Linear）③Elastic Beanstalk・CloudFormation・OpsWorks ■Manual Approval Action：①本番デプロイ前にSNS通知→担当者がコンソール/CLI/APIで承認/拒否②承認者ロールのIAM設定が必要 ■クロスアカウントパイプライン：S3アーティファクトバケットとKMSキーのクロスアカウント共有。",
+      "tags": ["CodePipeline", "CI/CD", "CodeBuild", "CodeDeploy"]
+    },
+    {
+      "id": "DVA-040",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "Amazon S3 イベント通知を使用して画像がアップロードされた際にサムネイル生成処理を起動するアーキテクチャの選択肢として正しい判断基準はどれですか？",
+      "choices": [
+        "単純なLambda直接呼び出し（S3→Lambda）は最も簡単・低コストだが失敗時の再処理が難しい。信頼性が重要な場合はS3→SQS→Lambda（キューバッファリングとDLQによる失敗処理）を選択し、複雑な処理ワークフローが必要な場合はS3→EventBridge→Step Functionsを選択する",
+        "S3イベント通知はSQSへの連携のみに対応しLambdaへの直接連携はできない",
+        "S3→SQS→Lambdaのアーキテクチャは遅延が大きすぎてリアルタイム処理には使用できない",
+        "S3イベント通知の配信は常に保証されており失敗時の対策は不要"
+      ],
+      "answers": [0],
+      "explanation": "S3イベント通知アーキテクチャパターン：■S3→Lambda（直接）：①最もシンプル・低コスト②S3がLambdaを同期的に呼び出し（Lambda→Acknowledgeを受け取ったS3が完了）③Lambda失敗時：S3は通常リトライしない（失敗が失われる可能性）④スループット制限：Lambda同時実行制限④適合：シンプル・一時的な失敗が許容される場合 ■S3→SQS→Lambda（推奨・信頼性重視）：①S3がSQSにメッセージをエンキュー②SQSがLambdaをポーリング③Lambda失敗：Visibility Timeout後に再処理③DLQ：maxReceiveCount後のデッドレター④バックプレッシャー制御⑤適合：失敗時の確実な再処理が必要・高スループット ■S3→EventBridge→Step Functions：①EventBridgeのフィルタリング②Step Functionsで複数ステップの処理ワークフロー（サムネイル+メタデータ抽出+DB更新等）③Retry・Catch・TimeoutのError Handling。",
+      "tags": ["S3", "イベント通知", "アーキテクチャ", "Lambda連携"]
+    }
+  ]
+}
