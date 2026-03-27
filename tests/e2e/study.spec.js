@@ -527,3 +527,20 @@ test.describe('データ永続性（localStorage）', () => {
     expect(totalAttempts).toBeGreaterThanOrEqual(3);
   });
 });
+
+// ============================================================
+// DOP試験
+// ============================================================
+test.describe('DOP試験', () => {
+  test('DOP が試験一覧に表示される', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await expect(page.locator('.exam-card').filter({ hasText: 'DOP' })).toBeVisible();
+  });
+
+  test('DOP選択後に問題が表示される', async ({ page }) => {
+    await selectExam(page, 'DOP');
+    await expect(page.locator('#question-text')).not.toHaveText('問題を読み込んでいます...');
+    await expect(page.locator('.choice-btn').first()).toBeVisible();
+  });
+});

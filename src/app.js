@@ -60,6 +60,11 @@ export const EXAM_LIST = [
     examName: 'AWS Certified Solutions Architect - Professional',
     file: 'data/sap.json',
   },
+  {
+    examCode: 'DOP',
+    examName: 'AWS Certified DevOps Engineer - Professional',
+    file: 'data/dop.json',
+  },
 ];
 
 // ============================================================
