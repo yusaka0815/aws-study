@@ -3,6 +3,9 @@
  * 出題アルゴリズム・SRSエンジン
  */
 
+/** localStorageの破損データ（NaN・undefined・null）をゼロに変換 */
+const safeInt = v => Number.isFinite(v) ? v : 0;
+
 /**
  * 連続正解数に基づく次回復習インターバル（ms）
  */
@@ -103,9 +106,9 @@ export function updateQuestionState(qState, isCorrect, now) {
   const interval = getIntervalMs(recentResults);
 
   return {
-    attempts: (qState ? qState.attempts : 0) + 1,
-    correct: (qState ? qState.correct : 0) + (isCorrect ? 1 : 0),
-    wrong: (qState ? qState.wrong : 0) + (isCorrect ? 0 : 1),
+    attempts: safeInt(qState ? qState.attempts : 0) + 1,
+    correct: safeInt(qState ? qState.correct : 0) + (isCorrect ? 1 : 0),
+    wrong: safeInt(qState ? qState.wrong : 0) + (isCorrect ? 0 : 1),
     recentResults,
     lastAnsweredAt: now,
     nextReviewAt: now + interval,
@@ -131,13 +134,13 @@ export function getStats(questions, userState) {
     }
     categoryStats[q.category].total++;
 
-    if (qState && qState.attempts > 0) {
+    if (qState && safeInt(qState.attempts) > 0) {
       answered++;
-      totalAttempts += qState.attempts ?? 0;
-      totalCorrect += qState.correct ?? 0;
+      totalAttempts += safeInt(qState.attempts);
+      totalCorrect += safeInt(qState.correct);
       categoryStats[q.category].answered++;
-      categoryStats[q.category].correct += qState.correct ?? 0;
-      categoryStats[q.category].attempts += qState.attempts ?? 0;
+      categoryStats[q.category].correct += safeInt(qState.correct);
+      categoryStats[q.category].attempts += safeInt(qState.attempts);
     }
   }
 
@@ -162,4 +165,17 @@ export function getStats(questions, userState) {
     accuracy,
     categoryList,
   };
+}
+
+/**
+ * 回答の正誤判定（単一・複数選択共通）
+ * 選択した全インデックスが正解インデックスと完全一致する場合のみ正解
+ * @param {number[]} selectedIndices - ユーザーが選択したインデックス配列
+ * @param {number[]} correctAnswers  - 正解インデックス配列
+ * @returns {boolean}
+ */
+export function isAnswerCorrect(selectedIndices, correctAnswers) {
+  if (selectedIndices.length !== correctAnswers.length) return false;
+  const selectedSet = new Set(selectedIndices);
+  return correctAnswers.every(i => selectedSet.has(i));
 }
