@@ -1041,6 +1041,526 @@
       ],
       "answers": [0, 1, 2, 3],
       "explanation": "AWS Security Hubの機能：(1)CSPM（Cloud Security Posture Management）：GuardDuty・Inspector・Macie・Config・IAM Access Analyzerの検出結果をASFF（Amazon Security Finding Format）で正規化して一元集約。(2)セキュリティ標準：AWS FSBP（基本セキュリティプラクティス）・PCI DSS・NIST SP 800-53・CIS AWS Foundations Benchmarkの自動チェックとコンプライアンススコア。(3)Organizations統合：委任管理者アカウント（通常Security/Audit アカウント）から全メンバーアカウントの検出結果を集約。(4)EventBridge Rulesで高重要度の検出結果を自動的にSNS通知・Lambda修復に連携。"
+    },
+    {
+      "id": "SAP-081",
+      "category": "アーキテクチャ設計",
+      "question": "AWS Well-Architected FrameworkのOperational Excellence Pillarの設計原則として正しいものはどれか？",
+      "choices": [
+        "インフラをコードとして定義し（IaC）、小規模で頻繁にリバーシブルな変更を行い、失敗を予測して対応プロシージャを文書化する",
+        "Operational Excellenceは人手によるオペレーション管理を最大化して品質を高める",
+        "変更は大きなバッチでまとめて適用してオペレーションコストを削減する",
+        "Operational Excellenceは一度設定したら変更しないシステムを目指す"
+      ],
+      "answers": [0],
+      "explanation": "Operational Excellence Pillarの設計原則：(1)Perform operations as code：CloudFormation・CDK・TerraformでインフラをIaCで管理。(2)Make frequent, small, reversible changes：大きなバッチより小さく頻繁なリリースでリスクを低減し、失敗時に即座にロールバック。(3)Refine operations procedures frequently：GameDays・Runbooks・Playbooksで継続的に改善。(4)Anticipate failure：事前障害分析（Pre-mortem）でリスクを特定し、対応プロセスを事前に文書化。(5)Learn from all operational failures：インシデント後のレトロスペクティブで学習。人手を最大化はアンチパターン（自動化を推奨）。"
+    },
+    {
+      "id": "SAP-082",
+      "category": "ネットワーキング",
+      "question": "Amazon Route53のジオプロキシミティルーティングポリシーの説明として正しいのはどれか？",
+      "choices": [
+        "リソースの地理的位置に基づいてトラフィックをルーティングし、バイアス値でルーティング境界を調整できる",
+      "ジオプロキシミティルーティングはAWSリソースにのみ対応しオンプレミスIPには使用できない",
+        "ジオプロキシミティルーティングはユーザーの位置情報を使わずにランダムにルーティングする",
+        "ジオプロキシミティルーティングとジオロケーションルーティングは同一の機能"
+      ],
+      "answers": [0],
+      "explanation": "Route53ジオプロキシミティルーティング：(1)ユーザーのDNSリクエスト元の位置とリソースの地理的位置の距離に基づいてルーティング。(2)バイアス（Bias）値を+/-設定することで特定リソースへのルーティング範囲を拡大・縮小できます。例えばUS-East-1のリソースのバイアスを+50にするとUS-East-1に割り当てられる地理的範囲が拡大します。(3)AWSリソース（リージョンで指定）とオンプレミスリソース（緯度経度で指定）の両方に対応。ジオロケーションルーティングは国・大陸・デフォルトでルーティングするポリシー（プロキシミティとは異なる）。"
+    },
+    {
+      "id": "SAP-083",
+      "category": "コンテナ・サーバーレス",
+      "question": "Amazon EKSでのKarpenterを使ったノードプロビジョニングの利点として正しいものはどれか？",
+      "choices": [
+        "Podのリソース要件をリアルタイムで分析して必要なインスタンスタイプを直接EC2にプロビジョニングし、Cluster Autoscalerより高速・効率的",
+        "KarpenterはAWSが提供する標準のKubernetesクラスターオートスケーラーでCluster Autoscalerと全く同一",
+        "Karpenterはノードの追加のみをサポートし、不要ノードの削除（scale-in）はできない",
+        "Karpenterを使うとEKSのノードグループが不要になりAWS管理コンソールが利用できなくなる"
+      ],
+      "answers": [0],
+      "explanation": "KarpenterはAWS開発のオープンソースKubernetesノードオートスケーラーです。Cluster Autoscaler（CA）との比較：(1)Karpenter：PodのPendingを検出→必要なCPU/メモリ・GPU・アーキテクチャ要件を分析→最適なインスタンスタイプを直接EC2 API経由でプロビジョニング（数秒で起動可能）。(2)Cluster Autoscaler：事前定義されたNode GroupのMin/Max内でスケール。インスタンスタイプはNode Groupで固定。Karpenterのメリット：30秒以内のノード起動（CAは数分）・Spotのインスタンスタイプ多様化・不要ノードの自動統合（Consolidation）。"
+    },
+    {
+      "id": "SAP-084",
+      "category": "データ管理",
+      "question": "AWS Glue Data Qualityで定義できるルールタイプとして正しいものをすべて選べ。",
+      "choices": [
+        "IsComplete（NULL率チェック）",
+        "IsUnique（重複チェック）",
+        "ColumnValues between（値範囲チェック）",
+        "DataFreshness（データの新鮮度チェック）"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS Glue Data Quality（DQDL: Data Quality Definition Language）で定義できるルール：(1)IsComplete：列のNULL率チェック（例：IsComplete \"order_id\"でNULLなし）。(2)IsUnique：重複値チェック（例：IsUnique \"customer_id\"）。(3)ColumnValues：値範囲・パターン・参照リスト（例：ColumnValues \"amount\" between 0 and 10000）。(4)DataFreshness：列の最新タイムスタンプが指定時間内か（例：DataFreshness \"event_time\" <= 1 days）。他にもCustomSQL・ReferentialIntegrity・RowCountMatch等のルールタイプがあります。"
+    },
+    {
+      "id": "SAP-085",
+      "category": "セキュリティ",
+      "question": "AWS Organizations でService Control Policies（SCP）を使うときの重要な動作として正しいものはどれか？",
+      "choices": [
+        "SCPは許可を付与するのではなく上限を設定する。IAMがAllowでもSCPがない（もしくはDenyの）場合はアクセス拒否される",
+        "SCPはIAMポリシーを置き換えてSCPだけでアクセスを管理できる",
+        "SCPはルートユーザーのアクションには適用されない",
+        "SCPはOrganizations管理アカウント自身にも自動的に適用される"
+      ],
+      "answers": [0],
+      "explanation": "SCP（Service Control Policies）の重要な動作：(1)フィルタリング：SCPはメンバーアカウントのIAMエンティティ（ユーザー・ロール）の最大権限を制限します。SCPがs3:PutObjectを許可していなければ、IAMポリシーがAllowでもアクセスは拒否されます（IAMとSCPのAND条件）。(2)SCPはIAMの代替ではなく追加レイヤー：SCPだけでは何も許可されず、IAMポリシーも必要。(3)ルートユーザーにも適用：SCPはOrganizationsのメンバーアカウントのルートユーザーにも適用されます（AWSサービスの一部操作を除く）。(4)管理アカウントにはSCPは適用されません。"
+    },
+    {
+      "id": "SAP-086",
+      "category": "高可用性・耐障害性",
+      "question": "Amazon Aurora PostgreSQLのBabelfish機能の説明として正しいのはどれか？",
+      "choices": [
+        "T-SQL（SQL Server）の文法・ストアドプロシージャ・ドライバー互換を提供してSQL ServerアプリをAurora PostgreSQLに最小限の変更で移行できる",
+        "BabelfishはAurora MySQLのOracle互換モード",
+        "BabelfishはAuroraの言語翻訳（多言語UIサポート）機能",
+        "BabelfishはSQL ServerのAWS完全互換マネージドサービス"
+      ],
+      "answers": [0],
+      "explanation": "Babelfishは Amazon Aurora PostgreSQLに組み込まれたSQL Server互換レイヤーです。機能：(1)TDS（Tabular Data Stream）プロトコル：SQL Serverのネイティブワイヤープロトコルに対応するため、既存のSQL Serverドライバー（JDBC・ODBC・ADO.NET）をそのまま使用可能。(2)T-SQL：SQL ServerのTransact-SQL文法（一部サポート）でクエリ・ストアドプロシージャを実行。(3)Aurora PostgreSQLとして動作するため、PostgreSQLのPostgreSQL方言でも接続可能（デュアルエンドポイント）。SQL Server → Aurora PostgreSQLの移行コストと複雑さを大幅削減できます。"
+    },
+    {
+      "id": "SAP-087",
+      "category": "コスト最適化",
+      "question": "Amazon EC2のSpotインスタンスの中断（Interruption）の処理方法として正しいものはどれか？",
+      "choices": [
+        "Spot Instance Interruption Notice（2分前のシグナル）をCloudWatch Events/EventBridgeで捕捉して処理中の作業をチェックポイント保存し、グレースフルシャットダウンを行う",
+        "Spotインスタンスが中断された場合、AWSが自動的に処理を別インスタンスで再実行する",
+        "Spotインスタンスの中断は3日前に通知されるため事前準備が十分にできる",
+        "EC2 Auto ScalingグループはSpotの中断を検出できずOn-Demandへの切り替えが遅れる"
+      ],
+      "answers": [0],
+      "explanation": "Spot Instance Interruption Noticeの処理：(1)Spotインスタンスが中断される2分前にEC2メタデータサービス（169.254.169.254/latest/meta-data/spot/interruption-action）とEventBridgeイベントで通知が送られます。(2)アプリケーションはこの通知をフックして処理中の作業をS3・DynamoDB等にチェックポイント保存し、グレースフルに接続をドレインして停止します。(3)Auto Scalingグループは中断を自動検出して代替インスタンスを起動します。(4)AWS EC2 Spot Advisor・Spot placement scoreで中断頻度の低いインスタンスタイプ・AZを選択することで中断リスクを低減できます。"
+    },
+    {
+      "id": "SAP-088",
+      "category": "アーキテクチャ設計",
+      "question": "オブザーバビリティ（Observability）の3本柱として正しいのはどれか？",
+      "choices": [
+        "Metrics（メトリクス）・Logs（ログ）・Traces（トレース）の3つの柱でシステムの内部状態を観測する",
+        "CloudWatch・GuardDuty・SecurityHubの3サービスがオブザーバビリティの3本柱",
+        "CPU・メモリ・ディスクの3種類のメトリクスがオブザーバビリティの3本柱",
+        "モニタリング・アラート・ダッシュボードの3機能がオブザーバビリティの3本柱"
+      ],
+      "answers": [0],
+      "explanation": "オブザーバビリティの3本柱（Three Pillars of Observability）：(1)Metrics（メトリクス）：時系列の数値データ（CPU使用率・エラー率・レイテンシ等）でシステムの健全性を定量化。AWSではCloudWatch Metrics。(2)Logs（ログ）：システムイベントの詳細な時系列記録。AWSではCloudWatch Logs・OpenSearch。(3)Traces（トレース）：リクエストのエンドツーエンドの処理フローを追跡して分散システムのボトルネックを特定。AWSではAWS X-Ray。AWS Distro for OpenTelemetry（ADOT）でこれらを統合収集できます。"
+    },
+    {
+      "id": "SAP-089",
+      "category": "移行",
+      "question": "AWS Migration Evaluatorを使った移行の事前評価で行えることとして正しいのはどれか？",
+      "choices": [
+        "オンプレミスのサーバー・VM・DBのサイジングと利用状況データを収集し、AWSでの推定コストとTCO（Total Cost of Ownership）削減効果をビジネスケースとして算出する",
+        "Migration EvaluatorはAWSへの実際のデータ移行を自動実行するツール",
+        "Migration EvaluatorはAWSコスト請求書の分析のみに使用する",
+        "Migration Evaluatorは移行後のAWSコストのみを計算しオンプレミスコストは含まない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Migration Evaluatorはクラウド移行のビジネスケースを作成するツールです：(1)現状分析：エージェントレスのコレクター（VMware vCenterやAD経由）でオンプレミスサーバーのCPU・メモリ・ストレージ・ネットワークの利用状況を2週間収集。(2)TCO計算：現在のオンプレミスTCO（ハードウェア・電気・人件費・施設コスト等）とAWSの推定コストを比較。(3)ビジネスケース：移行後のコスト削減・ROI・パイバックピリオドを算出してエグゼクティブ向けのレポートを生成。AWS Sales/Partner経由で利用できます。"
+    },
+    {
+      "id": "SAP-090",
+      "category": "データベース",
+      "question": "Amazon DocumentDBの説明として正しいものはどれか？",
+      "choices": [
+        "MongoDBワークロード互換のフルマネージドドキュメントデータベースで、AuroraのストレージアーキテクチャベースでMulti-AZ対応",
+        "DocumentDBはCassandra互換のNoSQLデータベース",
+        "DocumentDBはMongoDB 5.x以降の全機能と完全互換",
+        "DocumentDBはServerlessのみのデプロイメントオプションを提供する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon DocumentDBはMongoDB互換のフルマネージドドキュメントデータベースです：(1)MongoDB互換：MongoDB APIドライバー（pymongo等）でアクセス可能。ただしMongoDB 3.6・4.0のAPI互換（全機能ではない）。(2)Auroraアーキテクチャ：データは3AZに6コピーのSSD分散ストレージ（Aurora同様）で耐久性が高い。(3)スケーリング：最大15レプリカ・ストレージ自動スケール。(4)Serverlessオプション：DocumentDB Serverlessで消費ベースの自動スケール。(5)主なユースケース：コンテンツ管理・カタログ・ユーザープロファイル。Cassandra互換はAmazon Keyspacesです。"
+    },
+    {
+      "id": "SAP-091",
+      "category": "コンピュート",
+      "question": "AWS Outpostsの説明として正しいものはどれか？",
+      "choices": [
+        "オンプレミスのデータセンターに設置するAWS管理のラックで、AWS EC2・RDS・ECS・EKS・S3をオンプレミスで実行できる",
+        "OutpostsはオンプレミスのハードウェアをAWSからリモート管理するエージェント",
+        "Outpostsを使うとオンプレミスへのAWS APIリクエストがインターネット経由になる",
+        "Outpostsは全てのAWSサービスをオンプレミスで実行できる完全なAWS複製"
+      ],
+      "answers": [0],
+      "explanation": "AWS OutpostsはAWS設計のラックまたはサーバーハードウェアをお客様のデータセンターに設置し、AWSのインフラ・サービス・ツール・APIをオンプレミスで提供します。特徴：(1)AWSが設置・運用・監視・保守を担当。(2)AWSリージョンへのネットワーク接続（親リージョン）が必要（Outposts APIコールは親リージョンへ転送）。(3)対応サービス：EC2・ECS・EKS・RDS（MySQL/PostgreSQL）・ElastiCache・App Mesh・S3（S3 on Outposts）・MSK等。(4)レイテンシ要件（工場・病院・メディア制作等）やデータレジデンシー要件に適しています。全てのAWSサービスには未対応です。"
+    },
+    {
+      "id": "SAP-092",
+      "category": "セキュリティ",
+      "question": "AWS Macie の機密データ検出でサポートされるデータ識別子として正しいものをすべて選べ。",
+      "choices": [
+        "AWSが管理するManaged Data Identifiers（クレジットカード番号・個人識別情報等）",
+        "顧客が独自に定義できるCustom Data Identifiers（正規表現・キーワード）",
+        "機械学習で自動検出するML-Based Data Identifiers",
+        "Allow List（除外パターン）で誤検知を防ぐ除外リスト"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "Amazon Macieのデータ識別子：(1)Managed Data Identifiers（AWS管理）：100以上の組み込み識別子でクレジットカード番号・SSN・パスポート番号・AWSシークレットキー・OAuth トークン等を自動検出。(2)Custom Data Identifiers（顧客定義）：正規表現（regex）・キーワード・最大マッチ距離・除外テキストを定義して社内固有の機密パターンを検出。(3)Allow List：誤検知を防ぐための除外パターン（テストデータのダミーカード番号等）を定義。MLベースのidentifierは現在Macieの標準識別子とは別称で、Macieは主に正規表現ベースです。"
+    },
+    {
+      "id": "SAP-093",
+      "category": "ネットワーキング",
+      "question": "Amazon VPCのトランジットゲートウェイのルートテーブルとアタッチメントの関係として正しいのはどれか？",
+      "choices": [
+        "各アタッチメント（VPC・VPN・Direct Connect）はルートテーブルに関連付けられ、複数のルートテーブルで通信セグメンテーションを実現できる",
+        "Transit Gatewayには1つのルートテーブルのみ設定できる",
+        "Transit Gatewayのルートテーブルは自動的に全アタッチメント間の通信を許可する",
+        "Transit Gatewayはアタッチメントを追加するとデフォルトでフルメッシュ通信が設定される"
+      ],
+      "answers": [0],
+      "explanation": "Transit Gatewayのルートテーブルによるセグメンテーション：(1)複数のルートテーブル作成：例えば「Production RT」「Development RT」「Shared Services RT」を分けて作成。(2)アタッチメントの関連付け：各VPC/VPN接続を特定のルートテーブルに関連付けてルーティングを制御。(3)セグメンテーション例：本番VPCと開発VPCが同じルートテーブルを共有しないようにして直接通信を防ぐ（Shared ServicesのみDNS・AD等を共有）。デフォルトではアタッチメント追加時に自動的にルートが伝播されますが、セグメンテーション設計では明示的な設定が必要です。"
+    },
+    {
+      "id": "SAP-094",
+      "category": "コスト最適化",
+      "question": "AWS Cost Categories を使ったコスト配賦のベストプラクティスとして正しいのはどれか？",
+      "choices": [
+        "リソースタグ・アカウント・サービス・課金タイプを組み合わせたルールでコストを論理的にカテゴリ分け（部門・プロジェクト・環境別）してコスト配賦する",
+        "Cost CategoriesはAWS Organizationsの管理アカウントでのみ設定できる単純なアカウント分類",
+        "Cost Categoriesはアラートを生成するだけでコストレポートには反映されない",
+        "Cost CategoriesはAWS Budgetsとは統合されていない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Cost Categoriesのコスト配賦：(1)カスタムルール：タグ・アカウント・サービス・インスタンスタイプ・課金タイプ等の組み合わせ条件でコストを論理カテゴリに分類（例：タグenv=productionのリソースコストを「Production」カテゴリに）。(2)スプリットチャージ：共有リソース（NAT Gateway・Support料金等）のコストを複数カテゴリに比例配分（均等・比例・カスタム分割）。(3)Cost ExplorerとCost and Usage Reportに反映されてコスト配賦レポートを生成。(4)AWS BudgetsでCost Categoryにコスト予算アラートを設定可能。"
+    },
+    {
+      "id": "SAP-095",
+      "category": "移行",
+      "question": "オンプレミスのWindowsアプリケーションをAWSに移行する際のLicense Mobilityオプションとして正しいのはどれか？",
+      "choices": [
+        "MicrosoftのLicense Mobilityプログラムを使って、アクティブなSoftware AssuranceがあるSQL Server・SharePoint等のライセンスをAWSの専用ハードウェア（Dedicated Host）に適用できる",
+        "License MobilityはMicrosoft Office製品にも適用できる",
+        "License MobilityはShared Tenancyの通常EC2インスタンスに適用できる",
+        "BYOLはAWSのデフォルト課金モデルで全てのソフトウェアに追加費用なし"
+      ],
+      "answers": [0],
+      "explanation": "Microsoft License Mobilityを使ったAWS BYOL（Bring Your Own License）：(1)対象ライセンス：SQL Server・SharePoint・Exchange・System Center等のサーバーアプリケーション。Software Assurance（SA）が必要。(2)対象環境：AWS Dedicated Host（物理サーバー専有）またはDedicated Instances（物理的に分離されたハードウェア）。Shared Tenancyには適用不可（Microsoftの規約）。(3)Microsoft Officeはクライアントライセンスのため、License Mobilityの対象外（Microsoft 365はSaaSとして別途契約）。AWS License Managerで使用状況とライセンスコンプライアンスを追跡できます。"
+    },
+    {
+      "id": "SAP-096",
+      "category": "セキュリティ",
+      "question": "VPC Flow Logsを使った詳細なネットワーク分析のベストプラクティスとして正しいものはどれか？",
+      "choices": [
+        "VPC・サブネット・ENIレベルでFlow Logsを有効にし、拡張フォーマット（vpc-id・az-id・pkt-srcaddr等）でS3またはCloudWatch Logsに出力し、Athena・OpenSearchで分析する",
+        "VPC Flow LogsはVPCレベルでのみ設定でき、個別のENIには設定できない",
+        "VPC Flow Logsはリアルタイムでネットワークトラフィックをブロックできる",
+        "VPC Flow Logsにはデータの暗号化オプションがない"
+      ],
+      "answers": [0],
+      "explanation": "VPC Flow Logsのベストプラクティス：(1)レベル別設定：VPCレベル（全ENIを一括）・サブネットレベル・個別ENIレベルで設定可能。(2)拡張フォーマット：デフォルトの5タプル（src/dst IP・ポート・プロトコル）に加え、vpc-id・az-id・pkt-srcaddr（真の送信元IP）・pkt-dstaddr・traffic-path等を追加して詳細分析。(3)出力先：S3（Athena・Macie・OpenSearch Ingestion）またはCloudWatch Logs（Logs Insights）。(4)暗号化：S3出力時はSSE-KMS暗号化、CloudWatch Logs出力時はKMS暗号化を設定可能。Flow Logsは読み取り専用（ブロック不可）。"
+    },
+    {
+      "id": "SAP-097",
+      "category": "高可用性・耐障害性",
+      "question": "Amazon EBS のMulti-Attach機能の利用条件として正しいのはどれか？",
+      "choices": [
+        "io1またはio2ボリュームのみ対応し、同一AZ内の最大16インスタンスに同時アタッチ可能。クラスターアウェアなファイルシステム（OCFS2等）が必要",
+        "全EBSタイプ（gp2・gp3・io1・io2）でMulti-Attachが利用できる",
+        "Multi-Attachは最大64インスタンスへの同時アタッチが可能",
+        "Multi-AttachはWindowsインスタンスのみサポートしている"
+      ],
+      "answers": [0],
+      "explanation": "EBS Multi-Attachの制約：(1)対応タイプ：io1・io2（Provisioned IOPS）のみ。gp2/gp3/st1/sc1は非対応。(2)同時アタッチ数：同一AZ内の最大16個のEC2インスタンスに同時アタッチ可能。(3)ファイルシステム：複数インスタンスが同じストレージに同時書き込みする場合、クラスターアウェアなファイルシステム（OCFS2・GFS2・Lustre等）またはアプリケーションレベルの排他制御が必要（ext4等の通常FSは非対応）。(4)Linuxインスタンスのみサポート（Windowsは非対応）。主に高可用性クラスタリング（EC2クラスター）での共有ブロックストレージに使用。"
+    },
+    {
+      "id": "SAP-098",
+      "category": "ネットワーキング",
+      "question": "AWS PrivateLink を使って自社のSaaSアプリケーションをAWSマーケットプレイス経由で提供する際の構成として正しいのはどれか？",
+      "choices": [
+        "SaaSバックエンドをNLB配下に配置してVPC Endpoint Serviceを作成し、AWS Marketplaceにサービスを登録することでコンシューマーがVPCエンドポイント経由で安全に接続できる",
+        "PrivateLinkを使ったSaaS公開にはVPC Peeringが必須",
+        "AWS MarketplaceのPrivateLinkサービスはソースIPアドレスが必ず変換される",
+        "コンシューマーはInternet GatewayなしではPrivateLinkサービスにアクセスできない"
+      ],
+      "answers": [0],
+      "explanation": "AWS PrivateLinkを使ったSaaSサービス公開のアーキテクチャ：(1)プロデューサー側：アプリケーションサーバーをNLBの後ろに配置し、NLBをバックエンドとするVPC Endpoint Service（privatelink.amazonaws.com）を作成。(2)AWS Marketplace統合：Endpoint Serviceを AWS Marketplaceに登録してコンシューマーが購読できるようにする。(3)コンシューマー側：自社VPC内にInterface VPC Endpoint（ENI）を作成して接続。インターネット経由ではなくAWSネットワーク内での通信。(4)ソースIPはNLBのプライベートIPとして見える（元のIPは保持されない場合あり）。Internet Gatewayは不要です。"
+    },
+    {
+      "id": "SAP-099",
+      "category": "コンテナ・サーバーレス",
+      "question": "Amazon EventBridgeのスケジューラー（Scheduler）機能の説明として正しいのはどれか？",
+      "choices": [
+        "cron/rate式または特定の日時を指定して、Lambda・SQS・SNS・ECS・Step Functions等にスケジュールされたイベントを配信する一時スケジューラー",
+        "EventBridge Schedulerは既存のEventBridge Rulesのスケジュール機能と完全に同一",
+        "EventBridge Schedulerは1分以上の間隔のスケジュールのみサポートする",
+        "EventBridge Schedulerで作成したスケジュールは1回限りで繰り返しのスケジュールは作成できない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EventBridge Scheduler（2022年11月リリース）はスケジュール専用のサービスで、従来のEventBridge ScheduleRulesより高機能です：(1)スケジュールタイプ：Rate（固定間隔）・Cron（複雑な時間指定）・One-time（1回限り）の3種類。(2)柔軟な時間枠（Flexible Time Window）：指定した期間内で分散してジョブを実行（AWS Lambda同時実行のスパイク防止）。(3)大量スケジュール：100万以上のスケジュールを管理可能。(4)ターゲット：250以上のAWSサービスを直接ターゲットに設定。EventBridge Rulesのスケジュール機能より柔軟で機能が豊富です。"
+    },
+    {
+      "id": "SAP-100",
+      "category": "データ管理",
+      "question": "Amazon S3 Batch Operationsを使用して大量のS3オブジェクトに一括操作を実行する方法として正しいのはどれか？",
+      "choices": [
+        "S3 InventoryまたはCSVリストから対象オブジェクトを指定し、コピー・タグ付け・ACL変更・Lambda呼び出し・Glacier復元等を数十億オブジェクトに一括実行する",
+        "S3 Batch OperationsはEC2インスタンスを使って並列処理を行うサービス",
+        "S3 Batch Operationsはオブジェクトの削除のみをサポートする",
+        "S3 Batch Operationsは1回のジョブで最大1000オブジェクトにのみ操作できる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon S3 Batch Operationsはエクサバイト規模のS3オブジェクトへの一括操作を管理するサービスです：(1)対象オブジェクト指定：S3 Inventoryレポート（CSV/ORC/Parquet）またはカスタムCSVリストからオブジェクトを指定。(2)対応操作：Object Copy（バケット間コピー・ストレージクラス変更）・Object Tagging・Object Restore（Glacierからの復元）・Object ACL設定・Lambda関数呼び出し（カスタム処理）・S3 Object Lockコンプライアンス設定。(3)スケール：1ジョブで数十億オブジェクト・エクサバイト規模のデータを並列処理。(4)進捗追跡・完了通知が自動提供。"
+    },
+    {
+      "id": "SAP-101",
+      "category": "アーキテクチャ設計",
+      "question": "マルチリージョンのActive-Activeアーキテクチャで、DynamoDB Global TablesとRoute53のルーティングを組み合わせた構成として正しいのはどれか？",
+      "choices": [
+        "Route53のLatency Based RoutingまたはGeoproximityルーティングで各リージョンのALBにトラフィックを分散し、DynamoDB Global Tablesが各リージョンへの書き込みを自動レプリケートする",
+        "マルチリージョンActive-ActiveにはRoute53 Failoverルーティングのみが使用できる",
+        "DynamoDB Global Tablesではリージョン間でトランザクション（TransactWrite）が実行できる",
+        "マルチリージョンのDynamoDB Global Tablesは単一リージョンより必ず高コスト"
+      ],
+      "answers": [0],
+      "explanation": "マルチリージョンActive-Activeアーキテクチャ：(1)ルーティング：Route53のLatency Based Routing（低レイテンシリージョンに転送）またはGeoproximity Routing（地理的最近接リージョン）でトラフィックを分散。Health CheckでUnhealthyなリージョンを自動除外。(2)DynamoDB Global Tables：各リージョンのAPIサーバーが同じリージョンのDynamoDBに書き込み、自動的に他のリージョンに非同期レプリケート（LWW競合解決）。(3)トランザクション：TransactWriteは単一リージョン内のみ（クロスリージョントランザクションは不可）。グローバルActiveActiveは結果整合性で動作します。"
+    },
+    {
+      "id": "SAP-102",
+      "category": "移行",
+      "question": "AWS Application Discovery Service（ADS）のエージェントレスディスカバリーとエージェントベースディスカバリーの違いとして正しいのはどれか？",
+      "choices": [
+        "エージェントレスはVMwareのvCenter APIでVM情報（CPU・メモリ・OS）を収集し、エージェントベースはサーバーにインストールして詳細な依存関係・プロセス情報を収集する",
+        "エージェントベースは仮想環境にのみ対応し、物理サーバーはエージェントレスのみ",
+        "エージェントレスはLinuxのみ対応しWindowsサーバーはエージェントが必要",
+        "両方式のデータはMigration Hubではなく直接AWSコンソールに送信される"
+      ],
+      "answers": [0],
+      "explanation": "Application Discovery Service（ADS）の2方式：(1)エージェントレスディスカバリー：VMware vCenterに接続してホスト・VM・ネットワーク・ストレージ情報を取得。エージェントのインストール不要。VM単位のメトリクス（CPU・メモリ・ネットワーク）を収集可能。プロセスレベルの依存関係は不明。(2)エージェントベースディスカバリー：サーバー（Windows・Linux）にADS Agentをインストール。プロセス・ネットワーク接続・システムパフォーマンスを詳細収集。ネットワーク依存関係マップを構築してアプリケーショングルーピングが可能。収集データはMigration Hubに集約されます。"
+    },
+    {
+      "id": "SAP-103",
+      "category": "コスト最適化",
+      "question": "AWS Cost and Usage Report（CUR）の活用方法として正しいものはどれか？",
+      "choices": [
+        "最も詳細なコスト・使用量データをS3に出力し、AthenaやQuickSightで高度なコスト分析・ダッシュボード構築ができる",
+        "CURはリアルタイムのコストアラートのみに使用するサービス",
+        "CURはAWSのサポート料金とリザーブドインスタンスの情報を除外している",
+        "CURのデータは30日ごとに自動的に削除される"
+      ],
+      "answers": [0],
+      "explanation": "AWS Cost and Usage Report（CUR）はAWSの最も詳細なコスト・使用量データを提供します：(1)粒度：時間・日・月単位でのリソースレベルの詳細なコスト・使用量・タグ情報。(2)データ内容：RI・Savings Plans適用後の有効コスト・ブレンドレート・非ブレンドレート・使用量・タグ等の全情報を含む。(3)出力先：S3バケットにCSV/Parquet形式で自動エクスポート。Athenaでクエリ・QuickSightでダッシュボード・Grafanaでの可視化が可能。(4)Cost Explorerよりも粒度が細かくカスタム分析に最適。データは自動削除されず、設定したS3ライフサイクルポリシーに従います。"
+    },
+    {
+      "id": "SAP-104",
+      "category": "セキュリティ",
+      "question": "AWS Network Firewallのステートフルルールエンジン（Suricata）の説明として正しいのはどれか？",
+      "choices": [
+        "Suricataルール形式でネットワークシグネチャ・プロトコル識別・TLSインスペクション等の高度なL7ルールを定義できる",
+        "ステートフルルールエンジンはICMPのみをサポートする",
+        "SuricataルールはAWSがマネージドで提供するもののみ使用可能でカスタムルールは作成できない",
+        "Network FirewallのステートフルエンジンはWAFの代替サービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS Network Firewallのステートフルルールエンジン（Suricata互換）：(1)Suricataルール形式：open-sourceのIDSエンジンSuricataのルール文法を使ってシグネチャを定義。カスタムルールの作成が可能。(2)対応機能：プロトコル識別（HTTP・HTTPS・DNS・SMBの深部検査）・ペイロードパターンマッチング・SSL/TLSインスペクション（TLS1.3に対応）・マルウェアシグネチャ。(3)Managed Rule Groups：AWS・Cyber Security AリストのManaged Suricataルールグループを購読して利用可能（追加料金）。(4)WAFは主にHTTP/HTTPS L7で動作しますが、Network Firewallは全プロトコルのL3-L7に対応。"
+    },
+    {
+      "id": "SAP-105",
+      "category": "高可用性・耐障害性",
+      "question": "Amazon CloudFrontのオリジンフェイルオーバーの設定として正しいのはどれか？",
+      "choices": [
+        "オリジングループにプライマリとセカンダリオリジンを設定し、プライマリが指定したHTTPステータスコード（4xx・5xx等）を返した場合にセカンダリに自動フェイルオーバーする",
+        "CloudFrontはヘルスチェックなしでオリジンフェイルオーバーを自動実行する",
+        "オリジンフェイルオーバーはCloudFrontのPOSTリクエストにのみ適用される",
+        "フェイルオーバー後はプライマリオリジンが回復してもセカンダリに固定される"
+      ],
+      "answers": [0],
+      "explanation": "CloudFrontオリジンフェイルオーバーの設定：(1)オリジングループ：プライマリとセカンダリのオリジンを1つのグループにまとめる。(2)フェイルオーバー条件：プライマリオリジンが接続タイムアウト・指定したHTTPステータスコード（500・502・503・504等）を返したときにセカンダリへ自動切り替え。(3)対応メソッド：GET・HEAD・OPTIONSのみ（POST・PUT等の書き込みメソッドは非対応）。(4)プライマリ回復：次のリクエストからプライマリへの試行が再開されます（固定はされない）。Route53ヘルスチェックと組み合わせてALB→CloudFrontの多段フェイルオーバーを構成できます。"
+    },
+    {
+      "id": "SAP-106",
+      "category": "データ管理",
+      "question": "Amazon ElastiCache for RedisのGlobal Datastoreの説明として正しいのはどれか？",
+      "choices": [
+        "プライマリリージョンとセカンダリリージョン間でRedisクラスターを非同期レプリケートし、セカンダリはリードレプリカとして機能してDRとリード負荷分散に使用できる",
+        "Global Datastoreはマルチリージョンのアクティブ-アクティブ書き込みをサポートする",
+        "Global Datastoreを使うとセカンダリリージョンへのフェイルオーバーが自動的に行われる",
+        "Global DatastoreはRedisのMemcachedモードのみに対応する"
+      ],
+      "answers": [0],
+      "explanation": "ElastiCache Global Datastoreの特徴：(1)クロスリージョンレプリケーション：プライマリリージョン（書き込み）からセカンダリリージョン（読み取り専用レプリカ）に非同期レプリケート（レプリケーションラグ通常1秒以内）。(2)読み取り低レイテンシ：各リージョンのアプリケーションがローカルのRedisレプリカから低レイテンシで読み込み。(3)DR：プライマリリージョン障害時にセカンダリリージョンをプライマリに昇格（手動フェイルオーバー）。(4)書き込みはプライマリリージョンのみ（アクティブ-アクティブ書き込みは非対応）。最大2つのセカンダリリージョンをサポート。"
+    },
+    {
+      "id": "SAP-107",
+      "category": "移行",
+      "question": "大規模移行プロジェクトでAWS Landing Zoneを設計する際の考慮事項として正しいものをすべて選べ。",
+      "choices": [
+        "セキュリティ・ログアーカイブ・共有サービス等の専用アカウントを設計する",
+        "AWS Organizationsのアカウント構造（OU設計）を事前に設計する",
+        "Transit GatewayまたはAWS PrivateLinkでのネットワーク接続方式を決定する",
+        "IAM Identity Centerでのシングルサインオンと権限管理を設計する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS Landing Zone設計の主要要素：(1)アカウント設計：Management（管理）・Log Archive（ログ集中）・Security/Audit（セキュリティ監視）・Shared Services（DNS・AD・CI/CD共有）・Sandbox（実験）等の専用アカウントを設計。(2)OU設計：機能別（環境別・部門別）のOU階層でSCPを効果的に適用。(3)ネットワーク：Transit Gateway + Direct Connect/VPNのハブスポーク設計。VPCのCIDR設計とIPAM管理。(4)IAM Identity Center：SSO・権限セット・ADとの統合。(5)AWS Control Towerを使えばこれらを半自動で設定できます。"
+    },
+    {
+      "id": "SAP-108",
+      "category": "コンピュート",
+      "question": "AWS EC2 Imagebuilderの主な機能として正しいものはどれか？",
+      "choices": [
+        "AMI（Amazon Machine Image）の作成・テスト・配布を自動化するCI/CDパイプラインをマネージドで提供する",
+        "EC2 Image BuilderはDockerコンテナイメージのビルドに使用する",
+        "EC2 Image BuilderはEC2インスタンスのリアルタイムパッチ適用サービス",
+        "EC2 Image BuilderはAMIのコストを自動的に最小化するサービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS EC2 Image BuilderはゴールデンAMI作成の自動化パイプラインです：(1)パイプライン定義：ベースAMI（AWS提供またはカスタム）・ビルドコンポーネント（パッケージインストール・設定適用・セキュリティハードニング）・テストコンポーネント（自動テストスクリプト）を定義。(2)自動化：スケジュールまたはトリガーでAMIをビルド→テスト→配布。Systems Manager Automationで実行。(3)CISベンチマーク等のセキュリティハードニングコンポーネントを組み込める。(4)マルチリージョン・マルチアカウントへのAMI配布が可能。コンテナイメージはAWS CodeBuild・ECRが担当。"
+    },
+    {
+      "id": "SAP-109",
+      "category": "セキュリティ",
+      "question": "クロスアカウントのIAMロールの引き受け（AssumeRole）の仕組みとして正しいのはどれか？",
+      "choices": [
+        "信頼されるアカウント（Trusted Account）のIAMエンティティがSTS AssumeRoleAPIを呼び出して信頼するアカウント（Trusting Account）のロールを一時的に引き受けることができる",
+        "クロスアカウントAssumeRoleではIAMユーザーのアクセスキーを相手アカウントに送付する必要がある",
+        "AssumeRoleで取得した一時認証情報の最大有効期間は1時間で延長できない",
+        "クロスアカウントAssumeRoleはAWS Organizationsのメンバーアカウント間のみ利用可能"
+      ],
+      "answers": [0],
+      "explanation": "クロスアカウントAssumeRoleの仕組み：(1)信頼ポリシー：ターゲットアカウント（Trusting）のIAMロールの信頼ポリシーに「Principal: ソースアカウントのARN」を指定。(2)STS AssumeRole呼び出し：ソースアカウント（Trusted）のIAMエンティティがsts:AssumeRole APIを呼び出して一時的な認証情報（Access Key・Secret Key・Session Token）を取得。(3)外部ID（ExternalId）：第三者SaaSとの連携でConfused Deputy攻撃を防ぐために使用。(4)有効期間：デフォルト1時間、最大12時間（ロール設定で延長可能）。Organizationsに関係なく任意のアカウント間で使用可能。"
+    },
+    {
+      "id": "SAP-110",
+      "category": "ネットワーキング",
+      "question": "Amazon CloudFront のキャッシュポリシーとオリジンリクエストポリシーの違いとして正しいのはどれか？",
+      "choices": [
+        "キャッシュポリシーはCloudFrontがレスポンスをキャッシュする際のキャッシュキー（ヘッダー・クッキー・クエリ文字列）を定義し、オリジンリクエストポリシーはオリジンに転送する追加ヘッダーを定義する",
+        "キャッシュポリシーとオリジンリクエストポリシーは同一の設定",
+        "オリジンリクエストポリシーはCloudFrontのTTL（キャッシュ有効期間）を設定するポリシー",
+        "キャッシュポリシーを設定するとオリジンリクエストポリシーは無効になる"
+      ],
+      "answers": [0],
+      "explanation": "CloudFrontポリシーの使い分け：(1)キャッシュポリシー（Cache Policy）：CloudFrontがレスポンスをキャッシュする際の「キャッシュキー」を定義します。同じキャッシュキーを持つリクエストは同じキャッシュを返します。TTL（min/default/max）も設定。ヘッダー・クッキー・クエリ文字列をキャッシュキーに含める項目を選択。(2)オリジンリクエストポリシー（Origin Request Policy）：キャッシュキーには含まれないが、オリジンには転送したいヘッダー（User-Agent・Accept-Language等）を定義。キャッシュヒット率とオリジン情報伝達のバランスを最適化します。"
+    },
+    {
+      "id": "SAP-111",
+      "category": "高可用性・耐障害性",
+      "question": "Amazon Aurora のフォワードリード機能（Forward Read）の説明として正しいのはどれか？",
+      "choices": [
+        "Auroraのリードレプリカが最新の書き込みデータを含む結果を返すために、プライマリからのレプリケーションラグを補正してより整合性の高い読み取りを提供するセッションレベルの設定",
+        "Forward Readはプライマリノードへの書き込みを転送するロードバランシング機能",
+        "Forward Readを有効にするとリードレプリカのコストが2倍になる",
+        "Forward ReadはAurora MySQLのみでAurora PostgreSQLは未対応"
+      ],
+      "answers": [0],
+      "explanation": "Aurora Forward Read Replication（旧Fast Forward Read）は、Auroraリードレプリカがプライマリからのレプリケーションラグを認識して、ラグ分のトランザクションをプライマリから取得して補正読み取りを提供するオプションです。これによりリードレプリカでも「最新」に近いデータを読み取ることが可能になります。アプリケーションがセッション変数（aurora_replica_read_consistency=CONSISTENCY_SESSION等）で設定します。Aurora MySQL・PostgreSQL両方でサポートされています。"
+    },
+    {
+      "id": "SAP-112",
+      "category": "コスト最適化",
+      "question": "Amazon EC2 Instance Savings Plans（EC2 Instance SP）とCompute Savings Plans（Compute SP）の違いとして正しいものはどれか？",
+      "choices": [
+        "EC2 Instance SPは特定のファミリーとリージョンにコミットする最大割引（72%）、Compute SPはファミリー/リージョン/OS/テナント/ECS/Fargate/Lambdaに柔軟に適用できる割引（66%）",
+        "EC2 Instance SPの方がCompute SPより割引率が低い",
+        "Compute SPはEC2のみに適用されRDSには使用できない",
+        "EC2 Instance SPとCompute SPは同一の割引率で機能も同じ"
+      ],
+      "answers": [0],
+      "explanation": "Savings Plans比較：EC2 Instance Savings Plans：特定のEC2インスタンスファミリー（例：m5）とリージョン（例：us-east-1）にコミットする代わりに最大72%割引（標準RIと同等）。インスタンスサイズ・OS変更には対応（ファミリーとリージョンは固定）。Compute Savings Plans：インスタンスファミリー・リージョン・OS・テナント変更に全て対応し、ECS（Fargate）・Lambda・SageMakerにも適用できる最も柔軟なプランで最大66%割引。Compute SPは適用範囲が広い分、EC2 Instance SPより割引率が若干低くなります。"
+    },
+    {
+      "id": "SAP-113",
+      "category": "移行",
+      "question": "AWS Application Migration Service（MGN）を使った移行のテストカットオーバーと本番カットオーバーの流れとして正しいのはどれか？",
+      "choices": [
+        "エージェントインストール後に継続的なレプリケーションを開始し、テスト用インスタンスを起動して動作確認後、本番カットオーバーで移行完了インスタンスを起動してソースを停止する",
+        "MGNは本番カットオーバーのみをサポートし、テストカットオーバーは別途AWS DMSで実施する",
+        "カットオーバー時にはソースサーバーを先に停止してからAWSインスタンスを起動する",
+        "MGNのレプリケーションは1時間ごとのスナップショットのみでリアルタイムレプリケーションは不可"
+      ],
+      "answers": [0],
+      "explanation": "AWS MGN（Application Migration Service）の移行フロー：(1)エージェントインストール：ソースサーバーにMGN Agentをインストールして継続的なブロックレベルレプリケーションを開始（ソースを稼働させたまま）。(2)テストカットオーバー：テスト用のEC2インスタンスを起動して動作確認（ソースは継続稼働）。テスト完了後にテストインスタンスを削除。(3)本番カットオーバー：ソースのトラフィックをAWSに切り替えて本番インスタンスを起動。ソースへの変更がAWSに同期されたことを確認後にソースを停止。(4)レプリケーションはリアルタイムのブロックレベル同期。"
+    },
+    {
+      "id": "SAP-114",
+      "category": "コンテナ・サーバーレス",
+      "question": "Amazon ECS Service Connectの説明として正しいのはどれか？",
+      "choices": [
+        "ECSサービス間の通信にプロキシ（Envoy互換）を透過的に挿入してサービスディスカバリー・ロードバランシング・メトリクス収集を提供するECS統合サービスメッシュ",
+        "Service ConnectはVPC Peeringを使ってECSクラスター間の通信を確立する",
+        "Service ConnectはALBとNLBを組み合わせてECSサービスを公開するためのロードバランサー設定",
+        "Service ConnectはECS CloudMapの完全な置き換えで Cloud Mapは不要になる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon ECS Service ConnectはECSに統合されたサービスメッシュ機能です（2022年12月リリース）：(1)透過的プロキシ：Envoyプロキシをサイドカーとして各ECSタスクに自動注入（コード変更不要）。(2)サービスディスカバリー：名前空間ベースでサービスをDNS名で解決（service.namespace形式）。(3)組み込みロードバランシング：Envoyがサービスインスタンス間でラウンドロビン分散。(4)オブザービリティ：接続メトリクス（リクエスト数・エラー率・レイテンシ）がCloudWatchに自動送信。AWS App Meshより簡単に設定できECS特化の機能です。Cloud Mapとの共存も可能。"
+    },
+    {
+      "id": "SAP-115",
+      "category": "データ管理",
+      "question": "Amazon Keyspacesの説明として正しいのはどれか？",
+      "choices": [
+        "Apache Cassandra互換のサーバーレスNoSQLデータベースで、CQL（Cassandra Query Language）でアクセス可能",
+        "Amazon KeyspacesはAmazon DynamoDBの別名",
+        "KeyspacesはCassandraの全機能（軽量トランザクション・チェンジデータキャプチャ等）を完全サポート",
+        "KeyspacesはKeyValue型のデータのみを保存できる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon KeyspacesはフルマネージドのサーバーレスCassandra互換データベースです：(1)CQL互換：CassandraネイティブドライバーとアプリケーションコードをほぼそのままAWSに移行可能。(2)サーバーレス：オンデマンドモード（使用した読み書きキャパシティのみ課金）またはプロビジョニングモード。(3)主なユースケース：IoTデータ・時系列・ユーザープロファイル・大量書き込みのワイドカラムデータ。(4)Cassandraとの差異：軽量トランザクション（LWT）やCDCは一部サポートが限定的。AuroraやDynamoDBとは異なる独立したサービスです。"
+    },
+    {
+      "id": "SAP-116",
+      "category": "セキュリティ",
+      "question": "AWS Config RulesとAWS Config Conformance PacksのOrganizations全体への適用方法として正しいのはどれか？",
+      "choices": [
+        "Organizations Config Rulesをデプロイして全メンバーアカウントに一括でConfig Rulesを適用し、Conformance PacksでコンプライアンスフレームワークのルールをOrganization全体に展開する",
+        "Config RulesはOrganizations管理アカウントでのみ設定でき、メンバーアカウントには適用できない",
+        "Conformance Packsは1度設定すると変更不可のため慎重に設定する",
+        "AWS Config RulesはSCPと同様にアクションを直接防止する機能を持つ"
+      ],
+      "answers": [0],
+      "explanation": "AWS Config のOrganizations展開：(1)Organizations Config Rules（AWS OrganizationsとConfig の統合）：管理アカウントまたは委任管理者アカウントからOrganization全体・特定OU・特定アカウントにConfig Rulesを一括デプロイ。(2)Conformance Packs：複数のConfig Rules・修復アクション（SSM Automation）をパッケージ化したテンプレート。AWS提供（PCI DSS・HIPAA・CIS・NIST等）またはカスタムのConformance PacksをOrganization全体に展開可能。(3)Config Rulesはコンプライアンス状況の評価・報告をするが、アクションを防止（ブロック）するのではなく検出します（SCPやSGとは異なる）。"
+    },
+    {
+      "id": "SAP-117",
+      "category": "ネットワーキング",
+      "question": "AWS Wavelength の主な使用事例として正しいのはどれか？",
+      "choices": [
+        "5Gネットワークのキャリアの拠点（Wavelength Zone）にAWSのコンピュートとストレージを設置して、モバイルデバイス・IoTデバイスに1桁ミリ秒のレイテンシを提供する",
+        "WavelengthはAWSグローバルエッジネットワークのCloudFrontの別名",
+        "WavelengthはVPCを特定の波長帯のネットワーク通信に最適化するサービス",
+        "WavelengthはオンプレミスのデータセンターにAWSリソースを設置するOutpostsの後継"
+      ],
+      "answers": [0],
+      "explanation": "AWS WavelengthはAWSがキャリア（Verizon・KDDI等）の5G/LTE基地局（Mobile Edge Computing）に設置するAWSインフラです：(1)超低レイテンシ：モバイルデバイスから5G基地局→Wavelength Zone内のEC2/ECS/EKSまで1桁ミリ秒のレイテンシ（通常のAWSリージョンに比べて大幅削減）。(2)ユースケース：自動運転・リアルタイムゲーミング・工場のリアルタイム制御・AR/VR・ライブ動画処理。(3)VPCサブネット：WavelengthゾーンをサブネットとしてVPCに追加し、通常のVPCリソースと接続可能。CloudFront・Outpostsとは全く異なるサービスです。"
+    },
+    {
+      "id": "SAP-118",
+      "category": "アーキテクチャ設計",
+      "question": "ストラングラーフィグパターン（Strangler Fig Pattern）の説明として正しいのはどれか？",
+      "choices": [
+        "モノリシックなレガシーシステムを段階的にマイクロサービスに移行し、新機能をマイクロサービスとして実装してAPIゲートウェイでルーティングを切り替えながら最終的にモノリスを廃止する",
+        "Strangler Figパターンはデータベースのスキーマを段階的に変更する手法",
+        "Strangler Figパターンは全サービスを一度に新システムに切り替えるビッグバン移行",
+        "Strangler Figパターンはセキュリティ脆弱性のある依存関係を除去する手法"
+      ],
+      "answers": [0],
+      "explanation": "Strangler Fig Patternは段階的なシステム移行パターンです（Martin Fowlerが命名。イチジクの木が宿主を徐々に包み込む様子から）：(1)段階的移行：既存のモノリシックシステムを稼働させたまま、新機能をマイクロサービスとして実装。(2)ファサード層（APIゲートウェイ）：全リクエストをAPIゲートウェイまたはリバースプロキシが受け取り、移行済みのサービスへのルーティングを徐々に切り替え。(3)リスク軽減：ビッグバン移行（一括切り替え）と異なり、段階的にトラフィックを移行してリスクを分散。(4)AWS Migration Hubのマイクロサービス移行フレームワークにも採用されています。"
+    },
+    {
+      "id": "SAP-119",
+      "category": "高可用性・耐障害性",
+      "question": "AWS Fault Injection Simulator（FIS）を使ったカオスエンジニアリングの説明として正しいのはどれか？",
+      "choices": [
+        "実験テンプレートを定義してEC2・ECS・EKS・RDS・Network等への障害注入（CPU負荷・メモリ枯渇・AZ障害・ネットワーク遅延）を制御して実行し、システムの耐障害性を検証する",
+        "FISは本番環境では実行できず、ステージング環境のみで使用できる",
+        "FISを使うと自動的にインフラが壊れるため実験後に手動で復旧が必要",
+        "FISはEC2インスタンスのみをターゲットにできる"
+      ],
+      "answers": [0],
+      "explanation": "AWS Fault Injection Simulator（FIS）のカオスエンジニアリング：(1)実験テンプレート：AWSコンソール・SDKで障害シナリオ（どのリソースに・どんな障害を・何分間）を定義。(2)対応サービス：EC2（CPU負荷・停止）・ECS/EKS（タスク/Pod削除）・RDS（フェイルオーバー強制）・SSM（OS障害）・ネットワーク（レイテンシ・パケットロス追加）・AZ停止シミュレーション。(3)安全機構：Stop Conditions（CloudWatchアラームで実験を自動停止）・タイムアウトでリスクをコントロール。(4)本番・ステージング両方で実行可能（適切な安全機構が前提）。"
+    },
+    {
+      "id": "SAP-120",
+      "category": "コスト最適化",
+      "question": "AWS Graviton2/Graviton3ベースのインスタンスへの移行がコスト最適化に有効なユースケースとして正しいものをすべて選べ。",
+      "choices": [
+        "コンテナワークロード（ECS/EKSのFargate Graviton対応）",
+        "Lambda関数（ARM64アーキテクチャを選択）",
+        "Amazon RDS for MySQL/PostgreSQL（Graviton2ベースのdブランチインスタンス）",
+        "Amazon ElastiCache（Graviton2ベースインスタンス）"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Graviton（ARM64）対応のAWSサービス範囲：(1)ECS/EKS + Fargate：Graviton対応のコンテナイメージ（マルチアーキテクチャイメージ）で同等のワークロードを安価に実行。(2)Lambda ARM64：Lambda関数でArm64アーキテクチャを選択するとx86-64より最大20%コスト削減・パフォーマンス向上。(3)RDS for MySQL/PostgreSQL：db.m6g・db.r6g等のGraviton2インスタンスでx86比最大35%性能改善・コスト削減。(4)ElastiCache for Redis：Graviton2インスタンスタイプが利用可能。(5)その他：Aurora・OpenSearch・MSK等多くのマネージドサービスでGravitonが選択可能です。"
     }
   ]
 }
