@@ -1802,6 +1802,606 @@
       "answers": [0],
       "explanation": "AWS License Manager詳細：■機能：①ライセンスルール（License Configuration）の定義②例：SQL Server Standard：最大4ソケット・8コア③EC2インスタンス起動時にルールを評価・カウント④上限超過時のアクション：ブロック（ハードストップ）または通知のみ（ソフトストップ） ■対象ライセンスタイプ：①ソケット数（CPUソケット）②コア数（物理コア）③仮想CPU数④インスタンス数 ■Dedicated Host統合：①物理ホストのソケット/コア数を追跡②BYOL（Microsoft Windows Server・SQL Server等）のホストレベルライセンス管理③ホストリソースグループ：Auto Placement+License Manager追跡 ■Organizations統合：①管理アカウントからメンバーアカウントのライセンスを一元追跡②クロスアカウントのライセンス共有設定 ■AWS Marketplace統合：マーケットプレイス購入ライセンスをLicense Managerで追跡 ■コンプライアンスレポート：現在のライセンス使用状況→監査証跡 ■コスト：License Manager自体は無料（使用するEC2/DH料金は通常通り）。",
       "tags": ["License Manager", "BYOL", "ライセンス管理", "Dedicated Host"]
+    },
+    {
+      "id": "SOA-121",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Instance Connect と Systems Manager Session Manager の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "EC2 Instance ConnectはブラウザまたはCLIからSSHで一時的なOTPキーを生成してアクセスし、インターネット経由のアクセスにはセキュリティグループの22番ポートが必要。Session Managerはポート不要でプライベートサブネット内インスタンスにもアクセス可能で監査ログを保存できる",
+        "EC2 Instance ConnectとSession Managerは完全に同じ機能でコストのみが異なる",
+        "Session ManagerはSSHポートを使用するためセキュリティグループの設定が必要",
+        "EC2 Instance ConnectはWindowsのRDP接続のみをサポートしLinuxのSSHには対応していない"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Instance Connect vs Session Manager詳細：■EC2 Instance Connect：①ブラウザからワンクリックSSH（AWSコンソール）②CLIから：aws ec2-instance-connect send-ssh-public-key（OTPキー生成）→ssh接続③インターネット経由：セキュリティグループでポート22開放が必要④EC2 Instance Connect Endpoint（新機能）：プライベートサブネットにエンドポイントを作成→ポート22不要⑤インスタンスにAmazon Linux 2/Ubuntu等のみ（SSHサポートOS必要） ■Session Manager（SSM）：①ポート開放不要②プライベートサブネット：VPCエンドポイントまたはNAT GW経由③監査ログ：S3/CloudWatch Logsに全コマンド記録④IAM権限ベース（SSH鍵不要）⑤ポートフォワーディング：SSHトンネル代わり ■EC2 Instance Connect Endpoint（新機能）：①プライベートサブネットにEICEを作成②VPC内のEC2にインターネット経由でSSH接続可能（ポート22開放不要）③対象：Linux（SSH）/Windows（RDP）■推奨：本番環境→Session Manager（監査・セキュリティ）、開発環境→いずれも可。",
+      "tags": ["EC2", "Instance Connect", "Session Manager", "セキュアアクセス"]
+    },
+    {
+      "id": "SOA-122",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch の EMF（Embedded Metric Format）を使用してLambda関数からカスタムメトリクスをコスト効率よく送信する方法として正しいものはどれですか？",
+      "choices": [
+        "EMFはLambdaのStdoutに特定JSONフォーマットで出力するだけでCloudWatch Logsエージェントが自動的にメトリクスを抽出・送信し、PutMetricData APIと比較してAPI呼び出しコストとレイテンシを削減できる。Lambda Powertoolsのmetricsユーティリティが推奨",
+        "EMFはEC2のCloudWatch Agentのみが処理できる形式でLambdaでは使用できない",
+        "EMFを使用するとCloudWatch Logsへの書き込みが禁止され、メトリクスのみに変換される",
+        "EMFはJSON形式のログをCloudWatchダッシュボードに自動表示する機能"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch EMF（Embedded Metric Format）詳細：■仕組み：①Lambda→stdout（print/console.log）で特定のJSON構造を出力②CloudWatch Logsエージェント（Lambda側で自動）がEMFを検出③非同期でCloudWatch Metricsに自動変換④ログイベントとして保存（検索可能）+メトリクスとして記録 ■EMF JSON構造例：{'_aws':{'Timestamp':1234567890,'CloudWatchMetrics':[{'Namespace':'MyApp','Dimensions':[['Service','Region']],'Metrics':[{'Name':'Latency','Unit':'Milliseconds'}]}]},'Service':'api-gateway','Region':'ap-northeast-1','Latency':127} ■Lambda Powertools（Python/TypeScript/Java）：①@metrics.log_metrics デコレータ②add_metric('Latency', MetricUnit.Milliseconds, 127)③自動EMF形式出力 ■PutMetricData API比較：①PutMetricData：同期API呼び出し→レイテンシ・スロットリング懸念②EMF：非同期・Logs経由→オーバーヘッドなし・スロットリングなし ■コスト：①EMF：CloudWatch Logs書き込みコスト+Metricコスト（同額だがAPIスロットリングなし）②ハイパフォーマンス関数での大量メトリクス送信に特に有効。",
+      "tags": ["CloudWatch", "EMF", "Lambda", "カスタムメトリクス"]
+    },
+    {
+      "id": "SOA-123",
+      "category": "EBS",
+      "difficulty": 2,
+      "question": "Amazon EBS の Multi-Attach 機能の制限と適用ケースとして正しいものはどれですか？",
+      "choices": [
+        "EBS Multi-Attachはio1/io2ボリュームのみで利用可能で、最大16のEC2インスタンスに同一ボリュームをアタッチできる。ただしクラスター対応のファイルシステム（OCFS2等）が必要で、通常のLinuxファイルシステム（ext4/XFS）は複数ホストからの同時書き込みに対応していない",
+        "EBS Multi-AttachはgpボリュームでもIO最大化のために複数EC2に同時アタッチできる",
+        "Multi-Attachを使用するとAWSが自動的にデータ整合性を保証し特別なファイルシステムは不要",
+        "Multi-AttachはWindowsとLinuxの両方でAWSが保証するSMBプロトコルで共有できる"
+      ],
+      "answers": [0],
+      "explanation": "EBS Multi-Attach詳細：■前提条件：①ボリュームタイプ：io1またはio2（Provisioned IOPS SSD）のみ②インスタンスタイプ：Nitroベース③同一AZ内のインスタンスのみ（クロスAZは不可）④最大同時アタッチ：16インスタンス ■必要なファイルシステム（クラスター対応）：①OCFS2（Oracle Cluster File System）②GFS2（Red Hat Global File System）③コマンドライン：mkfs.ocfs2 /dev/xvdf等 ■なぜ通常FSは不使用：①ext4/XFS：シングルホスト前提の設計②Journal/キャッシュが複数ホストでコンフリクト③データ破損の可能性 ■ユースケース：①高可用性データベースクラスター（同一データへの複数ノードアクセス）②Oracle RAC等のクラスターDB③HA共有ストレージ（Pacemaker/Corosync） ■EFSとの違い：①EFS：NFS・マネージド・多数インスタンスから接続・大容量②EBS Multi-Attach：ブロックストレージ・同一AZ・高IOPS・専用クラスターFS必要 ■代替：FSxfor ONTAP（NFS/SMB/iSCSI対応のマネージドNAS）。",
+      "tags": ["EBS", "Multi-Attach", "クラスター", "共有ストレージ"]
+    },
+    {
+      "id": "SOA-124",
+      "category": "Systems Manager",
+      "difficulty": 2,
+      "question": "AWS Systems Manager の Change Manager を使用して変更管理プロセスを実装する際の設定として正しいものはどれですか？",
+      "choices": [
+        "Change Managerは変更リクエストの作成・承認ワークフロー・変更の実行（SSM Automation）・変更ログの一元管理を提供し、承認者へのSNS通知・変更ウィンドウの制御・本番環境への変更プロセスのガバナンスを実現する",
+        "Change ManagerはAWS Configの代替でリソースの設定履歴を管理するサービス",
+        "Change Managerはコードの変更のみを管理しインフラの変更は対象外",
+        "Change Managerの承認プロセスを省略してすぐに変更を実行することは一切できない"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager Change Manager詳細：■コンポーネント：①Change Template（変更テンプレート）：変更の標準手順を定義（自動承認/手動承認/緊急）②Change Request（変更リクエスト）：テンプレートから実際の変更を申請③Approver（承認者）：IAMユーザー/グループ/OpsCenter統合④Change Calendar（変更カレンダー）：変更禁止期間の設定 ■ワークフロー：①変更リクエスト作成→Requestedステータス②承認者にSNS通知③承認後→Approvedステータス→実行可能④Runbook実行（SSM Automation）⑤変更完了→Completedステータス ■承認設定：①必要承認数：1名/2名等②並列承認/順次承認③自動承認テンプレート（開発環境）：承認不要で即実行 ■Drift Detection統合：変更前後にAWS ConfigドリフトをDetect③通知 ■Organizations対応：管理アカウントから全メンバーアカウントの変更管理を一元化 ■Change Calendarとの統合：本番デプロイ禁止期間（年末年始・セール期間等）を設定→禁止期間中のChange Requestは自動ブロック。",
+      "tags": ["Systems Manager", "Change Manager", "変更管理", "承認ワークフロー"]
+    },
+    {
+      "id": "SOA-125",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon RDS の Enhanced Monitoring（拡張モニタリング）とCloudWatch標準メトリクスの違いとして正しいものはどれですか？",
+      "choices": [
+        "拡張モニタリングはRDSインスタンス内のエージェントがOSレベルのメトリクス（プロセスごとのCPU・メモリ・ファイルシステム・IO等）を1秒間隔で収集してCloudWatch Logsに送信し、CloudWatch標準メトリクス（5分間隔・ハイパーバイザーレベル）では取得できない詳細情報を提供する",
+        "拡張モニタリングはCloudWatch標準メトリクスと完全に同じ情報を収集する",
+        "拡張モニタリングを有効にするとCloudWatch標準メトリクスが自動的に無効化される",
+        "拡張モニタリングはAurora DBクラスターには使用できない"
+      ],
+      "answers": [0],
+      "explanation": "RDS Enhanced Monitoring詳細：■収集頻度：①CloudWatch標準：1分（デフォルト）または5分②拡張モニタリング：1秒〜60秒（設定可能）③データ保存先：CloudWatch Logs（RDSOSMetrics）→標準のMetricsコンソールではなくLogsで確認 ■追加メトリクス：①プロセスリスト：CPUとメモリを消費しているプロセス（mysqld/postgres/OS自体等）②ファイルシステム：マウントポイントごとの使用量③ネットワーク：受信/送信バイト・パケット④ディスク：読み書きIOPS・スループット ■ハイパーバイザーメトリクス vs OS内エージェント：①標準：ハイパーバイザーがVMの平均を測定→正確でない場合あり②拡張：OS内エージェントが実際のプロセスを測定→より正確なCPU利用 ■設定：①Enable Enhanced Monitoring: YES②Monitoring Interval: 1/5/10/15/30/60秒③IAMロール：rds-monitoring-role（自動作成）④追加コスト：CloudWatch Logsのデータ転送・保存料金 ■Performance Insightsとの使い分け：①拡張モニタリング：OSレベルの詳細②Performance Insights：SQLクエリレベルのDBLoad分析。",
+      "tags": ["RDS", "Enhanced Monitoring", "OS監視", "プロセス監視"]
+    },
+    {
+      "id": "SOA-126",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "AWS Global Accelerator と CloudFront の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Global AcceleratorはAWSのグローバルネットワーク（Anycast IP）でTCP/UDP/HTTPを高速化しエンドポイント間のフェイルオーバーを提供、CloudFrontはHTTP/HTTPSのコンテンツキャッシュとエッジ配信に特化。静的コンテンツ→CloudFront、動的コンテンツ/低レイテンシ要件→Global Accelerator",
+        "Global AcceleratorとCloudFrontは完全に同じ機能でコストのみが異なる",
+        "Global AcceleratorはS3の静的コンテンツ配信に最適化されCloudFrontよりも低コスト",
+        "CloudFrontはTCPとUDPの両方をサポートするためゲームサーバーの最適化にはCloudFrontを使用する"
+      ],
+      "answers": [0],
+      "explanation": "Global Accelerator vs CloudFront詳細：■Global Accelerator：①Anycast IP（2つの静的IPでどのエッジから受信しても同じIP）②TCP/UDP対応（L4レベル）③AWSバックボーン経由で最速経路③エンドポイント：EC2/ELB/EIP/NLB（複数リージョン対応）④ヘルスチェック：障害時に自動フェイルオーバー（30秒以内）⑤IPキャッシング不要（ALBと異なり固定IP）⑥ユースケース：ゲームサーバー（UDP）・IoT・VoIP・動的アプリ ■CloudFront：①キャッシュ（HTTPコンテンツを世界のPoP）②L7（HTTP/HTTPS/WebSocket）③動的コンテンツも転送可（キャッシュヒットしない場合もエッジ→オリジン間はAWSバックボーン）④Lambda@Edge/CloudFront Functions⑤WAF統合⑥ユースケース：静的ウェブサイト・VOD・ライブ配信・APIキャッシュ ■比較：①どちらもAWSバックボーンを使用②CloudFront：キャッシュ効果が高いHTTPSコンテンツ③Global Accelerator：静的IPが必要・非HTTPSプロトコル・動的コンテンツ（低レイテンシ）。",
+      "tags": ["Global Accelerator", "CloudFront", "CDN", "エッジ最適化"]
+    },
+    {
+      "id": "SOA-127",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 インスタンスのリタイアメント（Retirement）通知への対応方法として正しいものはどれですか？",
+      "choices": [
+        "EC2インスタンスのリタイアメント通知（基礎となるハードウェアの劣化）を受けたら、EBSバックドインスタンスは停止→起動（Stop/Start）で別のホストに自動移行し、インスタンスストアバックドは終了して新規作成が必要。AWS Healthからの通知をEventBridge経由でLambdaが自動処理可能",
+        "リタイアメント通知を受けた場合、インスタンスを再起動するだけで問題が解決する",
+        "リタイアメントはAWSが完全に自動処理するためユーザーは何も対応不要",
+        "EBSバックドインスタンスのリタイアメントはAMIを再作成してから対応する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Retirement対応詳細：■リタイアメント通知：①AWS Health（Personal Health Dashboard）からメール・PHDに通知②原因：ホストサーバーのハードウェア劣化・修復不可 ■対応方法（EBSバックドインスタンス）：①Stop（停止）→Start（起動）：新しいホストに自動マイグレーション②再起動（Reboot）では新ホストに移行されない③EIP/Elastic Network Interfaceはそのまま維持 ■対応方法（インスタンスストアバックドインスタンス）：①インスタンスを終了して新規作成②インスタンスストアデータは失われる（S3等への事前バックアップが必要） ■自動化：①EventBridge：aws.health→EC2 Scheduling Change→Lambda②Lambda：Stop→Start APIを自動実行③Auto Scaling Group：自動でターミネート→新インスタンス起動 ■RetiredAt日時：PHDに表示される強制リタイア日（それまでに対応しないとAWSが強制終了）■CloudWatch Alarmの自動復旧（recover）：System Status CheckFailed時に自動的に別ホストへ移行（リタイアメントとは異なるアクション）。",
+      "tags": ["EC2", "Retirement", "AWS Health", "ホスト移行"]
+    },
+    {
+      "id": "SOA-128",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の Glacier の3種類（Glacier Instant Retrieval / Glacier Flexible Retrieval / Glacier Deep Archive）の違いとして正しいものはどれですか？",
+      "choices": [
+        "Glacier Instant Retrievalはミリ秒で取り出し（最も高いGlacierストレージコスト）、Glacier Flexible Retrievalは数分〜数時間（Expedited/Standard/Bulk）で取り出し、Glacier Deep Archiveは最も安価で12〜48時間での取り出しを提供する",
+        "3種類のGlacierは取り出し速度のみが異なり、ストレージコストは全て同一",
+        "Glacier Instant Retrievalの取り出しには24時間かかる",
+        "Glacier Deep Archiveからの取り出しは常に即時でコストが最も高い"
+      ],
+      "answers": [0],
+      "explanation": "S3 Glacier 3種類詳細：■Glacier Instant Retrieval：①取り出し時間：ミリ秒（即時）②ストレージコスト：$0.004/GB/月（Glacierの中で最高）③最低保存期間：90日④ユースケース：医療画像・ニュースメディア等の年1〜2回アクセスがあるアーカイブ ■Glacier Flexible Retrieval（旧S3 Glacier）：①取り出し時間：Expedited（1〜5分/高コスト）・Standard（3〜5時間/中コスト）・Bulk（5〜12時間/最低コスト）②ストレージコスト：$0.0036/GB/月③最低保存期間：90日④ユースケース：バックアップ・災害復旧・コンプライアンス要件 ■Glacier Deep Archive：①取り出し時間：Standard（12時間）・Bulk（48時間）②ストレージコスト：$0.00099/GB/月（全S3クラスで最安）③最低保存期間：180日④ユースケース：金融・医療・規制要件による長期保管（7〜10年）⑤コスト比較：Standard($0.023/GB) vs Deep Archive($0.00099/GB)→96%削減 ■Lifecycle Policy：Standard→Instant→Flexible→Deep Archiveの自動移行設定。",
+      "tags": ["S3", "Glacier", "アーカイブ", "コスト最適化"]
+    },
+    {
+      "id": "SOA-129",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation の Service Role（サービスロール）を設定する際の最小権限の実装として正しいものはどれですか？",
+      "choices": [
+        "CloudFormation Service Roleを設定するとスタック操作（作成/更新/削除）をそのロールの権限で実行し、デプロイするユーザーはCloudFormation自体の権限のみ保持する。これにより実際のリソース操作権限をユーザーに付与せずにデプロイ可能になる",
+        "CloudFormation Service RoleはCloudFormationコンソールにのみ適用され、CLI/APIからの操作には影響しない",
+        "Service Roleを設定するとスタック内の全リソースが自動的にDeletionPolicy:Retainに設定される",
+        "CloudFormation Service RoleはAdministratorAccess権限が必必須で最小権限の設定はできない"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormation Service Role詳細：■動作：①スタック作成/更新/削除時にCloudFormationがService RoleをAssumeRole②リソース操作はService Roleの権限で実行③デプロイするIAMユーザー/ロールはCloudFormation API権限（cloudformation:Create/Update/DeleteStack）のみ必要 ■最小権限設計：①Service Role：テンプレートが使用するAWSリソースの権限のみ（例：EC2・RDS・IAMロール等）②デプロイユーザー：iam:PassRole（ServiceRoleをCFnに渡す権限）+ cloudformation:*③デプロイユーザーはEC2・RDSを直接操作する権限不要 ■ユースケース：①開発者がEC2/RDS作成権限なしに本番デプロイ②CI/CDパイプラインのサービスアカウントの権限最小化③マルチアカウント：権限境界をService Roleで制御 ■設定：①サービスロール（IAMロール）作成：Trust Policy：cloudformation.amazonaws.com②スタック作成/更新時：--role-arn arn:aws:iam::XXXX:role/CfnServiceRole③CloudFormationコンソール：Advanced options→IAM role ■PassRole権限：iam:PassRole（--role-arnで渡すRole ARNへの権限）が必要。",
+      "tags": ["CloudFormation", "Service Role", "最小権限", "ガバナンス"]
+    },
+    {
+      "id": "SOA-130",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 Auto Scaling の Predictive Scaling（予測スケーリング）の仕組みとして正しいものはどれですか？",
+      "choices": [
+        "Predictive ScalingはEC2使用パターンの過去データをMLで分析して将来の負荷を予測し、事前にインスタンスをスケールアウトすることでリアクティブスケーリングによるコールドスタート遅延を解消する。Forecast Onlyモードで予測確認後にForecast and Scaleに移行するのが推奨",
+        "Predictive ScalingはCloudWatchのAlarmに基づいてスケーリングを実行するため、Target Trackingと機能が重複する",
+        "Predictive Scalingは曜日・季節パターンを考慮せず過去7日間のデータのみを使用する",
+        "Predictive Scalingは定常的なトラフィックのアプリケーションに最適で、急激な変動には対応できない"
+      ],
+      "answers": [0],
+      "explanation": "Auto Scaling Predictive Scaling詳細：■仕組み：①過去14日間のEC2使用データ（CloudWatchメトリクス）をMLで分析②週次・日次・時間帯の周期パターンを学習③1時間ごとの予測スケジュールを48時間先まで生成④予測に基づいて事前にインスタンスをスケールアウト ■モード：①Forecast Only（評価用）：予測を表示するだけでスケーリングはしない→実際の使用量と比較②Forecast and Scale：予測に基づいて自動スケーリング③CapacityBuffer：予測値に追加バッファー（%）を設定 ■Target Trackingとの組み合わせ（推奨）：①Predictive：事前スケール（予測ベース）②Target Tracking：リアクティブ対応（実際の負荷対応）③両方設定時：どちらか高い方のDesired Capacityを採用 ■前提：14日以上のデータが必要（データ不足時は精度が低下）■ユースケース：①毎朝9時のトラフィック増加②週末の利用パターン③月末・月初の処理集中 ■制限：急激な予測外スパイクはTarget Trackingで対応（Predictiveは予測困難）。",
+      "tags": ["Auto Scaling", "Predictive Scaling", "ML予測", "スケーリング"]
+    },
+    {
+      "id": "SOA-131",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch の Log Insights を使用してAWS WAFログのSQLインジェクション試行を分析するクエリとして正しいものはどれですか？",
+      "choices": [
+        "filter action='BLOCK' and terminatingRuleId like /SQL/ | stats count(*) as blockCount by httpRequest.clientIp | sort blockCount desc | limit 20のようなクエリでブロックされたSQLインジェクション試行を試みたIPアドレスを特定できる",
+        "CloudWatch Logs InsightsはAWS WAFのログを分析できず、WAF専用の分析ツールが必要",
+        "WAFログの分析はAthenaのみで行え、CloudWatch Logs Insightsは使用できない",
+        "Logs InsightsのクエリはJavaScript形式で記述する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Logs Insights WAF分析詳細：■WAFログ設定：①CloudWatch Logs・S3・Kinesis Data Firehoseに送信可能②ログを有効化：WAF Web ACL→Logging→Enable ■CloudWatch Logs Insights有用クエリ：①ブロック上位IP：filter action='BLOCK' | stats count(*) by httpRequest.clientIp | sort desc②特定ルールのブロック：filter terminatingRuleId='AWSManagedRulesSQLiRuleSet' | stats count() by httpRequest.uri③エラーレート分析：stats count(httpRequest.requestId) by action | sort desc④時系列分析：filter action='BLOCK' | stats count(*) by bin(5m)⑤Geo分析：filter action='BLOCK' | stats count(*) by httpRequest.country ■WAFログフィールド：action/terminatingRuleId/terminatingRuleGroupId/httpRequest.clientIp/httpRequest.uri/httpRequest.requestId ■S3+Athena分析：①WAFログをS3に保存②Athena CREATE TABLE EXTERNAL（WAFパーティション化）③複雑な集計・長期データ分析 ■AWS WAF Security Automations（CDK）：自動的にOpenSearch/Athena/Glueで分析パイプラインを構築。",
+      "tags": ["CloudWatch Logs", "WAF", "セキュリティ分析", "SQLインジェクション"]
+    },
+    {
+      "id": "SOA-132",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Instance Store（インスタンスストア）の特徴と適切な使用ケースとして正しいものはどれですか？",
+      "choices": [
+        "Instance StoreはEC2ホストに物理的に接続されたNVMeストレージで超低レイテンシ・高IOPS（EBSより高い場合あり）を提供するが、インスタンスを停止または終了するとデータが消失する。バッファ・キャッシュ・一時ファイル・一時データの保存に適している",
+        "Instance StoreデータはEC2インスタンスを停止しても保持され、次回起動時にデータにアクセスできる",
+        "Instance StoreはEBSより常に高コストで特殊な用途のみに使用するべき",
+        "Instance Storeのデータは毎日自動的にS3にバックアップされる"
+      ],
+      "answers": [0],
+      "explanation": "Instance Store詳細：■特徴：①物理的にEC2ホストサーバーに接続されたディスク（SSDまたはHDD）②EC2インスタンスの一部として提供（別途料金なし）③超低レイテンシ（NVMeの場合マイクロ秒）・高IOPS（i3.16xlarge: 3.3M IOPS）④EBSより高IOPSを達成できるインスタンスタイプあり（i3/d3/c5d等）⑤一時的（Ephemeral）：停止・終了・ハードウェア障害でデータ消失 ■データ保持：①再起動（Reboot）：データ保持②停止（Stop）：データ消失③終了（Terminate）：データ消失④ホスト障害：データ消失 ■対応インスタンス：①i3/i4i：NVMeストレージ特化②c5d/m5d/r5d：-dサフィックスがインスタンスストア付き③d3：HDDインスタンスストア（ビッグデータ向け）④d3en：超大容量HDD ■ユースケース：①ElasticSearchのインデックス（S3にバックアップあり）②Kafkaのログストレージ③一時的なMapReduceの中間ファイル④Redisキャッシュ（AOFなし）⑤バッファ・スクラッチスペース ■RAID 0：複数Instance Storeを束ねてより高IOPS。",
+      "tags": ["EC2", "Instance Store", "NVMe", "一時ストレージ"]
+    },
+    {
+      "id": "SOA-133",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC の Shared VPC（共有VPC）を使用してOrganizations内の複数アカウントでVPCリソースを共有する設定として正しいものはどれですか？",
+      "choices": [
+        "Resource Access Managerを使用してVPCサブネットを他のアカウントに共有し、共有先アカウントがそのサブネットにEC2/RDS等を起動できる。中央アカウントがVPCを管理し他アカウントはリソースのみ管理するコスト効率の高いマルチアカウント設計が実現できる",
+        "Shared VPCはVPCピアリングの別名で、VPCを2つのアカウント間で共有する機能",
+        "Shared VPCを使用すると共有先アカウントがVPCのルートテーブルやセキュリティグループを変更できる",
+        "Shared VPCには最大5アカウントまでしか共有できない"
+      ],
+      "answers": [0],
+      "explanation": "Shared VPC（VPC Sharing）詳細：■設定：①AWS RAM（Resource Access Manager）を使用②VPC所有アカウント（Network Account）からサブネットを共有③共有先アカウントをOrganizations内のメンバーに指定④共有サブネットに共有先アカウントがEC2/RDS等を起動 ■権限の分離：①Network Account（VPC所有者）：VPC・サブネット・ルートテーブル・NACL・IGW等を管理②参加アカウント（Participant）：共有サブネット内のリソース（EC2・RDS等）を起動・管理③セキュリティグループ：Participantアカウントが自分のSGを作成（他アカウントのSGは参照のみ）④IPアドレス割り当て：VPC CIDR内から自動割り当て ■メリット：①VPCピアリングよりシンプル（推移的ルーティングが不要）②IPアドレス枯渇防止（VPCを集約）③Network専任チームがネットワーク設計を一元管理 ■Organization共有：①Organizations全体またはOUにOPT-IN設定②RAM Resource Shareで具体的なサブネットを指定 ■注意：VPC FlowLogsはNetwork Accountで収集、参加アカウントからも送信設定可能。",
+      "tags": ["VPC", "Shared VPC", "RAM", "マルチアカウント"]
+    },
+    {
+      "id": "SOA-134",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "AWS X-Ray を使用してマイクロサービスの分散トレースを実装する際の設定として正しいものはどれですか？",
+      "choices": [
+        "X-Ray SDKをアプリケーションに組み込んでトレースを生成し、X-Rayデーモン（EC2/ECS）またはX-Rayエンドポイント（Lambda）にセグメントデータを送信。Trace ID/Segment/SubsegmentでリクエストのE2Eの処理時間を可視化しService MapでサービスグラフをCloudWatchに表示できる",
+        "X-Rayはログファイルのみを分析するサービスでアプリケーションコードの変更は不要",
+        "X-Rayはサーバーレス（Lambda）環境では使用できない",
+        "X-RayのService MapはCloudWatchとは独立したサービスで別のコンソールから確認する"
+      ],
+      "answers": [0],
+      "explanation": "X-Ray詳細：■コンポーネント：①X-Ray SDK（Java/Python/Node.js/Go/.NET/Ruby）：アプリコードに組み込み②X-Ray Daemon（EC2/ECS/Beanstalk）：UDP 2000ポートでセグメント受信→X-Ray APIに転送③Lambda：環境変数でX-Ray有効化→SDKなしでもActive Tracingで自動 ■データ構造：①Trace：1つのE2Eリクエスト②Segment：1サービスの処理（HTTP呼び出し・Lambda実行等）③Subsegment：Segment内の詳細（DynamoDBクエリ・外部HTTP呼び出し等）④Annotation（インデックス）：検索可能なキー/値⑤Metadata：詳細情報（検索不可） ■Trace Header：X-Amzn-Trace-Id（HTTP伝播） ■Service Map：①サービス間の依存関係グラフ②各ノードのエラー率・レイテンシ③CloudWatch Console→X-Ray Traces ■CloudWatch統合：①X-Ray Traces→CloudWatch Traces（統合）②Service Mapのノードからメトリクス・ログに直接ジャンプ ■サンプリング：デフォルト（1req/秒+5%）→パフォーマンス影響なし→カスタムルールで制御。",
+      "tags": ["X-Ray", "分散トレース", "Service Map", "マイクロサービス"]
+    },
+    {
+      "id": "SOA-135",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の Inventory（インベントリ）を使用してバケット内のオブジェクト情報を定期的に収集する設定として正しいものはどれですか？",
+      "choices": [
+        "S3 Inventoryはバケット内の全オブジェクト（またはプレフィックス指定）のメタデータ（サイズ・最終更新日・ストレージクラス・暗号化状態等）を毎日または毎週CSV/ORC/Parquet形式でS3バケットに出力し、Athenaでクエリして大規模なコスト分析や未暗号化オブジェクトの検出に使用できる",
+        "S3 InventoryはS3のアクセスログと同じ機能でどちらを使っても同じ情報が取得できる",
+        "S3 Inventoryは全てのオブジェクトをCSVで出力するため、特定プレフィックスやストレージクラスでのフィルタリングはできない",
+        "S3 Inventoryを有効にするとS3のパフォーマンスが低下する"
+      ],
+      "answers": [0],
+      "explanation": "S3 Inventory詳細：■設定：①ソースバケット：インベントリ取得対象②デスティネーションバケット：出力先③スケジュール：毎日（最初のレポートは48時間後）または毎週④スコープ：バケット全体またはプレフィックス指定⑤フォーマット：CSV/ORC（Apache ORC）/Parquet⑥フィールド選択：サイズ・最終更新日・ストレージクラス・ETagMD5・暗号化状態・レプリケーション状態・オブジェクトロック状態等 ■Athena連携：①デスティネーションバケットにAthenaTBL自動作成（Glue Crawler使用）②SELECT * FROM inventory WHERE encryption_status='NOT-SSE' で未暗号化オブジェクトを検出 ■S3 Batch Operations連携：①InventoryのCSVをBatch OperationsのマニフェストとしてS3 Batch Operationsを実行②例：未暗号化オブジェクトを一括でSSE-KMS暗号化 ■用途：①大規模バケットのコスト最適化（古いオブジェクトの発見）②コンプライアンス確認（全オブジェクトの暗号化確認）③S3 Batch Operationsのマニフェスト生成 ■注意：S3 Listより高速・低コスト（Listはリクエスト課金が多い）。",
+      "tags": ["S3", "Inventory", "Athena", "コンプライアンス"]
+    },
+    {
+      "id": "SOA-136",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2の Fleet（フリート）管理を使用してスポットとオンデマンドの混在環境を最適化する設定として正しいものはどれですか？",
+      "choices": [
+        "EC2 FleetまたはSpot Fleetで複数インスタンスタイプ・AZ・購入オプションの組み合わせを指定し、AllocationStrategyにpriceCapacityOptimizedを設定することでスポット中断リスクを低減しながらコストを最適化した混在フリートを管理できる",
+        "EC2 Fleetはスポットインスタンスのみで構成されオンデマンドとの混在は不可能",
+        "Spot FleetはAuto Scalingグループとは独立して動作し、Auto Scalingの機能は使用できない",
+        "priceCapacityOptimized戦略は常に最低価格のインスタンスタイプのみを選択する"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Fleet詳細：■EC2 Fleet：①複数インスタンスタイプ・AZ・購入オプション（On-Demand/Spot/Reserved）の混在②Target Capacity：On-Demand基本台数+Spot上限台数③Instantタイプ：同期APIコールで指定容量を瞬時プロビジョン ■Spot Fleet（旧API・引き続き使用可能）：①スポット中心の混在フリート②複数Spot poolsからの選択 ■Allocation Strategy：①diversified：複数プールに分散（中断リスク分散）②lowestPrice：最低価格のプールに集中（コスト最安）③priceCapacityOptimized（推奨）：価格とキャパシティ可用性のバランスを考慮した最適プール選択→中断リスクを低減しながらコスト最適化 ■On-Demand + Spot混在：①On-Demandは安定ベースライン（例：最小10台）②Spotは追加スケール（予算次第で0〜100台）③allocationStrategy: {onDemandAllocationStrategy: prioritized, spotAllocationStrategy: priceCapacityOptimized} ■Auto Scalingとの統合：①EC2 Auto Scaling Mixed Instances Policy：Launch Template + override（複数タイプ）②EC2 Fleetより上位レイヤー（スケーリング管理込み）。",
+      "tags": ["EC2 Fleet", "Spot Fleet", "Spot Instance", "コスト最適化"]
+    },
+    {
+      "id": "SOA-137",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "AWS Systems Manager Incident Manager を使用して重大インシデントへの対応を自動化する設定として正しいものはどれですか？",
+      "choices": [
+        "Incident ManagerはCloudWatch Alarmや EventBridge をトリガーとしてインシデントを自動作成し、On-call担当者への通知（PagerDuty/SMS/Email）・Runbookの自動実行・タイムライン記録・影響分析を提供する。事後分析（Post-Incident Analysis）も統合されている",
+        "Incident ManagerはCloudWatchのダッシュボードを作成するためのサービス",
+        "Incident Managerのインシデント作成はコンソールからの手動操作のみで自動化はできない",
+        "Incident ManagerはAWS外部のシステム（PagerDutyやOpsGenie等）への通知はサポートしない"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager Incident Manager詳細：■構成要素：①Response Plan：インシデント対応計画（Runbook・連絡先・エンゲージメント）②Contact Channel：SMS/Email/SSM OpsCenter通知③On-Call Schedule：オンコールシフト管理④Escalation Plan：一次担当不応答時のエスカレーション ■インシデントトリガー：①CloudWatch Alarm（ALARM状態）②EventBridge Rule③API（手動）：StartIncident API ■自動化フロー：①アラーム→インシデント自動作成②On-Call担当者へSMS/Email通知③Runbook自動起動（SSM Automation）→初期対応を自動実行（例：EC2再起動・スナップショット取得）④Timeline：全アクションが時系列で記録 ■チャットオプス：AWS Chatbot経由でSlack/Chime統合→Slackチャネルでインシデント管理・コマンド実行 ■関連リソース：インシデントに影響するEC2/RDS/ECS等を自動または手動で関連付け ■Post-Incident Analysis：根本原因・タイムライン・アクションアイテムのテンプレート→次回インシデント防止 ■OpsCenter連携：Incident ManagerからOpsCenter OpsItemを自動作成。",
+      "tags": ["Systems Manager", "Incident Manager", "インシデント対応", "自動化"]
+    },
+    {
+      "id": "SOA-138",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Systems Manager Run Command を使用して複数インスタンスに一括でコマンドを実行する設定として正しいものはどれですか？",
+      "choices": [
+        "Run CommandはSSMドキュメント（AWS-RunShellScript等）を指定してタグ/Resource Group/インスタンスIDで対象を選択し、コマンドを実行。出力はS3/CloudWatch Logsに保存でき、SSHなしで数千のインスタンスに同時にコマンドを送信できる",
+        "Run CommandはEC2インスタンスのSSHポートが開放されている必要がある",
+        "Run CommandはWindowsのみをサポートし、LinuxコマンドはSession Managerを使用する必要がある",
+        "Run Commandの実行結果はコンソールにのみ表示され、S3への保存は不可能"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager Run Command詳細：■ターゲット指定：①インスタンスID（特定のインスタンス）②タグ（Environment=production等）③Resource Group（特定グループのインスタンス全て）④ManualInstanceIds（手動リスト） ■主要ドキュメント：①AWS-RunShellScript（Linux）：任意のシェルコマンド②AWS-RunPowerShellScript（Windows）：PowerShellコマンド③AWS-UpdateSSMAgent：SSMエージェント更新④AWS-InstallApplication：ソフトウェアインストール ■出力設定：①コンソール（2500文字まで）②S3バケット（フル出力）③CloudWatch Logs（フル出力・リアルタイム） ■レート制御：①MaxConcurrency：同時実行インスタンス数（数値または%）②MaxErrors：許容エラー数（超過で実行停止）③Concurrency例：MaxConcurrency=10% → 全対象の10%が同時実行 ■ユースケース：①OSパッチ（yum/apt update）②アプリケーションデプロイ③設定変更（httpd.conf更新等）④ログ収集 ■Maintenance Window統合：定期メンテナンス時間帯にのみRun Commandを実行 ■EventBridge：Run Command実行結果→EventBridge→Lambda（後続処理）。",
+      "tags": ["Systems Manager", "Run Command", "一括実行", "管理自動化"]
+    },
+    {
+      "id": "SOA-139",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation の Condition 関数と Parameter を組み合わせて環境別（dev/staging/prod）のリソース作成を制御する方法として正しいものはどれですか？",
+      "choices": [
+        "ParameterでEnvironmentを定義し、ConditionsブロックでIsProd: !Equals [!Ref Environment, prod]を作成し、RDSインスタンスのMultiAZプロパティに!If [IsProd, true, false]を設定することで同一テンプレートで本番はMulti-AZ、開発環境はシングルを使い分けられる",
+        "CloudFormationのConditionsは作成/削除の制御のみで、プロパティ値の変更には使用できない",
+        "Conditionは一度設定すると変更できないため、環境変数よりも変更が困難",
+        "EnvironmentパラメータはIAMポリシーによって制御されるためCloudFormationテンプレートでは設定不要"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormation Conditions詳細：■定義場所：テンプレートのConditionsセクション ■条件関数：①Fn::Equals/!Equals：等価比較②Fn::And/!And③Fn::Or/!Or④Fn::Not/!Not⑤Fn::If/!If：条件分岐 ■環境別設定例：Conditions: IsProd: !Equals [!Ref Env, prod] IsDevOrStaging: !Or [!Equals [!Ref Env, dev], !Equals [!Ref Env, staging]]■リソースの条件付き作成：Resources: ElastiCacheCluster: Condition: IsProd Type: AWS::ElastiCache::ReplicationGroup→Prodのみ作成 ■プロパティの条件分岐：Properties: MultiAZ: !If [IsProd, true, false] InstanceClass: !If [IsProd, db.r5.large, db.t3.small]■Output/Mappings：OutValue: !If [IsProd, !GetAtt Prod.Arn, !GetAtt Dev.Arn] ■AWS::NoValue：!If [CreateS3Bucket, MyBucket, !Ref AWS::NoValue]→条件falseのときそのプロパティ自体を除外 ■実践：①1テンプレートで複数環境対応（DRY原則）②パラメータにAllowedValues: [dev, staging, prod]で値を制限。",
+      "tags": ["CloudFormation", "Conditions", "環境別設定", "パラメータ"]
+    },
+    {
+      "id": "SOA-140",
+      "category": "Cost Management",
+      "difficulty": 2,
+      "question": "AWS Service Quotas と Well-Architected Framework の信頼性の柱における制限管理の設定として正しいものはどれですか？",
+      "choices": [
+        "Service Quotasで現在の上限と使用率を監視し、使用率が高い場合はService Quotasコンソールから直接上限緩和申請を実施。CloudWatchアラームと連携して使用率が80%を超えたら自動通知し、Trusted Advisorのサービス制限チェックと組み合わせて制限超過による障害を未然に防ぐ",
+        "サービスクォータはAWS基盤の固定値で変更申請はサポートに電話するしかない",
+        "Service Quotasの監視はTrusted Advisorのみが担当しCloudWatchとの連携は不可能",
+        "Well-Architected Frameworkの信頼性の柱ではサービス制限を気にする必要がないと定義している"
+      ],
+      "answers": [0],
+      "explanation": "Service Quotas詳細：■Service Quotasコンソール：①全AWSサービスのソフト/ハードリミット一覧②現在の使用率と上限値を表示③上限緩和申請：コンソールから直接申請（サポートチケット不要に移行中）④申請履歴の追跡 ■CloudWatch統合：①ServiceQuotas→CloudWatch Alarmsの自動作成②使用率(%)がしきい値超過でアラート ③例：EC2同時実行数・Lambda同時実行数・VPC数 ■Trusted Advisorとの連携：①サービス制限チェック（Business/Enterpriseサポートのみ）②使用率80%以上：警告③使用率100%以上：エラー④EventBridgeでTrusted Advisor→Lambda→自動緩和申請 ■Well-Architected Reliability Pillar：①REL 1：使用量を監視して制限に対してのバッファを維持②REL 2：変更管理③REL 3：障害管理→クォータ枯渇も障害モードの一つとして管理 ■ソフトリミット vs ハードリミット：①ソフトリミット（Adjustable）：緩和申請可能②ハードリミット（Fixed）：変更不可（AWS設計上の制限）■自動緩和（Auto Quotas Increase）：一部クォータはしきい値超過で自動緩和申請が起動する設定が可能。",
+      "tags": ["Service Quotas", "クォータ管理", "CloudWatch", "信頼性"]
+    },
+    {
+      "id": "SOA-141",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon RDS の Parameter Group の設定とデータベースパフォーマンスチューニングとして正しいものはどれですか？",
+      "choices": [
+        "Parameter GroupはDBエンジンの設定値（MySQL: innodb_buffer_pool_size・max_connections・slow_query_log等）を管理し、静的パラメータの変更は再起動が必要・動的パラメータは即時適用。カスタムパラメータグループを作成してインスタンスにアタッチする",
+        "Parameter GroupはAWSが完全に管理しユーザーはパラメータを変更できない",
+        "デフォルトパラメータグループに直接変更を加えることができ、変更後は即座に全インスタンスに適用される",
+        "Parameter Groupの変更はRDSインスタンスの削除・再作成後にのみ適用される"
+      ],
+      "answers": [0],
+      "explanation": "RDS Parameter Group詳細：■カスタムパラメータグループ作成必須：①デフォルトParameterGroupは変更不可（読み取り専用）②カスタムParameterGroupを作成してインスタンスにアタッチ ■パラメータタイプ：①Static（静的）：変更後にDBインスタンスの再起動が必要②Dynamic（動的）：変更後に即時反映（再起動不要）③DBエンジン別タイプがある ■主要パラメータ（MySQL）：①innodb_buffer_pool_size：メモリの70〜80%を推奨②max_connections：最大接続数（RDS Proxy使用時は自動管理）③slow_query_log: 1 + long_query_time: 1（スロークエリログ）④innodb_flush_log_at_trx_commit: 2（パフォーマンス優先・安全性低下）⑤character_set_server: utf8mb4 ■Option Group：DBエンジンの追加機能（MySQL Memcached・Oracle SSL等）を有効化→Parameter Groupとは別設定 ■Aurora Parameter Group：①クラスターパラメータグループ：クラスター全体に適用②DBインスタンスパラメータグループ：インスタンス個別に適用 ■ベストプラクティス：①Performance Insights・Enhanced Monitoringで効果測定②パラメータ変更前後のベンチマーク比較。",
+      "tags": ["RDS", "Parameter Group", "パフォーマンスチューニング", "設定管理"]
+    },
+    {
+      "id": "SOA-142",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "AWS Private Link（インターフェイスVPCエンドポイント）を使用してカスタムサービスを安全に外部公開する設定として正しいものはどれですか？",
+      "choices": [
+        "Provider側でNLBの後ろにサービスを配置してVPC Endpoint Serviceを作成し、Consumer側でInterface VPC Endpointを作成してプライベートIPアドレス（ENI）経由でサービスにアクセスする。インターネットを経由しない安全な接続を実現できる",
+        "AWS Private LinkはAWSが提供するマネージドサービスへのアクセスのみで、カスタムサービスの公開には使用できない",
+        "PrivateLinkを使用するにはProviderとConsumerのVPCがピアリングされている必要がある",
+        "VPC Endpoint Serviceに接続するConsumer数は最大1アカウントに限定される"
+      ],
+      "answers": [0],
+      "explanation": "AWS PrivateLink（Endpoint Service）詳細：■Provider（サービス提供側）の設定：①NLBをサービスの前段に配置②VPC Endpoint Serviceを作成（NLBを指定）③アクセス許可：特定のAWSアカウントまたはOrganizations全体③プライベートDNS名の設定（オプション） ■Consumer（サービス利用側）の設定：①Interface VPC Endpointを作成②Provider側のEndpoint Service名を指定③プライベートDNS有効化（オプション）：サービスのDNS名がENIのIPに解決 ■特徴：①インターネット経由不要（プライベートネットワーク内）②VPCのCIDRが重複していても使用可能（Peeringは重複不可）③クロスアカウント：Consumer→Provider の単方向③マルチリージョン：同リージョン内のみ（クロスリージョンは不可） ■ユースケース：①SaaSサービスの安全な提供②企業内マイクロサービスのクロスアカウント共有③コンプライアンス要件（インターネット非経由） ■AWS Marketplace：PrivateLink対応サービスをマーケットプレイスで提供可能 ■Endpoint Service Policy：Consumerからのアクセスを細粒度制御。",
+      "tags": ["VPC", "PrivateLink", "Endpoint Service", "セキュア接続"]
+    },
+    {
+      "id": "SOA-143",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "Amazon S3 の Select（S3 Select）とGlacier Selectを使用してコスト効率よくデータを取得する仕組みとして正しいものはどれですか？",
+      "choices": [
+        "S3 SelectはCSV/JSON/Parquet形式のオブジェクト内でSQL式を使用してサーバーサイドでフィルタリングし、必要なデータのみを返すため転送データ量を削減できる。オブジェクト全体を取得してからフィルタリングするより高速・低コスト",
+        "S3 Selectはバケット内の全オブジェクトを横断してSQLクエリを実行するサービス",
+        "S3 Selectを使用するにはAthenaへのクエリを経由する必要がある",
+        "Glacier SelectはGlacier Flexible Retrievalのデータには対応しているがGlacier Deep Archiveには非対応"
+      ],
+      "answers": [0],
+      "explanation": "S3 Select詳細：■仕組み：①SELECT式：SELECT s.name FROM S3Object s WHERE s.age > 25②サーバーサイド処理：S3がオブジェクト内でフィルタリング→マッチした行のみを返す③クライアントへの転送：必要データのみ ■メリット：①転送コスト削減（不要なデータを取得しない）②レイテンシ削減（小さなペイロード）③クライアント処理コスト削減 ■サポート形式：①CSV（+GZIP/BZIP2圧縮）②JSON（Lines形式）③Parquet（列指向→効率的）④NULL 圧縮：Parquet+Snappy等 ■制限：①1オブジェクト内のSQL（クロスオブジェクトクエリ→Athena）②SQL：SELECT/WHERE/GROUP BY/基本集計のみ③最大入力オブジェクト：5GB ■Glacier Select：①Glacier Flexible Retrieval（旧S3 Glacier）のアーカイブ内でSelect可能②SQL実行→マッチデータのみを復元→大容量アーカイブの部分取得 ■Athenaとの使い分け：①S3 Select：単一オブジェクト・シンプルなフィルタ・SDK直接②Athena：複数オブジェクト・複雑なクエリ・JOINや集計・マネージド。",
+      "tags": ["S3", "S3 Select", "サーバーサイドフィルタ", "コスト最適化"]
+    },
+    {
+      "id": "SOA-144",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の インスタンスタイプの命名規則（例：m6g.2xlarge）の意味として正しいものはどれですか？",
+      "choices": [
+        "m（汎用）/c（コンピューティング最適化）/r（メモリ最適化）/i（ストレージ最適化）等のインスタンスファミリー、6（世代番号）、g（Graviton2 ARM）/d（インスタンスストア）/n（高ネットワーク）等の属性、2xlarge（インスタンスサイズ）の4要素で構成される",
+        "命名規則は単なる識別子でありパフォーマンス特性とは無関係",
+        "世代番号が大きいほど常に価格が高くなる",
+        "インスタンスサイズの2xlargeはvCPU数が2であることを示す"
+      ],
+      "answers": [0],
+      "explanation": "EC2 インスタンスタイプ命名規則詳細：■ファミリー：①m（General Purpose・バランス型）②c（Compute Optimized・CPU特化）③r（Memory Optimized・メモリ特化）④i（Storage Optimized・NVMe特化）⑤p/g（GPU・AI/ML）⑥inf（Inferentia・ML推論）⑦trn（Trainium・ML学習）⑧t（バースタブル）⑨mac（macOS） ■世代番号（Major）：①大きいほど新しい（c6→c7→c8）②新世代は通常コストパフォーマンス向上③同価格で高性能な場合が多い ■属性（Processor/Storage等）：①a=AMD（c5a）②g=Graviton（c6g/m6g）③i=Intel（m6i）④n=High Bandwidth（c6in）⑤d=インスタンスストア（m5d）⑥b=ブロックストレージ最適化⑦e=大容量メモリ/ストレージ（r7iz等） ■サイズ：nano<micro<small<medium<large<xlarge<2xlarge<4xlarge<8xlarge<12xlarge<16xlarge<24xlarge<32xlarge<metal ■vCPU数：おおよそサイズに比例（large≈2vCPU、2xlarge≈8vCPU等、ファミリーによって異なる）。",
+      "tags": ["EC2", "インスタンスタイプ", "命名規則", "ファミリー"]
+    },
+    {
+      "id": "SOA-145",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC の IPv6 アドレス設計と既存IPv4 VPCへのIPv6対応追加手順として正しいものはどれですか？",
+      "choices": [
+        "既存VPCにIPv6 CIDR（/56）を割り当て（AWSから自動割り当て）、各サブネットに/64を割り当て、パブリックサブネットにはIGWのIPv6ルート（::/0→IGW）、プライベートサブネットにはEgress-Only IGWのIPv6ルートを追加し、インスタンスのセキュリティグループにIPv6ルールを追加する",
+        "既存のIPv4 VPCにIPv6を追加すると既存のIPv4設定が全て無効化される",
+        "AWS VPCのIPv6 CIDRはユーザーが任意のIPv6アドレスを指定できる",
+        "IPv6対応にはNAT Gatewayを使用してIPv4とIPv6の変換が必要"
+      ],
+      "answers": [0],
+      "explanation": "VPC IPv6詳細：■IPv6 CIDRの割り当て：①AWSが/56のIPv6 CIDRを自動割り当て（または持ち込みBYOIPv6）②ユーザーは任意のIPv6を指定不可（AWSが管理するアドレス空間から割り当て）③サブネット：/64のIPv6 CIDRをサブネットに割り当て（サブネットあたり1つ） ■ルートテーブル設定：①パブリックサブネット：::/0 → インターネットゲートウェイ②プライベートサブネット（アウトバウンドのみ）：::/0 → Egress-Only Internet Gateway ■セキュリティグループ：①インバウンド：IPv6のルールは別途追加が必要（例：::/0 Port 443 TCPの追加）②既存のIPv4ルール（0.0.0.0/0）はIPv6には自動適用されない ■EC2インスタンス：①EC2起動時にIPv6アドレス自動割り当て②複数IPv6アドレスの割り当て可能 ■デュアルスタック：IPv4とIPv6を同時サポート（完全な下位互換性）■NAT GatewayはIPv4→IPv6変換はしない（IPv6はグローバルアドレスのため翻訳不要・Egress-Onlyで制御）■BYOIP（Bring Your Own IP）：既存のIPv6アドレスブロックをAWSに持ち込む（AS番号必要）。",
+      "tags": ["VPC", "IPv6", "デュアルスタック", "Egress-Only IGW"]
+    },
+    {
+      "id": "SOA-146",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch OAM（Observability Access Manager）を使用してマルチアカウントの監視データを集約する設定として正しいものはどれですか？",
+      "choices": [
+        "OAMでMonitoring AccountにSinkを作成し、Sharing AccountにLinkを作成してSinkのARNを指定することで、Monitoring AccountからSharing AccountのCloudWatch Metrics/Logs/Traces/Application Insightsを集約して一元的にモニタリングできる",
+        "OAMはVPCピアリングが必要でピアリング接続後のみ動作する",
+        "OAMを設定するにはOrganizationsの管理アカウントのみから設定可能",
+        "OAMで集約できるデータはCloudWatch Metricsのみでログとトレースは別の設定が必要"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch OAM（Observability Access Manager）詳細：■概念：①Sink（シンク）：Monitoring Account（中央監視アカウント）に作成②Link（リンク）：Sharing Account（監視対象アカウント）に作成③SinkのARNをLinkに指定して接続 ■設定手順：①Monitoring Account：Create Sink、Sink Policy設定（どのアカウント/OUからのLinkを許可するか）②Sharing Account：Create Link、SinkのARN指定、共有するリソースタイプを選択（Metrics/Logs/Traces/Application Insights） ■Organizations統合：①管理アカウントから全メンバーアカウントに一括Link作成可能②OU単位での共有設定 ■集約後の操作：①Monitoring AccountのCloudWatch Dashboardで複数アカウントのデータを一画面に表示②Logs InsightsでSharing AccountのLogs Groupをクエリ③X-Ray TracesでSharing AccountのTracesを確認 ■前身（古い方法）：CrossAccountシェアリング設定（コンソールのSettings）→OAMに移行推奨 ■コスト：OAM自体は無料（転送されるCloudWatchデータの料金は通常通り）。",
+      "tags": ["CloudWatch", "OAM", "マルチアカウント", "集約監視"]
+    },
+    {
+      "id": "SOA-147",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "AWS Outposts を使用してオンプレミス環境でAWSサービスを実行する構成として正しいものはどれですか？",
+      "choices": [
+        "AWS OutpostsはAWSのハードウェア（Rack/Server）をオンプレミスに設置してEC2/EBS/RDS/ECS/EKS等をAWSリージョンと同じ方法で実行できる。Management ConsoleやAPIで一元管理され、Outposts上のサービスとAWSリージョンのサービスは低レイテンシで接続される",
+        "OutpostsはAWSアカウントとは独立したオンプレミス専用クラウドでAWS APIとは互換性がない",
+        "Outpostsではリージョンと同じ全てのAWSサービスが使用可能",
+        "OutpostsはAWSがデータセンターを建設してユーザーに貸し出すサービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS Outposts詳細：■ハードウェア形態：①Outposts Rack：フルラック・ハーフラック・クォーターラック（最大96インスタンス相当）②Outposts Servers：1Uまたは2Uの小型サーバー（店舗・小規模拠点向け）③AWSが設置・管理（ハードウェア保守はAWS担当） ■対応サービス：EC2/EBS/RDS/ECS/EKS/S3 on Outposts/ElastiCache/EMR等（全サービスではない）■管理：①AWSコンソール/API/CLIで通常のAWS操作と同じ②Outpost上のAMI・EBS・ENIはAWSリージョンと連携 ■コネクティビティ：①Service Link：Outposts→AWSリージョン（BGP接続必要）②Local Gateway：オンプレミスネットワークとの接続 ■ユースケース：①レイテンシ要件（工場のセンサー→数ms以内の処理）②データレジデンシー要件（データをオンプレミスに保持）③レガシーシステムとの密結合（物理的な近接性）④断続的接続環境（Outpostsは一時的な切断を許容）⑤小売店舗（POS・棚管理システム）■Outposts Servers（新）：1Uまたは2Uで5G基地局・工場・小売店等に適した小型フォームファクター。",
+      "tags": ["Outposts", "ハイブリッド", "オンプレミス", "エッジコンピューティング"]
+    },
+    {
+      "id": "SOA-148",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation のテンプレートリント（cfn-lint）と検証ベストプラクティスとして正しいものはどれですか？",
+      "choices": [
+        "cfn-lintはCloudFormationテンプレートの構文エラー・不正なリソースタイプ・廃止プロパティ・セキュリティベストプラクティス違反を静的解析し、CI/CDパイプライン（GitHub Actions/CodeBuild）に組み込んでプルリクエスト段階でエラーを検出できる",
+        "cfn-lintはcloudformation:ValidateTemplateの別名で同じ機能を提供する",
+        "cfn-lintはCloudFormationのデプロイ後のみ実行でき、デプロイ前の検証はできない",
+        "cfn-lintで検出できるエラーはYAML/JSON構文エラーのみ"
+      ],
+      "answers": [0],
+      "explanation": "cfn-lint詳細：■機能：①構文エラー：YAML/JSON形式の誤り②スキーマ検証：不正なリソースタイプ・プロパティ名③プロパティ型検証：StringにNumberを渡す等④必須プロパティの欠落確認⑤廃止プロパティ/リソースの検出⑥リソース制限（サポート外プロパティの組み合わせ） ■セキュリティチェック（cfn-lint + cfn-guard）：①cfn-lint：CloudFormation仕様準拠②cfn-guard：ビジネスポリシー（S3暗号化必須等） ■CI/CD統合：①GitHub Actions：cfn-lint action②CodeBuild buildspec：cfn-lint template.yaml -t③Pre-commit hook：ローカルで事前検証 ■コマンド：cfn-lint template.yaml（基本）・cfn-lint template.yaml -r us-east-1（リージョン指定）・cfn-lint template.yaml --format json（JSON出力）・cfn-lint template.yaml --ignore-checks W（警告無視） ■validateTemplate API：①CFn APIのテンプレート検証②cfn-lintより検証が少ない（基本的な構文のみ）③デプロイ前のシンプルな確認 ■SAM + cfn-lint：sam validate（SAM→CFn変換後にcfn-lintで検証）。",
+      "tags": ["CloudFormation", "cfn-lint", "テンプレート検証", "CI/CD"]
+    },
+    {
+      "id": "SOA-149",
+      "category": "Cost Management",
+      "difficulty": 2,
+      "question": "AWS Cost Anomaly Detection（コスト異常検出）の設定と活用方法として正しいものはどれですか？",
+      "choices": [
+        "Cost Anomaly DetectionはMLで過去のコストパターンを学習し、異常に高いコスト増加（例：誤ったオートスケーリング・リソースリーク・不正使用）を自動検出してSNS通知を送信し、根本原因（どのサービス・アカウント・タグが原因か）を分析して表示する",
+        "Cost Anomaly Detectionは手動でしきい値を設定する必要がありMLによる自動学習は行わない",
+        "Cost Anomaly Detectionは1日1回のバッチ処理のみでリアルタイム検出はできない",
+        "Cost Anomaly Detectionの使用にはBusinessサポートプランへの加入が必須"
+      ],
+      "answers": [0],
+      "explanation": "AWS Cost Anomaly Detection詳細：■仕組み：①ML（機械学習）で曜日・月次・季節変動等の通常コストパターンを学習②統計的異常（通常範囲外のコスト増加）を自動検出③スパイク・持続的な増加の両方を検出 ■コスト モニター設定：①AWS Services全体②Linked Account（Organizations）③Cost Category④Cost Allocation Tags（環境別・チーム別等） ■検出通知：①SNS Topicで異常検出をアラート②通知しきい値：個別異常の金額（例：$50以上の異常のみ）または日次サマリー③メール内容：異常の期間・影響額・根本原因候補・Cost Explorerへのリンク ■根本原因分析：①どのサービスのコストが異常か②どのUsage Typeが原因か③どのLinked Accountが原因か④どのタグが関連しているか ■ユースケース：①開発者の誤ったLambdaループで大量実行→異常検出②Spot Fleetのbidが通らずOn-Demandに切り替わり増加③誤った設定によるクロスリージョンデータ転送増加 ■コスト：異常検出数$0/月（無料）、検出した異常の通知を受け取ったコンテキストのみにCost Explorerの使用料が発生。",
+      "tags": ["Cost Anomaly Detection", "コスト管理", "ML", "異常検知"]
+    },
+    {
+      "id": "SOA-150",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "AWS System Manager Quick Setup を使用してAWSのベストプラクティス設定を大規模に展開する機能として正しいものはどれですか？",
+      "choices": [
+        "Quick Setupは複数のAWSサービスのベストプラクティス設定（SSMエージェント更新・Host Management・CloudWatch Agent・Patch Manager・自動化等）を単一のウィザードで全アカウント・全リージョンに一括展開し、設定の継続的なドリフト修正も行う",
+        "Quick SetupはSSMエージェントのインストールのみを行うツール",
+        "Quick SetupはEC2インスタンスにのみ適用でき、他のAWSリソースへの設定は不可能",
+        "Quick SetupはAWS Organizations使用時のみ利用可能でシングルアカウントでは使用できない"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager Quick Setup詳細：■提供する設定タイプ：①Host Management：SSMエージェント自動更新・インスタンスプロファイル設定・CloudWatch/EventBridge連携②Config Recording：AWS Config有効化③Dev Ops Guru：異常検出有効化④Distributor：ソフトウェア自動配布⑤Patch Manager：パッチ管理設定⑥Amazon Inspector：脆弱性スキャン有効化⑦DHMC（Default Host Management Configuration）：SSM接続の簡素化 ■展開：①シングルアカウント・シングルリージョン②Organizations（OU/全アカウント）で一括展開③継続的なドリフト修正：設定が変わった場合に自動修正 ■DHMC（Default Host Management Configuration）：①EC2インスタンスメタデータからSSMが自動的にEC2インスタンスをマネージドインスタンスとして認識②IAMロールなしでもSSM接続可能（EC2 Instance Metadata Service経由）③EC2 Image BuilderのAMIを作成後も自動適用 ■ドリフト修正：State Manager Associationsを使用して定期的に設定を再適用（ドリフトを検出・修正）。",
+      "tags": ["Systems Manager", "Quick Setup", "大規模展開", "ベストプラクティス"]
+    },
+    {
+      "id": "SOA-151",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "Amazon VPC Lattice を使用してサービスメッシュを構築する設定として正しいものはどれですか？",
+      "choices": [
+        "VPC LatticeはEC2/Lambda/ECS/EKSのサービス間接続を統一的に管理し、サービスネットワーク（Service Network）にサービスを登録することで認証・認可・ロードバランシング・観測性を自動提供し、EKS App Meshの後継として推奨される",
+        "VPC LatticeはAWS PrivateLinkの別名で同じ機能を提供する",
+        "VPC Latticeは同一VPC内のサービスのみを接続できる",
+        "VPC LatticeのService NetworkはAZごとに個別に作成する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "Amazon VPC Lattice詳細：■コンポーネント：①Service Network：接続するサービスの論理グループ（ドメイン境界）②Service：提供するサービス（EC2/Lambda/ECS/EKS等）③Target Group：サービスのバックエンド（EC2インスタンス/Lambda/ALB等）④Listener：プロトコル/ポート設定⑤Auth Policy：アクセス制御（IAMポリシーベース）⑥VPC Association：VPCをService Networkに関連付け ■特徴：①クロスアカウント・クロスVPC対応（RAM経由でService Networkを共有）②オーバーレイネットワーク（VPCのCIDR重複可能）③mTLS：自動証明書管理④サービスディスカバリー：FQDN（例：service.vpc-lattice.io）が自動割り当て ■対比：①ECS Service Connect：ECS内での連携（同クラスター/Namespace）②App Mesh：Envoyサイドカー必要・複雑な設定③VPC Lattice：インフラ分離・AWS管理・EC2/Lambda/コンテナ全対応・シンプルな設定 ■Auth Policy：Who（IAMプリンシパル）がHow（HTTP Method/Path）でAccessできるかを定義 ■コスト：サービス接続料金＋データ処理料金。",
+      "tags": ["VPC Lattice", "サービスメッシュ", "マイクロサービス", "クロスVPC"]
+    },
+    {
+      "id": "SOA-152",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "AWS Well-Architected Tool を使用してワークロードのアーキテクチャレビューを実施する方法として正しいものはどれですか？",
+      "choices": [
+        "Well-Architected Toolでワークロードを定義して6つの柱（運用上の優秀性・セキュリティ・信頼性・パフォーマンス効率・コスト最適化・持続可能性）に関する質問に回答し、改善事項（High/Medium Risk）のレポートを生成して改善計画を管理できる",
+        "Well-Architected ToolはEC2インスタンスのパフォーマンスを測定する自動テストツール",
+        "Well-Architected Toolは使用に追加コストがかかる有料ツール",
+        "Well-Architected Toolのレビューは年1回しか実施できない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Well-Architected Tool詳細：■6つの柱：①Operational Excellence（運用上の優秀性）：自動化・継続的改善②Security（セキュリティ）：最小権限・データ保護・インシデント対応③Reliability（信頼性）：回復性・スケーリング・障害から自動回復④Performance Efficiency（パフォーマンス効率）：リソース選択・監視・進化⑤Cost Optimization（コスト最適化）：コスト認識・継続的最適化⑥Sustainability（持続可能性）：環境への影響最小化（2021年追加） ■ワークロード定義：①ワークロード名・環境（Production/Non-Production）②AWSリージョン・非AWSコンポーネント③業界タイプ ■レビューフロー：①各柱のベストプラクティス質問に回答（Yes/No/N/A）②改善の機会を特定③リスクレベル：High Risk/Medium Risk/No Risk④Milestone：レビュー時点のスナップショット保存 ■Improvement Plan：①High RiskからMedium Risk→No Riskへの改善ロードマップ②TODO・期限・担当者の設定 ■無料：Well-Architected Tool自体は無料（AWS Partner Network経由のレビューは有料の場合あり）■Lenses：業界・テクノロジー別の追加チェック項目（Serverless Lens等）。",
+      "tags": ["Well-Architected", "アーキテクチャレビュー", "6つの柱", "改善計画"]
+    },
+    {
+      "id": "SOA-153",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch の メトリクスのディメンション（Dimension）を活用した細粒度監視の設定として正しいものはどれですか？",
+      "choices": [
+        "ディメンションはメトリクスを識別するためのキー/値ペアで、例えばEC2のCPUUtilizationにInstanceId=i-1234を指定すると特定インスタンスのCPUを取得でき、AutoScalingGroupName=my-asgを指定するとASG全体の集計値を取得できる",
+        "ディメンションは単なるメタデータで、ディメンションが異なっても同じメトリクスを参照する",
+        "ディメンションは全てのCloudWatchメトリクスに必ず設定する必要がある",
+        "カスタムメトリクスにはディメンションを設定できない"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Dimensions詳細：■概念：①メトリクスを識別・フィルタリングするためのキー/値ペア②同じ名前空間・メトリクス名でもディメンションが異なれば別のメトリクス③最大30ディメンション/メトリクス ■EC2ディメンションの例：①{InstanceId: i-1234}：特定インスタンスのCPU②{AutoScalingGroupName: my-asg}：ASG全体の集計③{ImageId: ami-xxxx}：同一AMIの全インスタンス集計 ■カスタムメトリクスでの活用：①{Env: prod, Service: api}：本番APIサービスのMetrics②{Region: ap-northeast-1}：リージョン別の集計③ディメンションなし：全体集計 ■注意：①ディメンションの組み合わせが違うと別のメトリクス②Env=prod + Service=api = Env=prodとは別 ■Cost：ディメンションごとにメトリクス料金が発生→高カーディナリティディメンション（UserId等）は慎重に ■CloudWatch Metric Math：SUM(METRICS('CPUUtilization', {InstanceId: i-1234},...))等で複数ディメンションを集計■Alarmとディメンション：アラーム作成時にディメンションを正確に指定する必要がある。",
+      "tags": ["CloudWatch", "ディメンション", "メトリクス", "細粒度監視"]
+    },
+    {
+      "id": "SOA-154",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Systems Manager Distributor を使用してソフトウェアパッケージを管理・配布する機能として正しいものはどれですか？",
+      "choices": [
+        "DistributorはSSMマネージドインスタンスへのソフトウェアパッケージ（カスタムまたはAWS提供：AmazonCloudWatchAgent等）の配布・インストール・アンインストール・バージョン管理を行い、Run CommandやMaintenance Windowと組み合わせてスケジュール配布が可能",
+        "DistributorはS3バケットへのファイルを配布するサービスでEC2とは無関係",
+        "DistributorはWindowsの.MSIパッケージのみをサポートしLinuxの.rpmや.debには対応していない",
+        "Distributorで配布したソフトウェアは自動的に全インスタンスにインストールされる設定変更は不要"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager Distributor詳細：■機能：①パッケージ作成：インストールスクリプト（install.ps1/install.sh）・アンインストールスクリプトをS3にZIP化してパッケージ登録②AWS提供パッケージ：AmazonCloudWatchAgent・AWSCodeDeployAgent・AWSPVDriver（Xen）等③バージョン管理：複数バージョンを管理・特定バージョンの指定インストール可能 ■インストール方法：①Run Command：AWS-ConfigureAWSPackage ドキュメントで即時インストール②State Manager Association：定期的に実行（ドリフト修正）③Maintenance Window：メンテ時間帯に実行 ■対応OS：Windows（.msi/.exe）・Linux（.rpm/.deb/シェルスクリプト）・macOS ■カスタムパッケージ作成：①S3に配置するZIPの構造：manifest.json + platform別ディレクトリ②manifest.json：パッケージ名・バージョン・ファイルマッピング定義 ■State Manager連携（推奨）：①Association：全インスタンス（タグ指定）に特定パッケージを常にインストール済みに維持②ドリフト検出：手動アンインストールされた場合に自動再インストール ■バージョン戦略：Latest/Default/特定バージョンを指定してインストール。",
+      "tags": ["Systems Manager", "Distributor", "パッケージ管理", "ソフトウェア配布"]
+    },
+    {
+      "id": "SOA-155",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon RDS の Blue/Green Deployments を使用してデータベースをゼロダウンタイムでアップグレードする方法として正しいものはどれですか？",
+      "choices": [
+        "RDS Blue/Green Deploymentsは現在の本番DB（Blue）の複製として新環境（Green）を作成してアップグレード・テストし、準備完了後にスイッチオーバーでBlueからGreenにトラフィックを切り替え。スイッチオーバーは数秒〜数分で完了し、ロールバックも容易",
+        "Blue/Green DeploymentsはEC2のBlue/Green deployと同様に全インスタンスを同時に切り替える",
+        "RDS Blue/Green Deploymentsは新しいRDSインスタンスを手動作成する必要があり自動化されていない",
+        "スイッチオーバー後にBlueデータベースは即座に削除される"
+      ],
+      "answers": [0],
+      "explanation": "RDS Blue/Green Deployments詳細：■フロー：①Createボタン1つ：Greenクラスター（Blueの複製）を自動作成②Greenにアップグレード・変更を適用（メジャーバージョンアップ・パラメータ変更・ストレージ最適化等）③レプリケーション：BlueからGreenへのレプリケーション継続（リアルタイム同期）④テスト：Greenエンドポイントでアプリをテスト⑤Switchover：コンソールまたはAPI→BlueとGreenのエンドポイントを入れ替え⑥Blue保持：スイッチオーバー後もBlueは一定期間保持（ロールバック可能）→手動削除 ■スイッチオーバー時間：MySQL: 数秒〜数分（小さいDBは秒単位）→ダウンタイム最小化 ■対応エンジン：MySQL 5.7+/8.0+（RDS）・MySQL互換Aurora・PostgreSQL（RDS） ■使用ケース：①メジャーバージョンアップ（MySQL 5.7→8.0）②エンジンバージョンアップ（マイナー含む）③Parameter Group変更（再起動が必要なパラメータ）④インスタンスクラス変更 ■注意：①外部レプリカがある場合は追加考慮が必要②Switchoverは書き込みが一時停止→アプリのリトライが必要。",
+      "tags": ["RDS", "Blue/Green Deployment", "ゼロダウンタイム", "DBアップグレード"]
+    },
+    {
+      "id": "SOA-156",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "Amazon Managed Grafana と Amazon Managed Service for Prometheus の組み合わせによる監視設定として正しいものはどれですか？",
+      "choices": [
+        "Managed Prometheusはオープンソースのメトリクス収集（EKS/EC2のPrometheus Exporterからスクレイプ）をマネージドで提供し、Managed GrafanaはPrometheusをデータソースとしてダッシュボードを作成。EKS上のコンテナ監視やカスタムメトリクスの可視化に最適",
+        "Amazon Managed Grafana はCloudWatchとのみ統合でき、外部データソースは使用できない",
+        "Amazon Managed Service for PrometheusはAWSサービスのみからデータを収集し、EC2上のカスタムアプリからは収集できない",
+        "Managed GrafanaはマネージドサービスではなくEC2インスタンス上にGrafanaをインストールするサービス"
+      ],
+      "answers": [0],
+      "explanation": "Managed Prometheus + Managed Grafana詳細：■Amazon Managed Service for Prometheus（AMP）：①セルフマネージドPrometheus不要②データ収集方法：AWS Distro for OpenTelemetry（ADOT）またはPrometheus Agentがリモートwrite③サポートされるソース：EKS（Kubernetes）・EC2・ECS（コンテナメトリクス）④Prometheus Query Language（PromQL）でクエリ⑤3年間のデータ保持⑥マルチリージョン・マルチアカウント ■Amazon Managed Grafana（AMG）：①マネージドGrafanaサービス（インフラ管理不要）②データソース：AMP・CloudWatch・X-Ray・Athena・OpenSearch・Splunk等（40以上）③IAM Identity Center統合：SSO認証④Grafana Alerts・ダッシュボード共有⑤バージョン管理 ■EKS監視フロー：①EKS→ADOT Collector→AMP（リモートwrite）②AMG→AMP（PromQL）③Kubernetes Dashboards：Node/Pod/Container/Namespace別メトリクス ■vs CloudWatch Container Insights：①Container Insights：マネージド（設定簡単）②AMP+AMG：オープンソース互換・高度なダッシュボード・オンプレミスからの統合。",
+      "tags": ["Managed Grafana", "Managed Prometheus", "Kubernetes監視", "EKS"]
+    },
+    {
+      "id": "SOA-157",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "Amazon EC2 Image Builder を使用してCIS（Center for Internet Security）ベンチマーク準拠のゴールデンAMIを作成する設定として正しいものはどれですか？",
+      "choices": [
+        "Image BuilderパイプラインでCIS Hardened Image（AWSが提供するManaged Component）または独自のCIS準拠スクリプト（Ansibleプレイブック等）をビルドコンポーネントとして組み込み、Amazon Inspectorのテストコンポーネントで脆弱性スキャンを実行してからAMIを配布する",
+        "Image BuilderでCIS準拠AMIを作成するには別途CIS認定機関への登録が必要",
+        "CISベンチマーク準拠はAWSが自動的に全AMIに適用するため追加設定は不要",
+        "Image BuilderのテストコンポーネントではアプリケーションのE2Eテストのみが実行可能"
+      ],
+      "answers": [0],
+      "explanation": "Image Builder CIS Hardening詳細：■CISベンチマーク：①業界標準のセキュリティ設定ガイドライン②Level 1（基本）・Level 2（高度）のプロファイル③OS別：CIS Amazon Linux 2 Benchmark・CIS Windows 2019 Benchmark ■Image Builderによる実装：①AWSが提供するManaged Component：CIS-CAT Lite（無料）・CIS Amazon Linux 2 Foundation等②カスタムComponent：Ansible Playbookの実行・シェルスクリプトでのhardening③Phaseの順序：Build（インストール）→Test（検証）→Distribute（配布） ■Inspectorテストコンポーネント：①Amazon Inspector Scan（SBOM + CVEスキャン）②パイプラインに組み込んで脆弱性発見時にビルド中止 ■SNS通知：ビルド成功/失敗/スキャン結果をSNS経由で通知③EventBridge：Pipeline実行イベントでLambda起動（JIRA作成等） ■配布設定：①複数リージョン・アカウントへの配布②License Manager統合：AMI使用ライセンスのカウント③AMI deprecation：古いバージョンの非推奨化④Auto Scalingへの自動適用：最新AMIをLaunch Templateに自動更新するCI/CD。",
+      "tags": ["EC2 Image Builder", "CISベンチマーク", "セキュリティ強化", "AMI"]
+    },
+    {
+      "id": "SOA-158",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "AWS X-Ray Groups と Filter Expressions を使用してトレースのフィルタリングと分析を効率化する設定として正しいものはどれですか？",
+      "choices": [
+        "X-Ray Groupsはフィルター式（例：responsetime > 2 AND service('api') AND annotation.user_type = 'premium'）で定義したトレースのサブセットに名前を付けて保存し、グループごとのService Map・CloudWatch Metricsを独立して表示・監視できる",
+        "X-Ray GroupsはCloudWatchのロググループと同じ概念で同じ管理コンソールで設定する",
+        "X-Ray Filter Expressionsは日本語の検索クエリをサポートしている",
+        "X-Ray GroupsはAWS Organizations全体に適用され個別のサービスには設定できない"
+      ],
+      "answers": [0],
+      "explanation": "X-Ray Groups詳細：■定義：①Filter Expressionでトレースのサブセットを定義②グループ名を付けて保存③X-Rayコンソールで複数グループを切り替えて分析 ■Filter Expression構文：①service('name')：特定サービスのトレース②responsetime > 2：レスポンス2秒超③error AND service('api')：エラーが発生したapiサービス④annotation.key = 'value'：Annotationのフィルタ⑤user：ユーザー追跡⑥id('trace-id')：特定のトレースID⑦duration >= 3：持続時間3秒以上 ■グループのメリット：①グループごとの独立したService Map②グループごとのCloudWatch Metrics（エラー率・スロットリング・レイテンシ）③グループにAlarmsを設定→特定サービスグループの異常を通知 ■実践例：①PremiumGroup：annotation.user_type='premium'→プレミアムユーザーの体験を個別監視②SlowGroup：responsetime > 5→遅いリクエストのみ③ErrorGroup：fault AND service('api')→APIのエラートレース集中分析 ■Annotations vs Metadata：①Annotations：インデックス化（Filter Expressionで使用可能）②Metadata：詳細情報（Filter不可・Trace詳細で参照）。",
+      "tags": ["X-Ray", "Groups", "Filter Expressions", "トレース分析"]
+    },
+    {
+      "id": "SOA-159",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "AWS の Elastic Load Balancing の接続ドレイン（Connection Draining）と登録解除遅延（Deregistration Delay）の設定として正しいものはどれですか？",
+      "choices": [
+        "ALBのDeregistration Delay（デフォルト300秒）はターゲットグループからEC2インスタンスを登録解除する際に既存の接続が完了するまで待機する時間で、デプロイ中のグレースフルシャットダウンを実現する。長時間接続（WebSocket等）には長い値を、ショートリクエストには短い値を設定する",
+        "Deregistration Delayを0秒に設定すると既存接続が即座に切断される",
+        "Deregistration DelayはNLBでのみサポートされALBでは設定できない",
+        "接続ドレインはEC2インスタンスの再起動時にのみ適用され、通常の登録解除には適用されない"
+      ],
+      "answers": [0],
+      "explanation": "ELB Connection Draining/Deregistration Delay詳細：■CLB（Classic）：Connection Draining（同一機能の旧名称）■ALB/NLB：Deregistration Delay■デフォルト：300秒（5分）・設定範囲：0〜3600秒 ■動作フロー：①インスタンスをターゲットグループから登録解除（または Unhealthy）②ALBが既存の接続（インフライト）を処理中のインスタンスへ新規リクエスト送信停止③既存接続が完了するか、Deregistration Delay時間経過後に強制切断④インスタンスはInService→Draining→Unused状態に遷移 ■設定指針：①ショートリクエストAPI（<1秒）：30秒で十分②通常のWebアプリ（数秒）：60〜120秒③長時間処理・WebSocket：300〜3600秒④バッチ処理：0秒（接続なし）→即座に登録解除 ■Auto Scalingとの連携：①スケールイン時にインスタンスをTerminatingへ②Deregistration Delay後にTerminate③Lifecycle HookとDeregistration Delayを組み合わせて確実なグレースフルシャットダウン ■Blue/Green デプロイ：①旧環境（Blue）の登録解除時にDeregistration Delayで既存リクエスト完了②新環境（Green）に完全切り替え。",
+      "tags": ["ELB", "ALB", "Connection Draining", "Deregistration Delay"]
+    },
+    {
+      "id": "SOA-160",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "AWS CloudWatch の Evidently を使用してフィーチャーフラグと A/B テストを実装する設定として正しいものはどれですか？",
+      "choices": [
+        "CloudWatch Evidentlyはクライアントからの評価リクエストに対してフィーチャーフラグ（機能ON/OFF）とA/Bテスト（複数バリアント間のトラフィック割り当て）を動的に制御し、ビジネスメトリクス（コンバージョン等）への影響をリアルタイムに分析して統計的有意性を判定できる",
+        "CloudWatch EvidentlyはCloudFormation Conditionsと同じ機能でデプロイ時のみ設定変更できる",
+        "CloudWatch EvidentlyはJavaScript/ReactアプリケーションのみをサポートしServer-sideには使用できない",
+        "A/Bテストの結果はEvidentlyコンソールでのみ確認でき、CloudWatchダッシュボードには表示できない"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Evidently詳細：■機能：①Feature Flags：機能のON/OFFをリアルタイム制御（再デプロイ不要）②A/B Testing：複数バリアントへのトラフィック分割③Canary Launch：段階的なロールアウト ■Project設定：①Project（プロジェクト）を作成②Feature（機能）：バリアントを定義（例：新デザイン/旧デザイン）③Launch（A/Bテスト）：バリアントへのトラフィック割り当て④Experiment（実験）：統計的検定で効果測定 ■SDK統合：①evaluateFeature API：ユーザーIDに基づいてどのバリアントを表示するか判定②Java/Python/Node.js/Go SDK③Webアプリ/モバイル/サーバーサイド全対応 ■メトリクス分析：①Custom Metrics：コンバージョン率・エラー率・収益等②統計的有意性：T検定でA/Bの差が意味あるか判定③CloudWatch Dashboardに自動可視化 ■Feature Flag（コンテキスト評価）：①ユーザーセグメント別に異なる機能を提供②例：Premium Userのみ新機能を有効化③緊急時：即座にfeatureをOFF ■コスト：$5/100万evaluateFeatureリクエスト。",
+      "tags": ["CloudWatch", "Evidently", "フィーチャーフラグ", "A/Bテスト"]
     }
   ]
 }
