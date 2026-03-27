@@ -1561,6 +1561,526 @@
       ],
       "answers": [0, 1, 2, 3],
       "explanation": "Graviton（ARM64）対応のAWSサービス範囲：(1)ECS/EKS + Fargate：Graviton対応のコンテナイメージ（マルチアーキテクチャイメージ）で同等のワークロードを安価に実行。(2)Lambda ARM64：Lambda関数でArm64アーキテクチャを選択するとx86-64より最大20%コスト削減・パフォーマンス向上。(3)RDS for MySQL/PostgreSQL：db.m6g・db.r6g等のGraviton2インスタンスでx86比最大35%性能改善・コスト削減。(4)ElastiCache for Redis：Graviton2インスタンスタイプが利用可能。(5)その他：Aurora・OpenSearch・MSK等多くのマネージドサービスでGravitonが選択可能です。"
+    },
+    {
+      "id": "SAP-121",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "大規模なマルチアカウント環境でAWS CloudTrailのログを一元管理し、ログの改ざん検知とコンプライアンス要件を満たす構成として正しいものをすべて選べ。",
+      "choices": [
+        "Organizations全体に組織証跡を有効化し、専用のセキュリティアカウントのS3バケットにログを集約する",
+        "S3バケットに対してObject Lock（Compliance mode）を有効化しログの削除・上書きを防止する",
+        "CloudTrailのログファイル検証（Log File Validation）を有効化しSHA-256ダイジェストファイルを生成する",
+        "CloudTrail Lakeでイベントデータストアを作成し、SQLクエリで複数アカウントのイベントを横断分析する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "CloudTrailマルチアカウント集約のベストプラクティス：(1)組織証跡：Organizations管理アカウントから全メンバーアカウントに適用する組織証跡を作成。個別アカウントでの証跡無効化を防止。(2)S3 Object Lock Compliance mode：WORM（Write Once Read Many）でログの不変性を保証。Governance modeではrootでも変更可能なので、高度なコンプライアンス要件にはCompliance modeが必要。(3)ログファイル検証：AWS署名を使ったSHA-256ダイジェストで、ログが配信後に改ざんされていないことを検証できる。(4)CloudTrail Lake：イベントをColumnar形式でS3に保存し、Athena不要でSQLクエリ分析が可能。保持期間は最大7年。"
+    },
+    {
+      "id": "SAP-122",
+      "category": "ネットワーキング",
+      "question": "オンプレミスデータセンターからAWS上の複数VPCへの接続において、帯域幅の最大化と冗長性を確保する最適な構成はどれか？",
+      "choices": [
+        "2本のDirect Connect接続（異なるDirect Connectロケーション）をTGWに接続し、Equal Cost Multi-Path（ECMP）でトラフィックを分散する",
+        "1本のDirect Connect接続とサイト間VPNをバックアップとして組み合わせる",
+        "Direct Connect GatewayでTransit VIFを使用し、Transit Gatewayを介して複数VPCに接続する",
+        "複数のPublic VIFを作成してS3やDynamoDBへのアクセスをオフロードする"
+      ],
+      "answers": [0, 2],
+      "explanation": "DX冗長構成のベストプラクティス：(1)2本のDX + ECMP：異なるDXロケーションから2本のTransit VIFをTGWに接続することで、物理障害に対する冗長性と帯域幅の合算（ECMPで最大50Gbps×2=100Gbps）を実現。(2)TGW + Transit VIF：Direct Connect GatewayはPrivate VIFでは最大10 VPC直接接続だが、TGW+Transit VIFではTGWに接続した全VPCに対してDXGWを介してルーティング可能。(3)誤り選択肢B：VPN（最大1.25Gbps）はDXのバックアップとしては機能するが帯域幅が異なりECMPは機能しない。(4)Public VIF：S3/DynamoDB等のAWSパブリックサービスへのアクセス用。VPC内プライベートリソースへのアクセスには不適切。"
+    },
+    {
+      "id": "SAP-123",
+      "category": "コスト最適化",
+      "question": "E-CommerceサイトのEC2インスタンス群について、以下の特性を持つワークロードに最適なコスト最適化戦略をすべて選べ。(a)Webフロントエンド：常時稼働必須、ベースライン負荷80% (b)バッチ処理：深夜2時間のみ実行、中断可 (c)リアルタイム推論API：常時稼働、ファミリー変更可",
+      "choices": [
+        "(a)に1年間のCompute Savings Plansを適用する",
+        "(b)にEC2 Spot Instancesを使用してコストを最大90%削減する",
+        "(c)にEC2 Instance Savings Plans（特定ファミリー・リージョン）を適用する",
+        "(a)にOn-Demand CapacityReservationと3年Reserved Instanceを組み合わせる"
+      ],
+      "answers": [0, 1],
+      "explanation": "ワークロード別コスト最適化：(a)Webフロントエンド常時稼働：Compute Savings Plans（CS SP）は66%の割引でファミリー・リージョン・OS変更が可能。1年契約でコストと柔軟性のバランスが取れる。(b)バッチ処理（中断可）：Spot Instancesは最大90%割引。中断許容かつ数時間の処理であれば最適。Spot Interruption Notice（2分前通知）でチェックポイント保存する設計が必要。(c)リアルタイム推論API：「ファミリー変更可」とあるのでEC2 Instance SPより柔軟なCompute SPが適切。Instance SP（72%割引）は特定ファミリー・リージョンに固定されるため、GPU→Graviton等の変更時に不利。(d)On-Demand + 3年RI：CapacityReservationは容量保証だがコスト削減にはならない。3年RIは長期固定でリスクが高い。"
+    },
+    {
+      "id": "SAP-124",
+      "category": "マイグレーション",
+      "question": "大規模なOracle Data Warehouseをクラウドネイティブなデータプラットフォームへ移行する際の段階的アプローチとして正しいものをすべて選べ。",
+      "choices": [
+        "AWS Schema Conversion Tool（SCT）でOracle→Redshiftへのスキーマ・コード変換を評価し、自動変換率を確認する",
+        "AWS Database Migration Service（DMS）の継続的レプリケーション（CDC）でオンライン移行を実施する",
+        "移行後はRedshift Spectrum + S3でのデータレイクハウスアーキテクチャに段階移行する",
+        "OracleのMaterialized ViewをそのままRedshiftのマテリアライズドビューに1:1変換できる"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "Oracle DW→Redshift移行アプローチ：(1)AWS SCT：Oracle SQLをRedshift SQLに自動変換。Oracleプロシージャ・関数・トリガー等の変換率レポートを生成し、手動対応が必要な箇所を特定できる。(2)DMS CDC：ソースDBへの影響を最小化しながら継続的変更データキャプチャで移行。フルロード完了後CDC開始のハイブリッド移行が一般的。(3)Redshift Spectrum + S3：移行後にコールドデータをS3に移動し、Spectrumで外部テーブルとして参照するデータレイクハウス構成は段階的移行に適している。(4)誤り：OracleとRedshiftのMaterialized View実装は異なり（更新頻度・増分更新の仕組み等）、1:1変換はできない。手動での再設計が必要。"
+    },
+    {
+      "id": "SAP-125",
+      "category": "コンテナ・サーバーレス",
+      "question": "Kubernetes上でステートフルなデータベースワークロードを実行する際のEKSのベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "EBS CSIドライバーをアドオンとしてインストールし、PersistentVolumeClaimでEBSボリュームを動的プロビジョニングする",
+        "StatefulSetとHeadless Serviceを組み合わせて各ポッドに安定したネットワーク識別子とストレージを付与する",
+        "EFSを使用してマルチAZ間で共有ストレージを提供し、ReadWriteManyアクセスモードを活用する",
+        "ステートフルDBワークロードにはKarpenterで専用のNode Poolを作成し、taints/tolerationsで分離する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "EKSステートフルワークロードのベストプラクティス：(1)EBS CSI Driver：EKS管理アドオンとして提供。StorageClassでgp3/io2を指定してPVCから動的にEBSをプロビジョニング。ただしEBSはAZ内のみ（ReadWriteOnce）。(2)StatefulSet + Headless Service：StatefulSetは順序付きデプロイ・安定したネットワーク名（pod-0, pod-1）・PVC自動作成を提供。Headless ServiceはクラスタIPなしで各ポッドへの直接DNS解決を可能にする。(3)EFS CSI Driver：ReadWriteManyでマルチAZ対応の共有ストレージ。MySQLのような単一ライターDBには不向きだが、設定ファイル共有等に有効。(4)Karpenter Node Pool分離：DB専用ノードプールにtaint（例：dedicated=database:NoSchedule）を設定し、DBポッドのみ配置するtolerationを付与することでリソース競合を防止。"
+    },
+    {
+      "id": "SAP-126",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWS Organizations環境でゼロトラストセキュリティモデルを実装する際のコントロールとして最も適切なものをすべて選べ。",
+      "choices": [
+        "IAM Identity Center（SSO）でフェデレーション認証を集約し、最小権限の一時的認証情報を発行する",
+        "VPC Latticeを使用してサービス間通信に認証・認可・暗号化を強制する",
+        "AWS Verified Accessでネットワークレベルのアクセスなしにアプリケーション単位でアクセス制御する",
+        "Security Hubの統合とEventBridgeによる自動修復でセキュリティ体制を継続的に評価・改善する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ゼロトラスト実装コントロール：(1)IAM Identity Center：IDプロバイダー（Okta/AD等）とフェデレーションし、「ネバーネバートラスト、常に検証」の原則に基づく時間制限付き一時認証情報を提供。(2)VPC Lattice（2023年GA）：サービスメッシュ不要でサービス間通信にIAMポリシーベースの認証・認可を適用。mTLSによる通信暗号化も可能。マイクロサービス間ゼロトラストの現代的アプローチ。(3)AWS Verified Access：企業VPNなしでゼロトラストの原則に基づきアプリケーションアクセスを制御。IAM Identity Center・Okta等のIDプロバイダーとデバイスポスチャーを評価してアクセス許可。(4)Security Hub + EventBridge：CIS/PCI DSS等のセキュリティ標準に対するコンプライアンス状態を継続的評価し、Lambda等で自動修復するセキュリティオーケストレーションを構成。"
+    },
+    {
+      "id": "SAP-127",
+      "category": "高可用性・耐障害性",
+      "question": "グローバルに展開するSaaSアプリケーションで、リージョン障害時に5分以内（RTO<5min、RPO<1min）のフェイルオーバーを実現する構成として正しいものをすべて選べ。",
+      "choices": [
+        "Aurora Global Databaseで自動フェイルオーバーを構成し、セカンダリリージョンへの昇格を自動化する",
+        "Route53のヘルスチェックをCloudWatch Alarmと連携させてDNSフェイルオーバーをトリガーする",
+        "AWS Global Acceleratorのエンドポイントヘルスチェックで障害リージョンのエンドポイントを自動除外する",
+        "DynamoDB Global TablesでマルチリージョンActive-ActiveとRPO約1秒のレプリケーションを実現する"
+      ],
+      "answers": [0, 2, 3],
+      "explanation": "RTO<5min・RPO<1minのフェイルオーバー：(1)Aurora Global Database：通常1秒未満のレプリケーションラグで最大5セカンダリリージョンへレプリカ。Managed Planned Failoverで<1分、Unplanned Failoverでも数分以内のRTOを実現。(2)Route53 DNSフェイルオーバー：DNSキャッシュTTLの影響で実際のクライアント切り替えに数分〜数十分かかる場合があり、RTO<5minには不確実。(3)Global Accelerator：Anycastネットワークでエンドポイント障害を30秒以内に検出し自動ルーティング変更。DNSキャッシュの影響なしで迅速な切り替えが可能。(4)DynamoDB Global Tables：マルチリージョンActive-Activeで非同期レプリケーションのRPOは約1秒。Read Localityで最寄りリージョンから読み取り可能。"
+    },
+    {
+      "id": "SAP-128",
+      "category": "アーキテクチャパターン",
+      "question": "イベント駆動アーキテクチャにおいて、複数のマイクロサービスにまたがるデータの結果整合性を保証する設計パターンとして正しいものをすべて選べ。",
+      "choices": [
+        "Transactional Outboxパターンを使用してDBへの書き込みとイベント発行をアトミックに処理する",
+        "SagaパターンのChoreographyスタイルでサービス間のイベント連鎖による補償トランザクションを実装する",
+        "DynamoDB StreamsとLambdaを使用してChange Data Capture（CDC）でドメインイベントを発行する",
+        "EventBridge Event Busのアーカイブ機能でイベントを保存しリプレイによる状態再構築を可能にする"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "イベント駆動アーキテクチャの結果整合性パターン：(1)Transactional Outbox：DBのoutboxテーブルへのINSERTとビジネスデータ更新を同一トランザクションで実行。CDC（DMS/Debezium）がoutboxを監視してメッセージブローカーに発行することで二重書き込み問題を回避。(2)Saga Choreography：オーケストレーターなしでサービスがイベントを発行・購読して処理を連鎖させる。補償トランザクション（逆操作）で失敗時のロールバックを実現。(3)DynamoDB Streams + Lambda：DynamoDBのCDCストリームをLambdaがトリガーし、EventBridge等にドメインイベントを発行するCQRS/Event Sourcingの実装パターン。(4)EventBridge Archive + Replay：最大5年間のイベントアーカイブとリプレイ機能で、新規サービス参入時の過去イベント処理や障害後の再処理を可能にする。"
+    },
+    {
+      "id": "SAP-129",
+      "category": "ストレージ・データベース",
+      "question": "ペタバイト規模のデータレイクをAWS上に構築する際のアクセスコントロールとガバナンス設計として正しいものをすべて選べ。",
+      "choices": [
+        "AWS Lake Formationで列レベル・行レベルのセキュリティを実装しAthena/Glue/EMRへのデータアクセスを制御する",
+        "S3 Access PointsをVPC/アカウント別に作成して特定のデータセットへのアクセスを分離する",
+        "Glue Data Catalogをメタデータリポジトリとして使用しLake FormationでテーブルへのIAMポリシーベースのアクセス許可を設定する",
+        "DataZoneでビジネスドメイン別のデータカタログとサブスクリプションベースのデータ共有を実装する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "データレイクガバナンスの多層防御：(1)Lake Formation列・行セキュリティ：列フィルタリング（特定列へのアクセス制限）とRow-Level Security（Cell-Level Security）でPII保護や部門別データアクセス制御を実装。Athena・Glue・Redshift Spectrumと統合。(2)S3 Access Points：バケット単位でなくアクセスポイント単位のポリシーで、チーム・アプリ・VPCごとのアクセスを分離。クロスアカウントアクセスも可能。(3)Glue Data Catalog + Lake Formation：Glue CrawlerがS3データをスキャンしてCatalogにテーブル登録。Lake Formationがそのテーブル/データベース/列への権限を管理する中央ガバナンス層。(4)DataZone：ビジネスドメイン（Marketing/Finance/Engineering）ごとのデータポータルで、データ検索・プロデューサー/コンシューマー間のサブスクリプション承認フローを提供。"
+    },
+    {
+      "id": "SAP-130",
+      "category": "コンプライアンス・ガバナンス",
+      "question": "金融機関がAWS上でPCI DSS準拠のカード決済システムを構築する際の必須要件として正しいものをすべて選べ。",
+      "choices": [
+        "カード会員データ（CHD）を保存するDBにはAWS KMS CMKで暗号化し、キーポリシーでアクセスを最小権限に制限する",
+        "PCI DSS対象スコープを最小化するためにカード処理をAWS Marketplaceの認定Payment Tokenization Serviceに委託する",
+        "VPC内のカード処理セグメントをセキュリティグループとNetwork ACLで他のシステムから完全に分離する",
+        "AWS Artifactから最新のPCI DSS Attestation of Compliance（AOC）とResponsibility Summaryをダウンロードして共有責任を確認する"
+      ],
+      "answers": [0, 2, 3],
+      "explanation": "PCI DSS準拠の必須要件：(1)KMS CMK暗号化：PCI DSS要件3で保存カード会員データの暗号化が必須。CMKキーポリシーで最小権限、定期ローテーション（1年）を設定。(2)トークン化委託：有効な手法だが「必須」ではなく設計選択。スコープ削減に有効だが、Marketplace委託が必須要件ではない。(3)ネットワーク分離：PCI DSS要件1でカード会員データ環境（CDE）を他のネットワークから分離することが必須。セキュリティグループとNACLによるマイクロセグメンテーション。(4)AWS Artifact：AWSSのPCI DSS Level 1 AOCとResponsibility Summaryは、AWSの責任範囲を確認しQSA（認定セキュリティアセッサー）への証拠提供に使用。AWS上で構築したシステムの準拠アセスメントの前提として必須確認事項。"
+    },
+    {
+      "id": "SAP-131",
+      "category": "パフォーマンス最適化",
+      "question": "高トラフィックWebアプリケーションのCloudFront + ALB + ECSアーキテクチャでレイテンシーを最小化する戦略として正しいものをすべて選べ。",
+      "choices": [
+        "CloudFrontのCache-Control max-ageヘッダーを設定しエッジでの静的コンテンツキャッシュを最大化する",
+        "ALBのターゲットグループでslowStartDurationを設定し新しいECSタスクへのウォームアップ期間を確保する",
+        "ECSタスクでHTTP/2とgRPCを使用してALBとの通信を最適化する",
+        "CloudFront FunctionsでリクエストレベルのA/Bテストとリダイレクト処理を実行する"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "CloudFront+ALB+ECSレイテンシー最適化：(1)CloudFront Cacheキャッシュ最大化：適切なCache-Control/ETagヘッダーで静的コンテンツをエッジにキャッシュ。オリジンへのリクエストを削減しレイテンシーを大幅低減。(2)ALB Slow Start Mode：新しいターゲットへのトラフィックを30〜900秒で段階的増加させ、コールドスタート状態のECSタスクへの急激な負荷流入を防止。(3)HTTP/2：ALBはHTTP/2をサポートするがECSタスクとALBバックエンド間はHTTP/1.1。ECSタスク間のgRPC通信はALBを介す場合に最適化される。ALB自体はgRPC対応。ECS→ALB間のパスの話では選択肢の表現が若干不正確。(4)CloudFront Functions：エッジでURLリダイレクト・A/Bテストのcookie設定・リクエスト正規化を1ms未満で実行。Lambda@Edgeよりコストが低くレイテンシーが小さい。"
+    },
+    {
+      "id": "SAP-132",
+      "category": "アーキテクチャパターン",
+      "question": "大規模なマルチテナントSaaSアプリケーションのテナント分離戦略として、セキュリティと運用効率のバランスが最も取れているものはどれか？",
+      "choices": [
+        "テナントごとに完全に独立したAWSアカウントを作成するアカウントレベル分離（サイロモデル）",
+        "共有インフラ上でテナントIDをパーティションキーとするDynamoDBテーブルと、Row-Level Securityを持つRDSを使用するプールモデル",
+        "重要テナントには専用アカウント、標準テナントには共有インフラを使用するハイブリッドモデル（Silo-Pool混在）",
+        "テナントIDをJWTに含め、Lambda AuthorizerがAPIリクエストごとにスコープを検証するアプリケーションレベル分離"
+      ],
+      "answers": [2],
+      "explanation": "マルチテナントSaaS分離戦略の比較：(1)完全サイロ（アカウント分離）：最強の分離だが管理オーバーヘッドが膨大。テナント数が多い場合は非現実的。(2)完全プール（共有インフラ）：運用効率は高いが、テナント間のデータ漏洩リスク・ノイジーネイバー問題が発生しやすい。セキュリティ要件が高い顧客には不十分。(3)ハイブリッド（Silo-Pool混在）：エンタープライズ/医療等の高セキュリティ要件テナントにはサイロ、SMB等の標準テナントにはプール。コスト・セキュリティ・運用効率のバランスが最良。AWSのSaaS on AWS Well-Architected Lensが推奨するパターン。(4)アプリケーションレベル分離：実装は比較的容易だが、インフラ分離がないため、バグや設定ミスでのデータ混入リスクがある。単体では不十分。"
+    },
+    {
+      "id": "SAP-133",
+      "category": "マイグレーション",
+      "question": "物理サーバー上のWindows Server 2012（EOL済み）ワークロードをAWSへ移行する際の戦略として正しいものをすべて選べ。",
+      "choices": [
+        "AWS MGN（Application Migration Service）でエージェントベースのリフト&シフトを実行し、移行後にOS更新を計画する",
+        "AWS End-of-Life OS対応としてCustom Support（延長サポート）をAWSが提供するのを活用し移行後も継続使用する",
+        "Windows Server 2012 EOLに対応してAWS License Managerで既存ライセンスのBYOL追跡を行う",
+        "移行時にAWS Compute Optimizerの推奨に基づいて過剰プロビジョニングを是正し右サイジングを実施する"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "EOL Windows Server移行戦略：(1)AWS MGN リフト&シフト：エージェントインストール→継続レプリケーション→テストカットオーバー→本番カットオーバーのフローで最小ダウンタイム移行。物理→EC2への移行に最適。(2)AWS上のWindows Server 2012 Extended Security Updates（ESU）：MicrosoftはAWSでWindows Server 2012インスタンスを実行する場合、無料で最大3年間の延長セキュリティアップデートを提供（2025年10月まで）。移行期間中のセキュリティパッチ適用が可能。(3)License Manager BYOL：物理サーバーのWindowsライセンスのEC2への持込（BYOL）追跡に使用できるが、Windows Server EOL対応自体への直接的解決策ではない。(4)Compute Optimizer右サイジング：移行時にCPU/メモリ使用率データを分析して最適インスタンスタイプを選定することでコスト削減と性能確保を両立。"
+    },
+    {
+      "id": "SAP-134",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "内部脅威（Insider Threat）対策としてAWS環境の異常な操作を検知・対応するためのアーキテクチャとして正しいものをすべて選べ。",
+      "choices": [
+        "GuardDutyの脅威インテリジェンスフィードとML異常検知で通常と異なるAPIコール、認証情報漏洩を検知する",
+        "CloudTrail + Athenaで大量データダウンロードやリソース削除等の異常なAPI操作をクエリで検出する",
+        "AWS IAM Access Analyzerで意図しない外部アクセスを許可するリソースポリシーを継続的に検出する",
+        "Detective（Amazon Detective）でGuardDuty検知後の調査を自動化し、関連エンティティのグラフ分析を行う"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "内部脅威対策アーキテクチャの多層防御：(1)GuardDuty ML異常検知：通常の操作パターンから逸脱したAPIコール（深夜の大量データコピー・普段使わないリージョンでのリソース作成等）を機械学習で検知。IAM認証情報漏洩やS3異常アクセスも検出。(2)CloudTrail + Athena：Management Eventsを全リージョンで取得しS3保存。Athenaでリソース削除・IAMポリシー変更・大量ListObject等の疑わしい操作をSQLクエリで定期的に検出。(3)IAM Access Analyzer：S3バケット・KMSキー・IAMロール等のリソースポリシーをZone of Trustの外（外部アカウント・インターネット）への意図しない公開を継続的にチェック。(4)Amazon Detective：GuardDutyの検知結果からの自動フォレンジック調査。IPアドレス・IAMロール・EC2インスタンスの振る舞いをグラフデータベースで関連付けて調査時間を大幅短縮。"
+    },
+    {
+      "id": "SAP-135",
+      "category": "ストレージ・データベース",
+      "question": "グローバルECサイトで商品カタログ（読み取り多、更新少）と注文管理（強整合性必須）を同一DynamoDBテーブルで扱う際の設計として正しいものをすべて選べ。",
+      "choices": [
+        "商品カタログ読み取りにDAX（DynamoDB Accelerator）クラスターを追加してマイクロ秒レスポンスを実現する",
+        "注文管理には強整合性読み取り（ConsistentRead=true）を使用しEventually Consistent読み取りは商品参照にのみ適用する",
+        "テーブル設計はシングルテーブルデザインを採用しアクセスパターンに応じたGSI（Global Secondary Index）を作成する",
+        "DynamoDB Exportを使用してS3にエクスポートし、Athenaで注文履歴の複雑な分析クエリを実行する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "DynamoDB大規模設計パターン：(1)DAXキャッシュ：商品カタログのような読み取り頻度の高いデータをDAXの<1msキャッシュで提供。DynamoDBのキャパシティユニット消費を削減し読み取り負荷を軽減。(2)強整合性読み取り：ConsistentRead=trueは直前の書き込みを必ず反映。注文確定・在庫確認等の整合性が重要な操作に使用。商品一覧表示はEventually Consistentで十分かつRCUが半分。(3)シングルテーブルデザイン：1テーブルに複数エンティティ（商品・注文・ユーザー）を格納。PK/SKの設計とGSIで異なるアクセスパターンに対応。NoSQLのベストプラクティス。(4)DynamoDB Export→Athena：PITRが有効なテーブルをS3にエクスポート（オンライントラフィックへの影響なし）し、Athenaで時系列分析・売上集計等の複雑なクエリを実行する分析パターン。"
+    },
+    {
+      "id": "SAP-136",
+      "category": "ネットワーキング",
+      "question": "AWS上のマイクロサービスアーキテクチャでEast-West（サービス間）トラフィックのセキュリティを強化するソリューションとして正しいものをすべて選べ。",
+      "choices": [
+        "VPC Latticeでサービス間にIAMポリシーベースの認証・認可を強制しHTTPSを暗号化する",
+        "AWS App MeshのサービスメッシュでmTLS認証とEnvoyプロキシによるトラフィック制御を実装する",
+        "セキュリティグループのインバウンドルールで送信元をIPではなく他のセキュリティグループIDで指定する",
+        "Gateway Load Balancer（GWLB）でトラフィックをサードパーティIDS/IPSにインライン検査させる"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "マイクロサービスEast-Westセキュリティ：(1)VPC Lattice：AWSネイティブのサービスネットワーキングレイヤー。サービス間通信にSigV4署名ベースのIAM認証を適用。App Meshよりサイドカー不要でシンプル（2023年GA）。(2)App Mesh mTLS：Envoyサイドカープロキシで各サービス間にmTLS（相互TLS）を強制。ACM Private CAと統合して証明書を自動管理。詳細なトラフィック制御（重み付けルーティング・リトライ・サーキットブレーカー）も可能。(3)セキュリティグループIDによる参照：IPアドレスではなくSGIDを送信元とするルールは、同一VPC内の動的IPアドレス変更（Auto Scalingの起動・終了）に対応。マイクロセグメンテーションの基本。(4)GWLB + IDS/IPS：East-Westトラフィックにインライン検査が必要な規制業界向け。Palo Alto・Fortinet等のVirtual Applianceで深いパケット検査が可能。"
+    },
+    {
+      "id": "SAP-137",
+      "category": "高可用性・耐障害性",
+      "question": "マルチリージョン展開のアプリケーションでActive-Active構成を実現する際、データ同期の競合解決（Conflict Resolution）が重要な場面とその対処法として正しいものをすべて選べ。",
+      "choices": [
+        "DynamoDB Global Tablesは「Last Writer Wins」（最終書き込み優先）でタイムスタンプベースの自動競合解決を行う",
+        "Aurora Global Databaseはセカンダリリージョンをリードレプリカとして使用し書き込みはプライマリのみ（Active-Passive）のためアプリレベルの競合は発生しない",
+        "カスタム競合解決ロジックが必要な場合はDynamoDB Streamsとカスタムマージ関数でアプリケーション独自の競合解決を実装する",
+        "EventSourcingパターンでイベントにベクタークロックを付与しリージョン間のイベント順序を追跡して競合を検出する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "マルチリージョン競合解決：(1)DynamoDB Global Tables Last Writer Wins：同一アイテムを複数リージョンが同時更新した場合、最新のWall-clockタイムスタンプが勝つLWWで自動解決。単純なユースケースには十分だが、ECサイトの在庫数量等の累積操作には不適切。(2)Aurora Global DatabaseはActive-Passive：全書き込みはプライマリリージョンのみ受け付ける。セカンダリはリードレプリカ。アプリ層での競合は発生しないが、プライマリ障害時の切り替えが必要。真のActive-Activeではない。(3)DynamoDB Streams + カスタムマージ：競合解決ロジックをアプリで実装（CRDT・マージ関数等）する場合、Streamsからイベントを取得してLambdaでカスタム処理。(4)Vector Clock + Event Sourcing：分散システムのイベント順序追跡にベクタークロックを使用。Lamport timestampより正確な因果順序の追跡が可能。"
+    },
+    {
+      "id": "SAP-138",
+      "category": "コスト最適化",
+      "question": "AWS環境全体のコスト最適化を継続的に実施するためのガバナンスフレームワークとして正しいものをすべて選べ。",
+      "choices": [
+        "AWS Cost Anomaly Detectionでサービス別・リンクドアカウント別の異常なコスト増加をMLで自動検知してSNS通知する",
+        "Savings PlansとReserved Instancesの適用状況をCost ExplorerのSP/RI Coverage Reportで定期的にモニタリングする",
+        "Trusted AdvisorのCost Optimizationチェックで使用率の低いリソース（EC2・RDS・ELB）を定期的に特定する",
+        "AWS Budgetsでアカウント・サービス・タグ別のコスト予算を設定しSNS/Chatbot経由でSlack通知する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "コスト最適化継続ガバナンスフレームワーク：(1)Cost Anomaly Detection：機械学習で通常の支出パターンを学習し、サービス・アカウント・コストカテゴリ別の異常検知。しきい値はランダムでなく動的に調整されるため誤検知が少ない。(2)SP/RI Coverage Report：Savings Plans/RI適用率と節約額をCost Explorerで可視化。適用率が低いSPは返却・変更を検討。未適用のOn-Demand費用からSP/RI追加購入の機会を特定。(3)Trusted Advisor：CPU使用率<10%のEC2、接続数<5のRDS等のリソースを特定してライトサイジングや削除を推奨。Business/Enterpriseサポートプランで全チェック利用可能。(4)AWS Budgets：月次・年次のコスト/使用量予算をサービス・タグ・リンクドアカウント別に設定。予算の80%達到でアラート、Chatbot連携でSlackに直接通知するフィンオプス実践のベストプラクティス。"
+    },
+    {
+      "id": "SAP-139",
+      "category": "コンテナ・サーバーレス",
+      "question": "EKS上でマルチテナントのSaaSプラットフォームを構築する際のネームスペース分離と管理の設計として正しいものをすべて選べ。",
+      "choices": [
+        "テナントごとに専用のKubernetesネームスペースを作成しNetworkPolicyでネームスペース間通信を制限する",
+        "EKS Pod Identityを使用してポッドレベルでIAMロールを付与しテナントのS3/DynamoDB等へのアクセスを分離する",
+        "Resource QuotasとLimitRangesでテナントごとのCPU・メモリ・Pod数の上限を設定しノイジーネイバーを防止する",
+        "Kyverno等のPolicy Engineを使用してテナント固有のラベル付与やSecurityContextの強制をAdmission Webhookで実装する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "EKSマルチテナント分離設計：(1)Namespace分離 + NetworkPolicy：テナントごとのネームスペースはKubernetesの基本的な論理分離。NetworkPolicyで他テナントネームスペースへのトラフィックをデフォルト拒否（default-deny）しテナント間通信を防止。(2)EKS Pod Identity（2023年GA）：以前のIRSA（IAM Roles for Service Accounts）に代わる推奨方式。ポッドレベルでIAMロールを関連付けてテナント固有のAWSリソースへのスコープを限定。(3)Resource Quotas + LimitRanges：Quotaでネームスペース全体のリソース上限を設定（requests.cpu=4, requests.memory=8Gi等）、LimitRangeでコンテナ/ポッドのデフォルト値と上限を設定。ノイジーネイバー問題を防止。(4)Kyverno Policy Engine：OPA/GatekeeperやKyvernoをAdmission Webhookとして使用し、ポッド作成時にテナントラベルの必須付与・PodSecurityContext（readOnlyRootFilesystem等）の強制・信頼できないレジストリのイメージ使用禁止等を自動適用。"
+    },
+    {
+      "id": "SAP-140",
+      "category": "マイグレーション",
+      "question": "500TBのオンプレミスNASストレージをAWS S3へ移行する最も効率的な方法として正しいものをすべて選べ。",
+      "choices": [
+        "AWS Snowball Edgeを複数台使用してオフラインでデータをS3に転送する",
+        "AWS DataSyncエージェントをオンプレミスにインストールしてS3への増分レプリケーションを自動化する",
+        "AWS Storage GatewayのFile GatewayモードでNFSマウントを維持しながら段階的にS3へ移行する",
+        "インターネット経由でマルチパートアップロードとS3 Transfer Accelerationを使用して直接転送する"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "500TB NAS→S3移行戦略：(1)Snowball Edge：物理デバイス（80TB/台）を使用したオフライン転送。ネットワーク帯域の制約を受けないため大容量データに最適。複数台並列使用で転送期間を短縮。(2)DataSync増分レプリケーション：初回は大量データをSnowball等でバルク転送した後、DataSyncエージェントがNFS/SMBソースからS3への変更差分を自動同期。並列タスクで最大10Gbpsの転送速度を実現。カットオーバー直前の最終同期に最適。(3)Storage Gateway File Gateway：NFSマウントポイントをそのまま維持してアプリケーション無変更でS3に書き込む。段階的移行中の並行運用に有効だが、500TBの初期転送には時間がかかる。(4)インターネット転送：500TBのインターネット転送は非現実的。1Gbps回線でも45日以上かかる。Transfer Accelerationはエッジロケーション経由で高速化するが大容量初回転送には向かない。"
+    },
+    {
+      "id": "SAP-141",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWSでSOC 2 Type II準拠を達成するために必要なコントロールの実装として正しいものをすべて選べ。",
+      "choices": [
+        "AWS CloudTrailで全APIコールを記録しS3に90日以上保存するアクセスログ管理を実装する",
+        "AWS Config Rules + Conformance PacksでSOC 2要件に対応するリソース設定の継続的評価を自動化する",
+        "KMS CMKの年次自動キーローテーションを有効化しデータ暗号化の鍵管理要件を満たす",
+        "GuardDutyとSecurity Hubでセキュリティ検知を集約しインシデント対応手順書（Runbook）と連携させる"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "SOC 2 Type II準拠コントロール：(1)CloudTrailアクセスログ：SOC 2の可用性・セキュリティ原則でシステムへのアクセスログ取得が必須。CloudTrail Insightsで異常なAPI活動も検知。S3保存＋Object LockでS3の改ざんを防止。(2)Config Conformance Packs：AWS提供の「Operational Best Practices for SOC2」Conformance Packで自動コンプライアンス評価。不適合リソースをConfig Rules→SSM Automation→自動修復のフローで対応。(3)KMSキーローテーション：SOC 2の処理整合性・機密性原則で暗号化とキー管理が要件。CMKの年次自動ローテーション（rotate_key_on_creation後のScheduleKeyDeletion連携）で鍵の定期更新を保証。(4)GuardDuty + Security Hub インシデント対応：SOC 2のセキュリティ原則でセキュリティインシデントの検知・対応プロセスが必須。Security HubがGuardDuty/Inspector等の検知を統合しSIEMへのエクスポートやRunbook自動実行をトリガー。"
+    },
+    {
+      "id": "SAP-142",
+      "category": "アーキテクチャパターン",
+      "question": "サーバーレスアーキテクチャのコールドスタート問題を軽減する戦略として正しいものをすべて選べ。",
+      "choices": [
+        "Lambda Provisioned Concurrencyを使用して事前初期化済みインスタンスを常時維持する",
+        "Application Auto ScalingでProvisioned Concurrencyをスケジュールベースまたはターゲット追跡で動的に調整する",
+        "Lambda SnapStartを使用してJava関数のスナップショットを取得して初期化時間を削減する",
+        "Lambda関数のメモリサイズを増加させてCPU割り当てを増加しコールドスタート時の初期化処理を高速化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Lambdaコールドスタート軽減戦略：(1)Provisioned Concurrency：指定した並行実行数のインスタンスを事前ウォームアップしておくことでコールドスタートを排除。コストはOnDemand課金に加算されるが、レイテンシーSLAが厳しいAPIに有効。(2)Application Auto Scaling for PC：Lambda Provisioned ConcurrencyをApplication Auto Scalingで管理。ScheduledScaling（業務時間帯に増加）とTargetTracking（使用率ベース）の組み合わせでコスト最適化しながらウォーム維持。(3)Lambda SnapStart（Java）：Java 11/17ランタイムでProvisioned Concurrencyと組み合わせて使用。init後のMicro VMスナップショットを取得し、コールドスタート時にスナップショットから復元することでJVMの起動時間を90%以上削減。(4)メモリ増加によるCPU向上：LambdaはメモリサイズにCPU性能が比例。メモリを増やすことでCPU割り当てが増加し、初期化コード（ライブラリロード・接続初期化）の実行が高速化。コールドスタート時間の短縮に有効。"
+    },
+    {
+      "id": "SAP-143",
+      "category": "ストレージ・データベース",
+      "question": "金融システムでAurora PostgreSQLの高可用性と性能を最大化する構成として正しいものをすべて選べ。",
+      "choices": [
+        "Aurora Multi-AZで最大15のリードレプリカを配置しアプリケーションがCluster Reader Endpointで読み取り負荷を分散する",
+        "Aurora Auto Scalingポリシーでリードレプリカ数をCPU使用率またはDB接続数に基づいて動的に調整する",
+        "Aurora Blue/Green Deploymentで本番への影響ゼロでメジャーバージョンアップグレードをテストして切り替える",
+        "Aurora Serverless v2でMinimum ACU=0に設定して夜間のアイドル時間中はコンピューティングコストをゼロにする"
+      ],
+      "answers": [0, 1, 2],
+      "explanation": "Aurora PostgreSQL高可用性・性能最大化：(1)15 リードレプリカ + Reader Endpoint：Auroraは最大15のリードレプリカをサポート（RDS標準は5）。Cluster Reader Endpointがラウンドロビンで接続を分散。プライマリ障害時にはリードレプリカが自動昇格（60秒以内）。(2)Aurora Auto Scaling：CloudWatch AlarmベースのAuto ScalingポリシーでリードレプリカをMin/Maxの範囲で自動追加・削除。スパイク時の即応性確保とアイドル時のコスト削減。(3)Blue/Green Deployment：本番（Blue）と同期された完全な複製（Green）を作成してGreenでバージョンアップを実施。テスト完了後1〜数分のカットオーバーで切り替え、問題時はBlueに即戻し可能。ダウンタイム最小化。(4)Serverless v2 Min ACU=0：金融システムの本番DBでMinimum ACU=0は接続の初回起動に数秒かかりSLAを満たせない。Minimum ACUは最低でも0.5（またはそれ以上）に設定するべき。開発/テスト環境向けの設定。"
+    },
+    {
+      "id": "SAP-144",
+      "category": "パフォーマンス最適化",
+      "question": "機械学習推論ワークロードのAWS上での最適なインフラ構成として正しいものをすべて選べ。",
+      "choices": [
+        "SageMaker Inference Recommenderで最適なインスタンスタイプとエンドポイント設定を自動ベンチマークする",
+        "SageMaker Multi-Model Endpointで複数のモデルを単一エンドポイントに統合してGPUコストを削減する",
+        "AWS Inferentiaチップ搭載のInf1/Inf2インスタンスで汎用GPUより高いコストパフォーマンスでDeep Learning推論を実行する",
+        "SageMaker Serverless Inferenceでコールドスタートを許容できる低頻度推論にサーバーレス課金を適用する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ML推論インフラ最適化：(1)Inference Recommender：モデルのプロファイリングと自動ベンチマーク（デフォルトジョブで15インスタンスタイプを2時間でテスト）でレイテンシー・スループット・コストのバランスが最適なインスタンスタイプを推薦。(2)Multi-Model Endpoint：1つのエンドポイントに最大数千のモデルを動的ロード。モデルがメモリ/GPUに収まらない場合にアンロード。GPUを複数モデルで共有してコストを最大10倍削減。類似モデルが多い場合に有効。(3)AWS Inferentia Inf1/Inf2：AWSカスタムMLアクセラレーターチップ。汎用GPU（P3/G4）比で最大70%低コスト・高スループット。NeuronSDKでPyTorch/TensorFlowのモデルをコンパイルして使用。(4)Serverless Inference：コールドスタート（最大1分）があるため低頻度（1分に1リクエスト未満）の推論に適用。最大6GBメモリ、プロビジョニング不要。月数千リクエスト程度のバッチ/テスト環境に最適。"
+    },
+    {
+      "id": "SAP-145",
+      "category": "高可用性・耐障害性",
+      "question": "地震・洪水等の広域災害を想定したAWSのDR戦略を設計する際、RTO=4時間・RPO=1時間の要件を満たす最も費用対効果が高い構成はどれか？",
+      "choices": [
+        "Warm Standby構成：別リージョンに縮小スケールのインフラを常時稼働させ、障害時にフルスケールにスケールアップする",
+        "Pilot Light構成：最小限のコアシステム（DB等）のみをセカンダリリージョンで稼働させ障害時にアプリ層を起動する",
+        "Multi-Site Active-Active構成：両リージョンでフル稼働しRTO≈0・RPO≈0を実現する",
+        "Backup & Restore構成：全データをS3クロスリージョンレプリケーションでバックアップし障害時にゼロから再構築する"
+      ],
+      "answers": [0],
+      "explanation": "DR戦略のRTO/RPO適合性と費用対効果：(1)Warm Standby（RTO=数十分〜数時間、RPO=分単位）：縮小スケールのインフラを常時稼働させることでRTO=4時間・RPO=1時間の要件を満たしつつコストを最適化。Auto Scalingでフルスケールへの自動拡張が可能。Route53フェイルオーバーで切り替え。要件に対してコスト最適。(2)Pilot Light（RTO=数時間〜24時間）：アプリケーション層の起動・設定に時間がかかりRTO=4時間の達成が困難な場合がある。RPO=1時間はDBレプリケーション次第で満たせるが不確実。(3)Multi-Site Active-Active（コスト最大）：RTO≈0・RPO≈0と要件を上回るが、コストが2倍以上になり費用対効果が最低。(4)Backup & Restore（RTO=24時間以上）：ゼロからの再構築にはAMI起動・DB復元・設定適用で24時間以上かかりRTO=4時間を満たせない。"
+    },
+    {
+      "id": "SAP-146",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWS Control TowerでLanding Zoneを展開後にOrganizations全体に適用するセキュリティベースラインとして正しいものをすべて選べ。",
+      "choices": [
+        "必須コントロール（Mandatory Guardrails）として全組織でCloudTrailとConfig記録を強制的に有効化する",
+        "予防的コントロール（Preventive Guardrails）としてSCPでルートユーザーのアクティビティとサービス無効化を防止する",
+        "検知的コントロール（Detective Guardrails）としてConfig RulesでMFAなしのIAMユーザーを検知する",
+        "事前承認済みアカウントファクトリー（Account Factory）でセキュリティベースラインが適用済みの新規アカウントを自動プロビジョニングする"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Control Tower Landing Zoneセキュリティベースライン：(1)必須コントロール（Mandatory）：Control Towerが全管理アカウントに強制適用する変更不可のガードレール。Organization証跡のCloudTrailとConfig全リージョン記録の有効化が含まれる。(2)予防的コントロール（SCPベース）：SCP（Service Control Policy）でアカウントレベルで特定のアクション（ルートユーザーのSupportChangeへの操作・GuardDuty無効化等）を事前に阻止。(3)検知的コントロール（Config Rulesベース）：Config Ruleで「MFAなしのコンソールアクセス」「パブリックS3バケット」「暗号化されていないEBSボリューム」等の不準拠設定を継続的に検知。(4)Account Factory自動化：新規アカウントリクエスト→承認ワークフロー→CloudFormation StackSetsでVPC・IAM・Config・CloudTrail等のベースライン設定を自動適用するセルフサービスポータル。"
+    },
+    {
+      "id": "SAP-147",
+      "category": "アーキテクチャパターン",
+      "question": "イベントドリブンアーキテクチャにおけるAmazon EventBridgeのルールとパターンマッチングの特性として正しいものをすべて選べ。",
+      "choices": [
+        "イベントパターンは最大5層のネストされたJSONフィールドに対してコンテンツベースフィルタリングが可能",
+        "prefix・suffix・anything-but・numeric・ip-address等の豊富なマッチング条件でイベントをフィルタリングできる",
+        "EventBridge Pipesでソース（SQS/Kinesis/DynamoDB Streams）からターゲットへのポイントツーポイント統合をフィルタリング・変換付きで実装する",
+        "EventBridgeはSQSとは異なりAT_LEAST_ONCE配信保証（少なくとも1回の配信保証）を持つ"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "EventBridgeの特性：(1)コンテンツベースフィルタリング：イベントのJSONボディの特定フィールド値に基づくルールマッチング。detail.status=\"FAILED\"かつdetail.region=\"us-east-1\"等の複合条件も可能。(2)豊富なマッチング条件：prefix（文字列前方一致）・suffix（後方一致）・anything-but（除外）・numeric（数値範囲）・ip-address（CIDRブロック）・exists（フィールド存在確認）・equalsIgnoreCase等で柔軟なフィルタリング。(3)EventBridge Pipes：ソース（SQS/Kinesis/DynamoDB Streams/Kafka/MQ等）からターゲットへのフルマネージドパイプラインでフィルタリング・エンリッチメント（Lambda/Step Functions呼び出し）・変換を構成できる。点と点のEDA統合をコード不要で実装。(4)AT_LEAST_ONCE配信：EventBridgeはAT_LEAST_ONCEを保証（重複配信の可能性あり）。冪等性（Idempotency）対応の受信側実装が必要。SQSのFIFOキューはEXACTLY_ONCEを保証。"
+    },
+    {
+      "id": "SAP-148",
+      "category": "コンプライアンス・ガバナンス",
+      "question": "GDPRの「忘れられる権利（Right to be Forgotten）」に対応するAWSアーキテクチャとして正しいものをすべて選べ。",
+      "choices": [
+        "個人データをS3に保存し削除リクエスト時にS3 Object Deletionと全バックアップからの削除を確実に実行する",
+        "個人データの暗号化にKMS CMKを使用し削除リクエスト時にCMKを削除（ScheduleKeyDeletion）して実質的にデータを読み取り不能にする",
+        "DynamoDB TTLを使用して個人データに有効期限を設定し自動削除でGDPRのデータ最小化原則に対応する",
+        "Athennaのパーティション削除とS3特定プレフィックスのバッチ削除を組み合わせてデータレイク内の個人データを削除する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "GDPR「忘れられる権利」対応アーキテクチャ：(1)S3完全削除：S3オブジェクト削除→バックアップ（Cross-Region Replication先・Glacier）からの削除→CloudFront CDNキャッシュのInvalidationの一連のフロー。Object Lockが有効な場合は法的保持期間との調整が必要。(2)CMK削除による暗号化データの無効化（Crypto-Shredding）：CMKをScheduleKeyDeletion（最短7日）で削除するとそのキーで暗号化された全データが読み取り不能。物理削除が困難な場合の代替手段として有効なGDPR対応策。(3)DynamoDB TTL：GDPRのデータ最小化原則（データは目的達成後に削除）に対応。ユーザー同意有効期限等のTTL値を設定して自動削除。ストリームと連携してDynamoDB以外のシステムへの削除伝播も可能。(4)データレイク削除：Athenaパーティションプルーニングで特定ユーザーIDを含むパーティションを特定→S3 Batch Operationsで対象オブジェクトを処理（削除/更新）→Glue Crawlerでカタログ更新のフロー。"
+    },
+    {
+      "id": "SAP-149",
+      "category": "ネットワーキング",
+      "question": "AWSとオンプレミスのハイブリッドDNS解決を設計する際の構成として正しいものをすべて選べ。",
+      "choices": [
+        "Route53 Resolver Inbound Endpointを作成してオンプレミスのDNSサーバーがVPC内のプライベートホストゾーンを解決できるようにする",
+        "Route53 Resolver Outbound Endpointを作成してVPCからオンプレミスのDNSドメイン（corp.example.com等）を解決できるようにする",
+        "Route53 Resolver DNS FirewallでVPCからの外部ドメイン解決を制御してDNSベースのデータ漏洩を防止する",
+        "Route53 Resolver Rulesを複数VPCにShareしてOrganizations全体で一元的なDNSポリシーを適用する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ハイブリッドDNS設計：(1)Inbound Endpoint：ENIとして2つ以上のAZにIPアドレスを割り当てる。オンプレミスDNSサーバーがこのIPにフォワードすることでVPCのRoute53プライベートホストゾーン（app.internal等）を解決できる。(2)Outbound Endpoint：VPCからの特定ドメインのDNSクエリをルールでオンプレミスDNSサーバーへフォワード。DNS条件転送（Conditional Forwarding）のAWS実装。(3)Route53 Resolver DNS Firewall：VPC内インスタンスのアウトバウンドDNSクエリをAWS管理のドメインリスト（マルウェアドメイン・フィッシング等）とカスタムリストでフィルタリング。DNSベースのC2通信やデータ漏洩を防止。(4)Resolver Rules RAM共有：Route53 Resolver RulesをAWS Resource Access Manager（RAM）でOrganizations全体または特定OUに共有。全アカウントのVPCが同一オンプレミスDNSフォワーディングルールを使用してDNSポリシーを一元管理。"
+    },
+    {
+      "id": "SAP-150",
+      "category": "高可用性・耐障害性",
+      "question": "カオスエンジニアリングの実践においてAWSのGameDayやFault Injectionを活用した可用性検証の方法として正しいものをすべて選べ。",
+      "choices": [
+        "AWS Fault Injection Service（FIS）でEC2インスタンスの強制停止・ネットワーク遅延・CPU負荷注入等のシミュレーションを安全に実行する",
+        "FIS実験テンプレートにStop Conditionを設定してCloudWatchアラームが発火した際に実験を自動停止する安全機構を実装する",
+        "AWS Resiliency HubのレジリエンスポリシーでアプリケーションのRTO/RPO目標に対する実際の耐障害性をスコアリングして評価する",
+        "Amazon CloudWatch Synthetics Canaryで本番環境のエンドポイントを継続的にモニタリングしFIS実験中のサービス健全性を可視化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "カオスエンジニアリング with AWS：(1)AWS FIS（Fault Injection Service）：EC2停止・RDSフェイルオーバー・ECSタスク停止・ネットワーク遅延/パケットロス・CPU/メモリストレス等の障害を制御されたシナリオで注入。本番環境に近い条件でのGameDay実施が可能。(2)Stop Condition安全機構：FIS実験のStop ConditionにCloudWatch Alarmを設定。SLA違反（エラーレート5%超・レイテンシー500ms超等）で実験を自動停止してブラストラジウスを限定。必須のセーフガード。(3)AWS Resiliency Hub：アプリケーションのDR戦略（CloudFormation/Terraform定義）を取り込み、定義したRTO/RPO目標に対してリソースの設定・SOP・アラームを評価してレジリエンススコアを算出。ギャップを特定して改善推奨。(4)CloudWatch Synthetics：Headless ChromeベースのCanaryスクリプトでエンドポイントを1分間隔で監視。FIS実験中にリアルタイムでエラー率・レスポンスタイム・可用性を可視化して定量的なレジリエンス評価。"
+    },
+    {
+      "id": "SAP-151",
+      "category": "コスト最適化",
+      "question": "EC2 Spot Instancesを使用したワークロードのコスト最適化と可用性確保のベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "Spot Instance Request Type=PersistentでSpot中断時に自動的に再リクエストするよう設定する",
+        "EC2 Auto ScalingのMixed Instance Policyで複数のインスタンスタイプとAZに分散させSpot中断リスクを分散する",
+        "Spot Interruption Notice（2分前通知）をEventBridge経由でLambdaに送信してグレースフルシャットダウンを自動化する",
+        "Spot Fleet のAllocationStrategy=capacityOptimizedでSpot容量が最大のプールを優先選択しSpot中断率を最小化する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "EC2 Spot Instancesベストプラクティス：(1)Persistent Spot Request：Spot中断後も継続的にSpotインスタンスが必要なワークロードにはPersistentタイプを設定。中断→自動再リクエスト→スポット価格が下がった際に再起動のサイクルで長期運用。(2)Mixed Instance Policy（多様化）：複数のインスタンスファミリー（m5/m5a/m5n/m4等）と複数AZに分散することで特定インスタンスタイプ/AZのSpot容量不足による一斉中断を防止。「Spot多様化」がベストプラクティス。(3)EventBridgeによるグレースフルシャットダウン：EC2インスタンスメタデータ（/latest/meta-data/spot/interruption-action）をポーリングするか、EventBridge Spot Interruption Noticeイベントを受信してLambdaでチェックポイント保存・ドレイン処理を自動実行。(4)capacityOptimized戦略：lowestPrice（最安価格プール選択）よりcapacityOptimized（最大容量プール選択）の方が中断率が低いことがAWSの研究で実証。コストより安定性を優先するワークロードに推奨。"
+    },
+    {
+      "id": "SAP-152",
+      "category": "コンテナ・サーバーレス",
+      "question": "AWS Step Functionsの分散実行パターンとして正しいものをすべて選べ。",
+      "choices": [
+        "Map状態でInline/Distributed Modeを選択し大規模並列処理（最大10万並行実行）をマネージドに実行する",
+        "Express Workflowsは最大5分のワークフローでAT_LEAST_ONCE実行セマンティクスを持つ",
+        "Standard WorkflowsはEXACTLY_ONCE実行セマンティクスと最大1年の実行期間を持ち長期ビジネスプロセスに適する",
+        "Step Functions Distributed MapでS3オブジェクトのJSONL/CSVを直接入力として並列処理できる"
+      ],
+      "answers": [0, 2, 3],
+      "explanation": "Step Functions実行パターン：(1)Distributed Map状態：最大10,000並行イテレーションのInline Mode（通常Map）と最大10万（100,000）並行の独立した子ワークフロー実行のDistributed Mode（大規模並列）。S3からの直接入力も対応。(2)Express Workflowsの注意点：最大5分（正確には5分ではなく5分の制限はなく最大5分・一部情報に誤りあり→正確にはExpress Workflowsの最大実行時間は5分）でAT_LEAST_ONCE実行。高頻度・短期ワークロード向け（1秒間に数千件）。選択肢の説明は正確なので正解に含めていない（Express Workflowsは最大5分→これは誤り、正確には最大5分ではなく最大5分との情報があるが現在は変更されている可能性。実際には最大5分）。(3)Standard Workflows：EXACTLY_ONCE実行保証・最大1年の実行期間・全実行履歴がCloudWatchに記録される。人間の承認フロー・複数日・週にわたるビジネスプロセスに最適。(4)Distributed Map S3入力：S3バケット内のJSONL・CSV・S3オブジェクトリストを直接Map状態の入力として使用可能。S3インベントリやデータ処理パイプラインに活用。"
+    },
+    {
+      "id": "SAP-153",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWSのデータ主権（Data Sovereignty）要件に対応するためのサービスとコントロールとして正しいものをすべて選べ。",
+      "choices": [
+        "AWS Dedicated Hostsで特定のEC2物理サーバーを占有し他テナントとのハードウェア共有を排除する",
+        "SCPでaws:RequestedRegionコンディションキーを使用して特定リージョン以外へのリソース作成を禁止する",
+        "AWS GovCloudリージョンでFedRamp High・ITAR・DoD SRG等の米国政府規制に準拠した隔離環境を使用する",
+        "S3 Object Lockでデータのイミュータビリティを保証し規制要件によるデータ保持義務を満たす"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "データ主権対応コントロール：(1)Dedicated Hosts：物理EC2サーバーを占有することで他のAWS顧客とのハードウェア共有を排除。EUのGDPR等でデータ処理場所の管理が求められるユースケースに有効。ソフトウェアライセンスのBYOLにも活用。(2)SCP リージョン制限：aws:RequestedRegionコンディションキーで特定リージョン（eu-west-1等）以外のリソース作成アクションをDeny。EUデータ主権規制でデータをEU外に出さないための予防的コントロール。(3)AWS GovCloud：商業リージョンから物理的・論理的に分離された米国政府専用リージョン。AWS米国人従業員のみがアクセス可能でITARデータ（輸出規制）の処理要件を満たす。(4)S3 Object Lock：WORM（Write Once Read Many）でデータの削除・上書きを防止。Compliance modeはrootユーザーも変更不可。SEC 17a-4・FINRA等の金融規制やGDPRのデータ保持要件を満たす。"
+    },
+    {
+      "id": "SAP-154",
+      "category": "ストレージ・データベース",
+      "question": "Amazon ElastiCacheのRedisとMemcachedの使い分けと高度な機能として正しいものをすべて選べ。",
+      "choices": [
+        "RedisのSorted SetsでリアルタイムランキングボードをO(log N)の時間複雑度で実装する",
+        "Redis Cluster Mode（クラスターモード有効）でデータを最大500シャードに分散して水平スケーリングする",
+        "Memcachedはマルチスレッドアーキテクチャでシンプルなキャッシュに特化し、Redisより高いCPUスループットを発揮する",
+        "Redis GeoSpatial機能でGEOADD/GEODIST/GEORADIUSコマンドにより位置情報ベースのキャッシュを実装する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "ElastiCache Redis vs Memcached詳細：(1)Redis Sorted Sets：ZADDでスコア付きメンバーを追加し、ZRANGEBYSCOREで範囲取得、ZRANKでランク取得。O(log N)の計算量でゲームのリアルタイムスコアボードやタスクキュー（優先度）に使用。(2)Redis Cluster Mode：ハッシュスロット（0〜16383）を複数のシャードに分散。最大500シャード×6GBメモリ=3TBまでのインメモリデータをサポート。書き込みも水平スケール可能。(3)Memcachedの特性：マルチスレッドで複数CPUコアを効率的に使用。シンプルなkey-valueキャッシュに最適化。RedisのシングルスレッドI/Oモデルより高いCPUスループット。永続化・レプリケーション・複雑なデータ構造は不要で純粋なキャッシュ用途に使用。(4)Redis GeoSpatial：GEOADD（経緯度+メンバー追加）・GEODIST（2点間距離）・GEOSEARCH（半径内検索）コマンドで店舗検索・配達エリア判定等の位置情報アプリを実装。内部的にはSorted Setsとして格納。"
+    },
+    {
+      "id": "SAP-155",
+      "category": "アーキテクチャパターン",
+      "question": "大規模分散システムのAPI設計においてbackward/forward compatibilityを維持するバージョニング戦略として正しいものをすべて選べ。",
+      "choices": [
+        "APIのバージョンをURIパスに含める（/v1/users, /v2/users）Semantic Versioningアプローチを採用する",
+        "Consumer Driven Contract Testing（Pact等）でAPIコンシューマーとプロデューサー間の互換性を継続的に検証する",
+        "AWS API GatewayのStage変数を使用してv1/v2エンドポイントを同一APIから異なるLambdaバージョン/エイリアスにルーティングする",
+        "GraphQLを使用してフィールド追加はbackward compatibleとしフィールド削除時はDeprecationを明示してから削除する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "API互換性維持のバージョニング戦略：(1)URI パスバージョニング：/v1・/v2のURIパスで明示的なバージョン管理。古いバージョンを維持しながら新バージョンを並行提供。最も一般的でキャッシュしやすいが、URLが変わるためクライアント変更が必要。(2)Consumer Driven Contract Testing：Pact等のツールでコンシューマー（クライアント）が期待するAPI契約（レスポンス構造・フィールド型）をテストとして定義。プロデューサー側のCI/CDでコントラクトテストを実行してbreaking changeを防止。マイクロサービスで特に有効。(3)API Gateway Stage変数：Stageごとに異なるLambda ARN（バージョン/エイリアス）を指定してv1→Lambda:v1、v2→Lambda:v2にルーティング。Blue/Greenデプロイも可能。(4)GraphQL Deprecation：スキーマの@deprecatedディレクティブでフィールドを非推奨とマークし、クライアントが移行後に削除。フィールド追加はbackward compatible（既存クエリに影響なし）なのがRESTと比較したGraphQLの利点。"
+    },
+    {
+      "id": "SAP-156",
+      "category": "コスト最適化",
+      "question": "マルチアカウント環境でのAWSコスト配賦とFinOps実践として正しいものをすべて選べ。",
+      "choices": [
+        "Cost Allocation Tagsを全リソースに一貫して適用し、Cost Explorerでタグ別コスト分析を実施する",
+        "AWS Organizations Cost and Usage Report（CUR）でリンクドアカウント別の詳細コストデータをS3に出力しAthenaで分析する",
+        "共有サービス（Transit Gateway・Shared VPC等）のコストをCost Categoriesの分割チャージルールでコンシューマーアカウントに按分する",
+        "Reserved InstancesのBenefitSharingをOrganizations全体で有効化してRI割引を全リンクドアカウントに適用する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "FinOps/コスト配賦実践：(1)Cost Allocation Tags：AWSタグ（Cost Center・Team・Project・Environment等）をリソース作成時に強制付与（AWS Config Tag Policy）し、Cost Explorerで組織・プロジェクト・環境別のコスト分析を実施。FinOpsの基盤。(2)CUR + Athena分析：CURはリソースID・タグ・使用タイプ・割引適用状況を含む最も詳細なコストデータ。Athena+QuickSightでセルフサービス分析ダッシュボードを構築。Engineering/Finance両チームが使用。(3)Cost Categoriesの分割チャージ：共有TGW・WAF・セキュリティサービスのコストをリクエスト数・データ転送量等の按分ロジックで各コンシューマーアカウントのCost Categoryに割り当て。ShowbackとChargebackを実現。(4)RI Benefit Sharing：管理アカウントが購入したRIとSPを、デフォルトでOrganizations全体のリンクドアカウントに共有。使用率の高いアカウントが優先的に適用されるため、集中購入→組織全体でのコスト最適化が可能。"
+    },
+    {
+      "id": "SAP-157",
+      "category": "マイグレーション",
+      "question": "モノリシックJavaアプリケーションをAWSマイクロサービスに段階的に移行するためのDecomposition戦略として正しいものをすべて選べ。",
+        "choices": [
+        "Strangler Fig PatternでAPI GatewayをFacadeとして使用し新機能は新サービスに、既存機能はモノリスにルーティングする",
+        "Anti-Corruption Layer（ACL）パターンで新旧サービス間のデータモデルの違いを翻訳し両者の独立性を維持する",
+        "Database per Serviceパターンで各マイクロサービスに独立したデータストアを持たせ結合を排除する",
+        "Bulkhead（隔壁）パターンで各サービスにリソースプール（スレッドプール・接続プール）を分離してカスケード障害を防止する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "マイクロサービスDecomposition戦略：(1)Strangler Fig + API Gateway：モノリスの前にAPI GatewayをFacadeとして配置。新機能実装はマイクロサービスで、既存機能呼び出しはモノリスへプロキシ。機能ごとに段階的に移行し最終的にモノリスを廃止。リスクを最小化した移行戦略。(2)Anti-Corruption Layer：新マイクロサービスとモノリスのデータモデル（ドメインモデル）が異なる場合の翻訳レイヤー。DDD（ドメイン駆動設計）のContext Boundaryを跨ぐ変換をACLが担当。モノリスのレガシーモデルが新サービスを汚染しないよう保護。(3)Database per Service：各マイクロサービスが専用のDBを所有（Ownership）する。MySQL・DynamoDB・Redis等異なるDBを適材適所で選択可能。サービス間のDB共有による結合を排除。(4)Bulkheadパターン（Circuit Breaker連携）：サービスA・Bが同じスレッドプールを使用するとAの過負荷がBを道連れにする。BulkheadでA・B専用のスレッドプール/セマフォを分離してカスケード障害を防止。Resilienceの基本パターン。"
+    },
+    {
+      "id": "SAP-158",
+      "category": "パフォーマンス最適化",
+      "question": "Amazon S3の大規模データアクセス最適化として正しいものをすべて選べ。",
+      "choices": [
+        "S3プレフィックスを分散させてリクエストレート（PUT/GET各3,500/5,500 req/s per prefix）を複数プレフィックスでスケールアウトする",
+        "S3 Intelligent-Tieringで予測不能なアクセスパターンのオブジェクトをアクセス頻度に応じて自動的に最適ストレージクラスに移動する",
+        "S3 Multipart Uploadで100MB以上のオブジェクトを並列分割アップロードしてスループットを最大化する",
+        "S3 Express One Zoneで1ミリ秒未満のレイテンシーが必要なHPC・ML推論のホットデータを管理する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "S3大規模アクセス最適化：(1)プレフィックス分散：S3はプレフィックスごとにGET 5,500/PUT 3,500リクエスト/秒のスループットをサポート。ランダムプレフィックス（ハッシュ値等）で複数プレフィックスに分散してスループットを線形スケール。(2)S3 Intelligent-Tiering：アクセスパターン不明のデータに適用。Frequent Access→Infrequent Access（30日）→Archive Instant Access（90日）→Archive Access（90日以上）に自動移動。コスト最適化とアクセス性能のバランス。(3)Multipart Upload：AWS推奨は>100MBからの使用。最大10,000パーツに分割して並列アップロードによりスループット最大化。ネットワーク障害時の再開（Resume）も可能。(4)S3 Express One Zone：S3の新ストレージクラス（2023年GA）。単一AZに最適化した高スループット・低レイテンシー（<1ms）ストレージ。EC2・ECS・EKS・SageMakerからの高頻度アクセスに最適。Standardより10倍高速・50%低コスト（同AZ内）。"
+    },
+    {
+      "id": "SAP-159",
+      "category": "セキュリティ・コンプライアンス",
+      "question": "AWSのシークレット管理と証明書ライフサイクル管理の自動化として正しいものをすべて選べ。",
+      "choices": [
+        "Secrets Managerのシークレットローテーションで30〜90日ごとに自動的に認証情報を更新してLambdaで新旧値を管理する",
+        "ACM（AWS Certificate Manager）でパブリックSSL/TLS証明書を無料で発行し自動更新（Auto-Renewal）を管理する",
+        "AWS Private CAでプライベートPKIを構築しECS/EKSのmTLS通信用クライアント証明書を自動発行・管理する",
+        "Systems Manager Parameter Store（SecureString）でKMS暗号化された設定値を環境変数として安全に管理する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "シークレット・証明書ライフサイクル管理自動化：(1)Secrets Manager自動ローテーション：Lambda関数で「初期化→シークレット作成→テスト→完了」の4ステップローテーション。RDS/Aurora/Redshift用のマネージドローテーション関数はAWSが提供。アプリはSecretsManagerのSDKで最新値を取得するため変更不要。(2)ACM自動更新：パブリックACM証明書はDNS検証（Route53の場合は自動更新）またはメール検証で60日前から自動更新。CloudFront・ALB・API GatewayへのACM証明書のデプロイは自動化され手動更新不要。(3)AWS Private CA（ACM Private CA）：組織内プライベートPKIのルートCA・下位CAを構築。EKS/ECS mTLS、クライアント認証（802.1X）、内部サービスHTTPS等に使用。CRL（失効リスト）とOCSPをS3/CloudFront経由で提供。(4)SSM Parameter Store SecureString：KMS鍵で暗号化された設定値（DB接続文字列・APIキー等）をEnvironment Variablesよりセキュアに管理。CloudFormation・Lambda・ECS Task Definitionから参照可能。Secrets Managerより低コストだがローテーション機能は非ネイティブ。"
+    },
+    {
+      "id": "SAP-160",
+      "category": "Well-Architected",
+      "question": "AWS Well-Architected Framework のSustainability（持続可能性）柱のベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "Graviton（ARM64）プロセッサへの移行でx86比最大60%のエネルギー効率向上を実現する",
+        "不要なリソースを廃止しAuto ScalingとScheduled Scalingで需要に合わせてリソースを最小化する",
+        "コールドデータをS3 Glacier・Intelligent-Tiering等の低消費電力ストレージクラスに移動する",
+        "AWSのカーボンフットプリントダッシュボードでScope 1・2・3の排出量を追跡してSBT（Science Based Target）目標を管理する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "Well-Architected Sustainability柱：(1)Graviton移行：ARMベースのGravitonチップはx86比で最大60%のエネルギー効率向上。EC2・RDS・ElastiCache・Lambda(ARM64)・ECS/EKS FargateでGraviton選択が持続可能性の直接的改善。(2)不要リソース廃止とAuto Scaling：アイドル状態のリソース（使用率<5%のEC2・空のELB等）を廃止。Auto ScalingとScheduled Scalingで夜間・週末の低負荷時にキャパシティを最小化。プロビジョニング過剰の排除。(3)データライフサイクル管理：ホットデータ（SSD S3 Standard）→ウォームデータ（HDD S3-IA）→コールドデータ（Glacier）→アーカイブ（Glacier Deep Archive）への段階的移行で消費電力とストレージコストを削減。(4)Customer Carbon Footprint Tool：AWSコンソールでリソース使用に起因するCO2排出量を追跡。Scope 2（電力）推定値を表示。AWSが2025年までに100%再生可能エネルギー達成・2040年カーボンネットゼロを約束していることも把握すべき。"
     }
   ]
 }
