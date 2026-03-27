@@ -1652,6 +1652,606 @@
       "answers": [0],
       "explanation": "Ground Truth vs A2I比較：■SageMaker Ground Truth（ラベリング特化）：①大規模・初期ラベリング：画像分類・BB・セマンティックセグメンテーション・テキスト分類・NER②ワーカー：Mechanical Turk・Private（社内）・Vendor（専門業者）③Active Learning（自動ラベリング）：高信頼度予測を自動ラベル付け→人件費50〜70%削減④RLHF（Reinforcement Learning from Human Feedback）ワークフロー：LLM評価・ランキング⑤Ground Truth Plus：フルマネージドなラベリングアウトソーシング ■Amazon A2I（Augmented AI）：①本番推論パイプラインへの人間レビュー組み込み②ユースケース：Textract/Rekognitionの信頼度スコアが閾値以下→レビュー③Human Loop：条件トリガーで自動的にヒューマンレビュータスクを作成④本番後のQA・例外処理に特化。",
       "tags": ["AWSAIサービス", "Ground Truth", "A2I", "ヒューマンレビュー"]
+    },
+    {
+      "id": "MLA-111",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "SageMaker Pipelinesのキャッシュ機能（Step Caching）を有効にする目的と正しい設定方法はどれですか？",
+      "choices": [
+        "CacheConfig(enable_caching=True, expire_after='PT1H')をステップに設定することで、同一入力・パラメータのステップ実行結果を指定時間内キャッシュし、パイプライン再実行時の不要な再計算（ProcessingJob・TrainingJob等）をスキップしてコスト・時間を削減できる",
+        "キャッシュ機能はSageMaker Pipelinesでは未対応",
+        "キャッシュは自動で全ステップに適用されるためユーザーの設定は不要",
+        "Step CachingはConditionStepのみに適用できる特殊機能"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Pipelines Step Cachingの詳細：■設定：cache_config = CacheConfig(enable_caching=True, expire_after='PT1H')（ISO 8601期間形式：PT1H=1時間、P1D=1日、P30D=30日）→各Stepのコンストラクタに cache_config=cache_config を渡す ■キャッシュヒット条件：入力データ・コンテナイメージ・スクリプト・パラメータ・環境変数が全て同一の場合 ■効果：①Processing Job：通常15〜30分→0秒（キャッシュヒット）②Training Job：数時間→0秒③大幅なコスト削減 ■注意：データが更新された場合はキャッシュが使われないよう入力S3パスを変更するか expire_after を適切に設定④キャッシュは同一Pipeline実行内ではなく実行間で有効 ■ユースケース：実験的なパイプライン修正時に上流ステップを再実行しない。",
+      "tags": ["MLOps", "Pipelines", "Step Caching", "コスト最適化"]
+    },
+    {
+      "id": "MLA-112",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "テキスト分類タスクで LSTM（Long Short-Term Memory）が Vanilla RNN より優れている主な理由はどれですか？",
+      "choices": [
+        "LSTMはCellStateとHiddenState、3つのゲート（Forget・Input・Output）による選択的な記憶・忘却機構で長期依存関係を捕捉し、Vanilla RNNの勾配消失/爆発問題を大幅に緩和できる",
+        "LSTMはVanilla RNNより単純な構造でパラメータ数が少ない",
+        "Vanilla RNNは長距離依存関係をLSTMより効率的に学習できる",
+        "LSTMはBidirectional処理に対応していないため現代のNLPでは使用されない"
+      ],
+      "answers": [0],
+      "explanation": "LSTM（Long Short-Term Memory）の仕組み：■Vanilla RNNの問題：長いシーケンスで勾配消失（BPTT時に勾配が指数的に減少）→長期依存関係を学習できない ■LSTMの解決機構：①Cell State（c_t）：長期記憶を保持するメインの情報パスウェイ（勾配高速道路）②Forget Gate（f_t=σ(W_f[h_{t-1},x_t]+b_f)）：過去のCellStateをどれだけ忘れるか③Input Gate（i_t）：新しい情報をどれだけCellStateに追加するか④Cell State更新：c_t = f_t * c_{t-1} + i_t * tanh(...)⑤Output Gate（o_t）：CellStateのどの部分を出力するか ■GRU（Gated Recurrent Unit）：LSTMの簡略版（2ゲート）で同等性能・少パラメータ ■現代のNLP：TransformerがLSTMを大部分代替したが、軽量・リアルタイム処理・時系列データでLSTMも依然使用。",
+      "tags": ["MLアルゴリズム", "LSTM", "RNN", "系列モデル"]
+    },
+    {
+      "id": "MLA-113",
+      "category": "データエンジニアリング",
+      "difficulty": 3,
+      "question": "AWS Glue DataBrew を使用したノーコードデータ準備と通常のGlue ETL（PySpark）の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "DataBrewはデータアナリスト向けのビジュアルUIで250以上の組み込み変換（正規化・外れ値除去・形式標準化等）をコードなしで適用するサービス、Glue ETLはPySparkで大規模データの複雑なカスタム変換・MLパイプライン統合に使用",
+        "DataBrewはGlue ETLの完全な代替品であり同等機能を提供する",
+        "Glue DataBrewはPythonコードの記述が必須でノーコードには非対応",
+        "DataBrewはS3データのみに対応し他のデータソースは使用できない"
+      ],
+      "answers": [0],
+      "explanation": "Glue DataBrew vs Glue ETL比較：■AWS Glue DataBrew：①ターゲット：データアナリスト・データサイエンティスト（非エンジニア）②GUIでデータプロファイリング（欠損値率・分布・異常値の可視化）③250+の組み込み変換（フォーマット変換・正規化・外れ値処理・テキスト操作・集計）④レシピ（Recipe）：変換ステップを保存・再利用可能⑤COLUMN STATISTICS：各列の統計を自動計算⑥対応データソース：S3・Glue Data Catalog・Redshift・RDS・Aurora・JDBC ■Glue ETL（PySpark/Python Shell）：①任意の複雑な変換ロジック②GlueContext・DynamicFrameでGlue組み込み機能活用③ジョブブックマーク・スケジュール・ワークフロー④大規模分散処理（テラバイト〜ペタバイト） ■典型的使い分け：探索的データ準備→DataBrew、本番ETLパイプライン→Glue ETL。",
+      "tags": ["データエンジニアリング", "Glue DataBrew", "Glue ETL", "データ準備"]
+    },
+    {
+      "id": "MLA-114",
+      "category": "SageMaker高度",
+      "difficulty": 3,
+      "question": "大規模言語モデル（LLM）をAWS SageMaker でファインチューニングする際のPEFT（Parameter-Efficient Fine-Tuning）手法の適用方法として正しいものはどれですか？",
+      "choices": [
+        "LoRA（Low-Rank Adaptation）やQLoRAを使用してフリーズした事前学習モデルに低ランク行列を追加し、全パラメータの0.1〜1%のみ訓練することでフルファインチューニング比で大幅にGPUメモリ・計算コストを削減できる",
+        "PEFTはLLMのファインチューニングでは精度が大幅に低下するため実用的でない",
+        "LoRAはTransformerアーキテクチャ以外のモデルには適用できない",
+        "QLoRAを使用するとモデルが量子化されるため推論速度は向上するが精度は使用できないレベルまで低下する"
+      ],
+      "answers": [0],
+      "explanation": "PEFT手法の詳細：■フルファインチューニングの問題：70B+パラメータモデルの全重みを更新→GPU 100枚以上が必要・コスト現実的でない ■LoRA（Low-Rank Adaptation）：①特定の重み行列W（注意機構のWq/Wk/Wv/Wo等）を凍結②低ランク行列A・B（rank=4〜64）を追加：ΔW = A×B③訓練するのはA・Bのみ（元の重みは変更なし）④推論時：W + ΔW としてマージ可能（レイテンシー増加なし）⑤パラメータ削減：全体の0.1〜1%のみ ■QLoRA（Quantized LoRA）：①ベースモデルを4bit量子化（NF4・FP4）でロード②LoRAアダプターをFP16で追加訓練③65Bモデルを単一48GB GPU（A40等）でファインチューニング可能 ■SageMaker適用：HuggingFace PEFTライブラリ + SageMaker Training Job。",
+      "tags": ["SageMaker高度", "LoRA", "PEFT", "LLMファインチューニング"]
+    },
+    {
+      "id": "MLA-115",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon Kendra と Amazon Bedrock Knowledge Bases の違いとして正しいものはどれですか？",
+      "choices": [
+        "Kendraは企業文書の高精度MLベース検索エンジン（FAQs・自然言語クエリ対応・コネクタ豊富）、Bedrock Knowledge BasesはRAG（検索拡張生成）でベクターDBと生成AIを統合したエンドツーエンドサービスで回答生成まで担う",
+        "KendraとBedrock Knowledge Basesは同一の機能を提供する",
+        "Bedrock Knowledge BasesはSQLクエリのみに対応し自然言語検索には非対応",
+        "Kendraは生成AIとの統合が完全に対応しておらず単純なキーワード検索のみ提供"
+      ],
+      "answers": [0],
+      "explanation": "エンタープライズ検索・RAG比較：■Amazon Kendra：①エンタープライズ検索に特化②多数のコネクタ：SharePoint・Confluence・S3・RDS・Salesforce・ServiceNow等③FAQ・ドキュメント検索・ランキング④検索結果のハイライト・スニペット抽出⑤インクリメンタルクロール・アクセス制御（ドキュメントレベル）⑥Kendra Retrieve APIでBedrock等と統合可能（Kendraを検索+Bedrockで生成） ■Bedrock Knowledge Bases（RAG）：①ドキュメントをチャンク化→埋め込みモデルでベクター化→OpenSearch Serverless/Pinecone等に保存②クエリをベクター検索→関連チャンク取得→Bedrock LLMで回答生成③RAGワークフロー全体をマネージド提供④ハイブリッド検索（ベクター+BM25）対応⑤フルマネージド（インフラ管理不要） ■選択基準：検索精度・コネクタ重視→Kendra、生成AI回答重視・RAG→Bedrock KB。",
+      "tags": ["AWSAIサービス", "Kendra", "Bedrock Knowledge Bases", "RAG"]
+    },
+    {
+      "id": "MLA-116",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "SageMaker Pipelines と AWS Step Functions の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "SageMaker PipelinesはML特化のオーケストレーションでネイティブSageMakerステップ・実験追跡・Model Registryを統合、Step FunctionsはML以外も含む汎用サーバーレスワークフローオーケストレーターで複数AWSサービスの複雑な状態機械を構築できる",
+        "Step FunctionsはMLワークフローに非対応でSageMaker Pipelinesのみを使用すべき",
+        "SageMaker PipelinesはStep Functionsより高コストなため常にStep Functionsを使用すべき",
+        "両サービスは完全に同一でどちらを使用しても結果は変わらない"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Pipelines vs Step Functions：■SageMaker Pipelines：①ML特化：ProcessingStep・TrainingStep・TuningStep・ModelStep・RegisterModelStep等のネイティブMLステップ②DAG定義：Python SDK・JSON（Pipeline Definition JSON）③Model Registry・Experiments統合（自動メタデータ記録）④Studio UIでのビジュアルDAG確認・実行履歴⑤Step Caching・キャンセル機能⑥適合：モデル開発・定期的再訓練・ML CD ■Step Functions：①State Machine：Lambda・ECS・Glue・SageMaker Training/Endpoint等任意AWSサービスを組み合わせ②表現力：Choice（条件分岐）・Parallel（並列）・Map（イテレーション）・Wait③エラーハンドリング：Catch・Retry④視覚的ワークフロー定義（Workflow Studio）⑤ML以外（注文処理・報告書生成等）にも適用可 ■SageMaker Data Wrangler Flow→Pipelines統合や、PipelinesからStep Functionsを呼ぶハイブリッド構成も可能。",
+      "tags": ["MLOps", "SageMaker Pipelines", "Step Functions", "ワークフロー"]
+    },
+    {
+      "id": "MLA-117",
+      "category": "MLアルゴリズム",
+      "difficulty": 3,
+      "question": "アンサンブル学習のスタッキング（Stacking）において、メタラーナーのトレーニング時にデータリーケージを防ぐ正しい方法はどれですか？",
+      "choices": [
+        "K-Fold交差検証でベースモデルをフォールドごとに訓練し、バリデーションフォールドの予測を収集してメタ特徴量を作成することで、メタラーナーのトレーニングデータが訓練データと重複しない（Out-of-Fold予測を使用）",
+        "全データでベースモデルを訓練後、その予測結果を直接メタラーナーのトレーニングデータとして使用する",
+        "スタッキングにはK-Fold交差検証は不要で単純なホールドアウト分割で十分",
+        "メタラーナーのトレーニングには元のデータを使わずベースモデルの予測のみを使用するためリーケージは発生しない"
+      ],
+      "answers": [0],
+      "explanation": "Stacking における Out-of-Fold（OOF）予測：■問題：全データでベースモデルを訓練→同じデータで予測→メタラーナーに渡すと、ベースモデルは訓練データを過学習した予測を出力→メタラーナーが過学習した予測を学習→テストデータで性能低下（データリーケージ） ■OOF解決策：①データをK-Fold分割②各Fold i：残りK-1フォールドでベースモデル訓練→フォールドiで予測（このFold iのサンプルは訓練に使われていない）③全フォールドの予測を結合=OOF予測（訓練データサイズと同じ・各サンプルは必ず未学習モデルで予測）④メタラーナーをOOF予測で訓練 ■本番（Test）推論：全訓練データでベースモデルを再訓練→テストデータを予測→メタラーナーで最終予測 ■実装：mlens・vecstack ライブラリが自動化。",
+      "tags": ["MLアルゴリズム", "スタッキング", "Out-of-Fold", "アンサンブル学習"]
+    },
+    {
+      "id": "MLA-118",
+      "category": "データエンジニアリング",
+      "difficulty": 2,
+      "question": "AWS での機械学習データレイク構築において、Delta Lake や Apache Iceberg 等のオープンテーブルフォーマットの利点として正しいものはどれですか？",
+      "choices": [
+        "ACID トランザクション・タイムトラベル（過去時点のデータ参照）・スキーマ進化（列追加/変更）・パーティション最適化・増分クエリ等を S3 上の Parquet ファイルに提供し、ML のポイントインタイム特徴量取得や監査に活用できる",
+        "オープンテーブルフォーマットはAthenaとの互換性がないため使用できない",
+        "Delta Lake と Iceberg は読み取り専用フォーマットで書き込みはサポートしない",
+        "オープンテーブルフォーマットは小規模データにのみ有効で大規模ML用途には不適"
+      ],
+      "answers": [0],
+      "explanation": "オープンテーブルフォーマット（Delta Lake・Apache Iceberg・Apache Hudi）：■共通機能：①ACID Transactions：複数ファイル更新の原子性②Time Travel（タイムトラベル）：過去のスナップショットをクエリ（TIMESTAMP AS OF・VERSION AS OF）③Schema Evolution：カラム追加・型変更のスキーマ変更対応④Partition Evolution：既存データ再書き込みなしでパーティション変更 ■Apache Iceberg（AWS推奨）：①Athena・Glue・EMR・Redshift Spectrumが完全サポート②Hidden Partitioning：クエリにパーティション列を記述不要③Row-Level Deletes/Updates（MERGE INTO・UPDATE・DELETE対応）④Compaction：小ファイル問題を自動解消 ■ML活用：①Training-Serving Skew防止：同一スナップショットで学習・評価②監査：誰がいつデータを変更したか追跡③Point-in-Time Feature Retrieval：Feature Store代替として活用可能。",
+      "tags": ["データエンジニアリング", "Apache Iceberg", "Delta Lake", "データレイク"]
+    },
+    {
+      "id": "MLA-119",
+      "category": "SageMaker高度",
+      "difficulty": 2,
+      "question": "SageMaker Processing Job で大規模データを並列処理する際、効率的なデータ分散処理の設定として正しいものはどれですか？",
+      "choices": [
+        "ProcessingInput の s3_data_distribution_type を 'ShardedByS3Key' に設定することで複数インスタンスに自動的にS3オブジェクトを均等分散し、instance_count を増やすことで水平スケールアウトが可能",
+        "Processing Job のデータ分散にはEFSマウントが唯一の方法",
+        "Processing Job は単一インスタンスのみをサポートしており並列処理はできない",
+        "ShardedByS3Keyでは全インスタンスが全データを受け取り重複処理する"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Processing Job 並列データ処理：■s3_data_distribution_type オプション：①FullyReplicated（デフォルト）：全インスタンスが全データを受け取る→データ増幅型処理（各インスタンスが独立した処理をする場合）②ShardedByS3Key：S3キーに基づいてインスタンス間でデータを分割（各インスタンスが互いに重複しないサブセットを受け取る）→集約なしの並列変換処理に最適 ■並列スケールアウト：instance_count=10 + ShardedByS3Key → 1000ファイルを各100ファイルずつ10インスタンスで並列処理 ■ユースケース：①大規模データの特徴量変換②モデル評価（大規模テストデータセットの並列スコアリング）③データプロファイリング ■注意：ShardedByS3Keyはオブジェクト数単位の分割のため、ファイルサイズが均一でない場合は偏りが生じる→可能な限りファイルサイズを均一に。",
+      "tags": ["SageMaker高度", "Processing Job", "並列処理", "ShardedByS3Key"]
+    },
+    {
+      "id": "MLA-120",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon Bedrock の Guardrails 機能で設定できる保護機能として正しいものはどれですか？",
+      "choices": [
+        "有害カテゴリのフィルタリング（暴力・憎悪・性的コンテンツ等）・ PIIの自動検出・マスキング・カスタムNG Word/トピック拒否・グラウンディングチェック（幻覚検出）をモデルとアプリケーション間に挟んで入出力両方をフィルタリングできる",
+        "Guardrailsはプロンプトのみをフィルタリングし、モデルの出力は制御できない",
+        "GuardrailsはAmazon BedrockのClaude モデルにのみ適用可能",
+        "GuardrailsはVPCエンドポイント経由でのみアクセス可能なセキュリティ機能"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Bedrock Guardrails詳細：■機能カテゴリ：①Content Filters（コンテンツフィルタ）：Hate/Insults/Sexual/Violence/Misconduct/Prompt Attackのカテゴリ別に強度設定（None/Low/Medium/High）②Denied Topics（トピック拒否）：カスタムトピック（例：「株式投資アドバイスは禁止」）を自然言語で定義→一致するプロンプト/回答をブロック③Sensitive Information Filters（PII保護）：18種類のPII（SSN・クレカ・メール等）を検出・マスク・ブロック④Word Filters（NG Word）：カスタムNG Wordリスト・マネージドWordリスト⑤Grounding Check（グラウンディング）：RAGのソースと回答の整合性スコアで幻覚を検出・ブロック ■適用：特定モデル（Claude・Llama・Titan等）とGuardrailを紐付け→InvokeModel/Converse APIで自動フィルタリング ■Trace：どのガードレールがトリガーされたか詳細ログ。",
+      "tags": ["AWSAIサービス", "Bedrock", "Guardrails", "安全性"]
+    },
+    {
+      "id": "MLA-121",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "K-Nearest Neighbors（KNN）アルゴリズムの特徴と適切なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "KNNは怠惰学習（Lazy Learning）でモデル構築なしにテスト時に全訓練データとの距離を計算するため、低次元・小〜中規模データの分類・回帰・レコメンデーションに適しているが、高次元・大規模データには計算・メモリ効率が悪い",
+        "KNNはトレーニング時に全計算を行うため推論が高速で大規模データに最適",
+        "KNNはkの値（近傍数）を大きくするほど常にオーバーフィットが増加する",
+        "KNNはSageMakerの組み込みアルゴリズムには含まれていない"
+      ],
+      "answers": [0],
+      "explanation": "K-Nearest Neighbors（KNN）詳細：■仕組み：テスト点から訓練データ全点のユークリッド距離（またはコサイン・マンハッタン等）を計算→最近傍k点を選択→分類：多数決、回帰：平均 ■特徴：①Lazy Learning：訓練フェーズなし（モデル=訓練データセット）②推論：O(nd)（n=訓練サンプル数・d=次元数）→大規模データで低速③高次元：次元の呪いでユークリッド距離の意味が薄れる④k選択：k小→過学習・k大→アンダーフィット ■SageMaker KNN組み込みアルゴリズム：①ANN（近似最近傍）ベースで大規模データ対応②faissライブラリを内部使用③ユースケース：製品レコメンデーション・類似コンテンツ検索・異常検知（距離が大きい点）④ファイルサイズ・クエリ速度・精度のトレードオフ設定（正確 vs 近似）。",
+      "tags": ["MLアルゴリズム", "KNN", "怠惰学習", "近傍探索"]
+    },
+    {
+      "id": "MLA-122",
+      "category": "SageMaker高度",
+      "difficulty": 3,
+      "question": "SageMaker HyperPod を使用した大規模モデルトレーニングの利点として正しいものはどれですか？",
+      "choices": [
+        "HyperPodはクラスターの自動障害検出・ノード自動復旧（Fault Tolerance）・分散チェックポイントによる中断後の自動再開を提供し、大規模LLMトレーニング時のハードウェア障害による作業損失を最小化できる",
+        "HyperPodは単一GPUインスタンスのトレーニング高速化に特化したサービス",
+        "HyperPodはJupyterNotebookの実行環境に特化しトレーニングジョブの管理には使用しない",
+        "HyperPodはAWS Trainium インスタンスには対応しておらずNVIDIA GPUのみをサポート"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker HyperPod詳細：■背景：大規模モデル（70B+パラメータ）の分散訓練は数百ノードで数週間→単一ハードウェア障害で全作業損失のリスク ■主要機能：①Resilient Cluster（耐障害性クラスター）：健全性チェックで障害ノードを自動検出・置換（ノード交換中も他ノードは継続）②Auto-resume：チェックポイントからの自動再開（人間の介入なし）③SageMaker Managed Checkpoint：分散チェックポイントをS3に効率的保存→ノード交換後に自動ロード④クラスター管理：Slurm・EKS連携でジョブスケジューリング⑤対応インスタンス：p4d・p4de・p5（A100・H100）・Trn1（AWS Trainium） ■ユースケース：GPT-3スケール以上のLLM事前訓練・大規模マルチモーダルモデル・基盤モデルのフルファインチューニング。",
+      "tags": ["SageMaker高度", "HyperPod", "大規模分散訓練", "耐障害性"]
+    },
+    {
+      "id": "MLA-123",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "SageMaker エンドポイントで Inference Recommender を使用する際の主な目的と使用方法として正しいものはどれですか？",
+      "choices": [
+        "Inference Recommenderは様々なインスタンスタイプ・設定での推論パフォーマンスを自動ベンチマークし、レイテンシー・スループット・コストのトレードオフを可視化して最適なインスタンスタイプを推奨する",
+        "Inference Recommenderはモデルの精度向上のためのアルゴリズムを推薦するサービス",
+        "SageMaker Inference Recommenderは常に最も高性能なインスタンスを推薦する",
+        "Inference Recommenderの使用にはSageMakerの特別な権限設定が必要でデフォルトでは利用不可"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Inference Recommender詳細：■2つのモード：①Default（デフォルト）推奨：レジスタードモデルに対して複数インスタンスで短時間ベンチマーク実行→最適インスタンスを自動推薦（約45分）②Advanced推奨：ユーザー定義のトラフィックパターン・レイテンシー要件で詳細ベンチマーク（数時間） ■出力メトリクス：インスタンスタイプ別のp50/p90/p99レイテンシー・スループット（req/s）・1リクエストあたりコスト・CPU/GPUメモリ使用率 ■使用手順：①Model Packageとしてモデル登録②テスト用ペイロード（推論リクエストのサンプル）をS3にアップロード③Inference Recommenderジョブ実行→レポート取得 ■活用：新モデルデプロイ前のインスタンス選定で過不足ないリソース確保→コスト最適化。",
+      "tags": ["MLOps", "Inference Recommender", "インスタンス選定", "コスト最適化"]
+    },
+    {
+      "id": "MLA-124",
+      "category": "データエンジニアリング",
+      "difficulty": 2,
+      "question": "機械学習の特徴量エンジニアリングで数値特徴量のスケーリングが必要な場合と不要な場合の判断基準として正しいものはどれですか？",
+      "choices": [
+        "線形回帰・ロジスティック回帰・SVM・NN・KNNは特徴量スケールの差に敏感なためStandardScaler/MinMaxScaler等が必要、ツリー系（決定木・ランダムフォレスト・XGBoost等）はスプリットのしきい値で判断するためスケーリング不要",
+        "全てのMLアルゴリズムで特徴量スケーリングは必須",
+        "スケーリングはアルゴリズムに関係なく常にモデル精度を向上させる",
+        "Deep Learningモデルには特徴量スケーリングは不要"
+      ],
+      "answers": [0],
+      "explanation": "特徴量スケーリングの判断：■スケーリングが必要なアルゴリズム：①距離ベース：KNN（ユークリッド距離が支配的特徴に偏る）・K-Means（同様）②線形モデル：Linear/Logistic Regression（正則化項がスケールに依存）③SVM：カーネル関数がスケールに敏感④Neural Network：勾配降下法の収束速度がスケールに依存（学習率の調整に影響）⑤PCA：分散が大きい特徴量に引っ張られる ■スケーリング不要：①ツリー系（Decision Tree・Random Forest・XGBoost・LightGBM）：各ノードでのスプリット判断はしきい値のみで絶対値スケールに依存しない ■スケーリング手法：StandardScaler（平均0・分散1の標準化）・MinMaxScaler（[0,1]へのノーマライゼーション）・RobustScaler（外れ値に強い四分位範囲ベース）・Log変換（右歪み分布の補正）。",
+      "tags": ["データエンジニアリング", "特徴量スケーリング", "StandardScaler", "前処理"]
+    },
+    {
+      "id": "MLA-125",
+      "category": "MLOps",
+      "difficulty": 3,
+      "question": "SageMaker で本番モデルに対するドリフト監視と自動対応のエンドツーエンド実装として最も適切なアーキテクチャはどれですか？",
+      "choices": [
+        "Data Quality Monitor（入力分布変化）＋Model Quality Monitor（予測精度低下）→CloudWatch Alarm→EventBridge Rule→SageMaker Pipelines（再収集→再訓練→評価→ConditionStep→承認→Blue-Greenデプロイ）の完全自動化パイプライン",
+        "ドリフト検出はCloudWatchのみで可能であり、Model Monitorは不要",
+        "ドリフトが検出された場合、エンドポイントは自動的に以前のモデルバージョンにロールバックされる",
+        "Model Monitorは週次のバッチ分析のみを実行し、リアルタイム監視は不可能"
+      ],
+      "answers": [0],
+      "explanation": "完全自動ドリフト対応アーキテクチャ：■Step 1 - データ品質モニタリング：①Data Quality Monitor：エンドポイントのInputキャプチャをベースライン統計と比較②hourlyスケジュールで監視③CloudWatch Metrics：feature_baseline_drift_distance（特徴量ごとのドリフトスコア）を送信 ■Step 2 - モデル品質監視：①Model Quality Monitor：Ground Truth（遅延ラベル）と予測の精度差③CloudWatch Metric：ModelQuality/Accuracy等 ■Step 3 - アラームとトリガー：①CloudWatch Alarm：ドリフトスコア > 閾値でALARM②EventBridge Rule：Alarmステート変化→SageMaker Pipeline実行③または直接EventBridgeからパイプライン起動 ■Step 4 - 自動再訓練パイプライン：新データ収集→前処理→再訓練→評価→ConditionStep（基準以上の場合のみ）→RegisterModel→承認→update_endpoint() ■全体をTerraform/CDKでIaC化。",
+      "tags": ["MLOps", "ドリフト監視", "自動再訓練", "エンドツーエンド"]
+    },
+    {
+      "id": "MLA-126",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon Bedrock の Fine-tuning（ファインチューニング）と Continued Pre-training の違いとして正しいものはどれですか？",
+      "choices": [
+        "Fine-tuningは入出力ペア（プロンプト-応答）の教師ありデータでモデルの応答スタイル・タスク特化を調整、Continued Pre-trainingはラベルなしのドメイン固有テキストで言語知識・ドメイン知識を継続的に拡張する",
+        "Fine-tuningはContinued Pre-trainingより常に多くのデータが必要",
+        "Continued Pre-trainingはモデルの全パラメータを凍結して行うため実質的な学習は起きない",
+        "両機能はAmazon Bedrockでは提供されておらずSageMakerのみで利用可能"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Bedrock モデルカスタマイズ比較：■Fine-tuning（ファインチューニング）：①データ形式：{prompt, completion}ペアの教師ありデータ（JSONL）②目的：特定タスク（Q&A・分類・要約等）への特化・応答形式の統一③必要データ量：数百〜数千件④既存のモデル知識を保持しつつタスク適応 ■Continued Pre-training（継続的事前学習）：①データ形式：ラベルなしのプレーンテキスト（企業文書・技術文書・ドメイン文書）②目的：ドメイン特化言語知識の注入（医療・法律・金融等の専門用語・概念）③必要データ量：数GB以上が推奨④モデルの汎用言語能力を拡張 ■Bedrock対応モデル：Amazon Titan・Claude（一部）・Llama（一部）⑤プロビジョンドスループット：カスタマイズモデルのデプロイにはプロビジョンドスループットが必要。",
+      "tags": ["AWSAIサービス", "Bedrock", "Fine-tuning", "Continued Pre-training"]
+    },
+    {
+      "id": "MLA-127",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "Word2Vec の CBOW（Continuous Bag of Words）と Skip-gram の違いとして正しいものはどれですか？",
+      "choices": [
+        "CBOWは周辺単語のコンテキストから中心単語を予測し高頻度語に有利、Skip-gramは中心単語から周辺単語を予測し低頻度語・フレーズ学習に優れるが計算コストが高い",
+        "CBOWとSkip-gramは同一のアルゴリズムで実装の違いのみ存在する",
+        "Skip-gramはCBOWより常に精度が低く現代では使用されない",
+        "Word2VecのCBOWはTransformerのBERT と同一のアーキテクチャを使用している"
+      ],
+      "answers": [0],
+      "explanation": "Word2Vec の2つのアーキテクチャ：■CBOW（Continuous Bag of Words）：①目的：コンテキスト窓内の周辺単語群→中心単語を予測（多対1）②高速：周辺単語の平均ベクトルで中心単語を予測③高頻度語の表現が良質④少ないデータでも比較的安定 ■Skip-gram：①目的：中心単語→各周辺単語を予測（1対多）②低頻度語・稀な単語・固有名詞の表現が良質③フレーズ（New York等）を単一トークンとして学習可能④計算コスト高（各訓練サンプルでN個の予測）⑤Negative Samplingで高速化 ■共通：①シャローなニューラルネット（入力層→隠れ層1層→出力層）②隠れ層の重みベクトル=単語埋め込み③コサイン類似度でking - man + woman ≈ queen等の線形演算が成立 ■現代：BERT・GPT等の文脈考慮型埋め込みに置き換えられつつあるが軽量・高速で依然使用。",
+      "tags": ["MLアルゴリズム", "Word2Vec", "CBOW", "Skip-gram"]
+    },
+    {
+      "id": "MLA-128",
+      "category": "SageMaker高度",
+      "difficulty": 2,
+      "question": "SageMaker Data Wrangler から SageMaker Pipelines にデータ変換フローをエクスポートする際の正しいワークフローはどれですか？",
+      "choices": [
+        "Data WranglerのFlowファイルをPipelines Python SDKコードとしてエクスポート→生成されたProcessingStepをベースにTrainingStep・RegisterModelStep等を追加してフルMLパイプラインを構築し、定期実行や本番デプロイを自動化できる",
+        "Data WranglerのフローはSageMaker Pipelinesと統合できず別途手動で変換コードを書く必要がある",
+        "Data Wranglerで作成した変換はPipelineにエクスポートすると精度が失われる",
+        "Data WranglerのエクスポートはS3 CSVファイルのみに対応しておりPipelinesには非対応"
+      ],
+      "answers": [0],
+      "explanation": "Data Wrangler → Pipelines 統合ワークフロー：①Data Wranglerでビジュアルデータ変換（300+変換）を構築・検証②エクスポート先選択：SageMaker Pipelines / Python Code / Jupyter Notebook / Feature Store ③Pipelines選択時の出力：data_wrangler_pipeline.py（完全なPipeline Pythonコード）に変換ステップがProcessingStepとして自動生成④生成コードの拡張：TrainingStep（SageMaker Training）・EvaluateModelStep・ConditionStep・RegisterModelStep等を追加して完全なMLパイプラインに拡張 ■生成されるコードの内容：ProcessingInput（S3データパス）・DataWranglerProcessorクラス（専用コンテナ）・FlowファイルのS3パス参照・output-name の指定 ■利点：データサイエンティストがビジュアルで検証した変換を、エンジニアがコードとして本番化する分業ワークフローが可能。",
+      "tags": ["SageMaker高度", "Data Wrangler", "Pipelines", "エクスポート"]
+    },
+    {
+      "id": "MLA-129",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "モデルの説明可能性（Explainability）を提供する SHAP（SHapley Additive exPlanations）の仕組みとして正しいものはどれですか？",
+      "choices": [
+        "SHAPはゲーム理論のShapley値に基づき、各特徴量が予測に対する限界貢献度（他の全特徴量の組み合わせでの平均寄与）を計算し、ベースライン予測からの各特徴量の加算的な影響を説明する",
+        "SHAPは線形モデルにしか適用できず、ツリー系やニューラルネットには使用不可",
+        "SHAP値はモデルの精度指標であり説明可能性とは無関係",
+        "SHAPはグローバル重要度のみを提供し、個別サンプルの説明には対応していない"
+      ],
+      "answers": [0],
+      "explanation": "SHAP（SHapley Additive exPlanations）詳細：■理論的基盤：協力ゲーム理論のShapley値（全特徴量の部分集合でのモデル出力の加重平均寄与度） ■解釈：SHAP(feature_i) = そのサンプルでfeature_i が予測をベースライン（平均予測）からどれだけ変化させたか（正=予測を上げる、負=下げる） ■グローバルvs ローカル：①グローバル：全サンプルのSHAP値の平均絶対値→特徴量重要度②ローカル：個別サンプルの予測を特徴量ごとに加法分解 ■実装種類：TreeSHAP（決定木系・高速・正確）・KernelSHAP（モデル非依存・低速）・LinearSHAP・DeepSHAP（NN） ■SageMaker Clarify統合：SHAPをBuilt-inで実行（トレーニング後・推論後）→Global/Local Explanationレポート・Visualizations（Bar・Waterfall・Summary Plot）→Model Cardに統合。",
+      "tags": ["MLOps", "SHAP", "説明可能性", "Explainability"]
+    },
+    {
+      "id": "MLA-130",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon SageMaker と Amazon Bedrock の使い分けとして最も適切な判断基準はどれですか？",
+      "choices": [
+        "Bedrockは既成の基盤モデル（Claude・Llama・Titan等）をAPI経由で利用またはFine-tuningする場合に使用し、SageMakerはカスタムモデル開発・独自アルゴリズム実装・フルMLOpsパイプライン・既成モデル以外のモデル訓練・運用が必要な場合に使用する",
+        "BedrockはSageMakerの新しいバージョンであり古いSageMakerは非推奨",
+        "SageMakerはテキスト生成のみに対応しBedrockは画像処理に特化している",
+        "Bedrockを使用するには必ずSageMakerのサブスクリプションが必要"
+      ],
+      "answers": [0],
+      "explanation": "Bedrock vs SageMaker選択基準：■Amazon Bedrock：①ユースケース：生成AIアプリケーション（チャットボット・コンテンツ生成・要約・翻訳・コード生成等）②モデル：Amazon・Anthropic・Meta・Mistral・Stability AI等の事前学習済み基盤モデル③APIベース：InvokeModel/Converse APIでシンプルなML知識なしに使用④Fine-tuning：プロンプト-応答ペアでタスク特化（フルMLトレーニングほど複雑でない）⑤RAG：Knowledge Bases、エージェント：Bedrock Agents ■Amazon SageMaker：①カスタムモデル：独自アーキテクチャ・アルゴリズムの研究・実装②フルMLOps：Data Wrangler→Feature Store→Training→Clarify→Registry→Monitor③非生成AIのML（表形式・CV・時系列等）④LLMをゼロから訓練・フルファインチューニング（Bedrock FTより柔軟）⑤MLエンジニア向けの高度な制御 ■ハイブリッド：SageMakerでTraining→BedrockのCustom Modelとしてデプロイも可能。",
+      "tags": ["AWSAIサービス", "Bedrock", "SageMaker", "使い分け"]
+    },
+    {
+      "id": "MLA-131",
+      "category": "MLアルゴリズム",
+      "difficulty": 3,
+      "question": "サポートベクターマシン（SVM）のカーネルトリック（RBFカーネル等）の役割として正しいものはどれですか？",
+      "choices": [
+        "カーネルトリックは低次元で線形分離不可能なデータを明示的に高次元空間へ変換せず、カーネル関数k(x,y)=φ(x)·φ(y)の内積計算だけで高次元特徴空間での分類境界を求めることができる",
+        "カーネルトリックはデータを圧縮して計算量を削減するための前処理技術",
+        "RBFカーネルは線形カーネルと同一であり使用するカーネルの種類は結果に影響しない",
+        "SVMのカーネルトリックはバイナリ分類にのみ対応し多クラス分類には適用不可"
+      ],
+      "answers": [0],
+      "explanation": "SVMカーネルトリック詳細：■線形SVM：max-margin超平面を最適化（マージン最大化）→高次元空間では強力だが、低次元・非線形データには不向き ■カーネルトリック：①特徴マップφ：入力空間→高次元（または無限次元）特徴空間②直接変換だと計算コスト爆発③カーネル関数k(x,y)=φ(x)·φ(y)：変換後の内積をφを経由せず直接計算④SVMの双対問題はサポートベクトル間の内積のみを必要とするため実現可能 ■主要カーネル：①Linear：k(x,y)=x^T·y（線形分離可能な場合）②RBF（Gaussian）：k(x,y)=exp(-γ||x-y||²)（無限次元・局所的类似度）③Polynomial：k(x,y)=(x^T·y+c)^d④Sigmoid ■ハイパーパラメータ：C（正則化・マージン-誤分類トレードオフ）・γ（RBFの影響範囲）がモデル性能に大きく影響 ■SageMaker：LibSVM/SKLearnのサポートで使用可能。",
+      "tags": ["MLアルゴリズム", "SVM", "カーネルトリック", "RBFカーネル"]
+    },
+    {
+      "id": "MLA-132",
+      "category": "データエンジニアリング",
+      "difficulty": 2,
+      "question": "MLモデルのトレーニングデータを Amazon S3 から効率的に読み込む際、SageMaker の FastFile モードが適切なユースケースはどれですか？",
+      "choices": [
+        "FastFileモードはランダムアクセスや部分アクセスが必要な大規模データセット（全データを先に全部ダウンロードしたくない・最初のファイルから即座に訓練開始したい場合）に適し、PipeモードよりSeek操作が可能でFileモードより起動が速い",
+        "FastFileモードはS3データをローカルディスクに全コピーしてから訓練を開始するためFileモードと同一",
+        "FastFileモードはCSVファイルのみをサポートしParquetやTFRecordには非対応",
+        "FastFileはPipeモードのエイリアスで両者は完全に同一の動作をする"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker入力モード詳細比較：■File Mode：①S3からローカルディスクに全データをコピーしてから訓練開始②大規模データで起動遅延大（数十分）③ランダムアクセス可・多エポック学習に向く ■Pipe Mode：①FIFO（named pipe）経由でS3からデータをストリーミング②起動即座だがSeek不可（シーケンシャルのみ）③TFRecord形式推奨④SageMaker独自API（recordio）が必要 ■FastFile Mode（推奨・2021年リリース）：①S3をFUSEマウント（POSIX互換）②初回アクセス時にオンデマンドダウンロード（必要なファイル/範囲のみ）③Seek可（ランダムアクセス対応）④訓練開始まで待ち時間ほぼゼロ⑤任意ファイル形式に対応⑥大規模データセットでFileモード比で大幅に起動時間短縮 ■推奨：一般的なユースケースではFastFileを第一選択、低ファイル数・全データ必須→File、TFRecord大規模ストリーミング→Pipeも選択肢。",
+      "tags": ["データエンジニアリング", "SageMaker", "FastFile", "入力モード"]
+    },
+    {
+      "id": "MLA-133",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "SageMaker Studio での機械学習プロジェクト管理に MLflow Tracking Server を AWS にデプロイして使用する利点として正しいものはどれですか？",
+      "choices": [
+        "MLflow Tracking ServerをAmazonでホストすることで、SageMaker Experimentsとの比較・PyTorch/TensorFlow/Scikit-learnのmlflow.autolog()での自動追跡・Model Registry統合・Team間のExperiment共有が可能になる",
+        "MLflowはAWS環境での動作が保証されていないため使用すべきでない",
+        "SageMaker ExperimentsとMLflowは完全に同一の機能を持つためどちらか一方のみ使用できる",
+        "MLflow Tracking ServerはEC2上にのみデプロイ可能でSageMakerとの統合はない"
+      ],
+      "answers": [0],
+      "explanation": "AWS での MLflow 活用：■デプロイ方法：SageMaker managed MLflow（プレビュー）またはECS/EC2でMLflow Tracking Server自己ホスト ■主要機能：①Experiment Tracking：run.log_param()・run.log_metric()・run.log_artifact()②Auto-logging：mlflow.sklearn.autolog()・mlflow.pytorch.autolog()等でハイパーパラメータ・メトリクス・モデルを自動記録③Model Registry：モデルのバージョン管理・ステージ（Staging/Production）管理④Projects：再現可能な実験パッケージング⑤Models：フレームワーク横断の標準モデル形式 ■SageMaker統合：①SageMaker Training JobからMLflow URLに接続して追跡②MLflow Model → SageMaker Endpoint（mlflow.sagemaker.deploy()）③SageMaker ExperimentsとMLflowのデュアル記録も可能 ■選択：OSS標準・フレームワーク非依存→MLflow、AWS完全統合→SageMaker Experiments。",
+      "tags": ["MLOps", "MLflow", "実験追跡", "Model Registry"]
+    },
+    {
+      "id": "MLA-134",
+      "category": "SageMaker高度",
+      "difficulty": 3,
+      "question": "SageMaker の分散訓練で Tensor Parallelism（テンソル並列）を使用するのに適したケースとして正しいものはどれですか？",
+      "choices": [
+        "単一のレイヤーの重み行列が単一GPUのメモリに収まらない超大規模モデル（GPT-3・LLaMA等のTransformerの注意機構・FFN層）で、行列演算をGPU間で分割して単一GPUメモリ制約を回避し、SageMaker分散訓練ライブラリのtensor_parallel_degreeで設定する",
+        "テンソル並列はデータを複数GPUに分割する技術でモデルサイズ制約の解消には使用できない",
+        "テンソル並列は小規模モデルのトレーニングに最適でLLMには非対応",
+        "SageMakerはテンソル並列をサポートしておらずDeepSpeedのみで実装可能"
+      ],
+      "answers": [0],
+      "explanation": "分散訓練の並列化戦略比較：■Data Parallelism（データ並列）：①同じモデルを複数GPUにコピー②異なるミニバッチを各GPUで処理③勾配を集約（AllReduce）④モデルが1GPUに収まる場合に有効 ■Model Parallelism（モデル並列）：①モデルの異なる層を異なるGPUに配置（Pipeline Parallelism）②GPU間でアクティベーションを転送③モデルが1GPUに収まらない場合 ■Tensor Parallelism（テンソル並列）：①単一の行列演算（注意機構のWeight行列等）を複数GPU間で分割②例：4096×4096行列を2GPU間で[2048×4096]×2に分割③Transformer FFN・Attention投影が主なターゲット④ultra-large model（175B+）に必須 ■SageMaker Distributed Training Library（SMDDP）：tensor_parallel_degree（テンソル並列度）・pipeline_parallel_degree・sharded_data_parallelismを組み合わせて3D並列化を実現。",
+      "tags": ["SageMaker高度", "分散訓練", "テンソル並列", "大規模モデル"]
+    },
+    {
+      "id": "MLA-135",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "機械学習でのデータ不均衡（Class Imbalance）に対するコスト感応型学習（Cost-Sensitive Learning）の仕組みとして正しいものはどれですか？",
+      "choices": [
+        "class_weight（sklearn）やscale_pos_weight（XGBoost）等で少数クラスの誤分類コストを多数クラスより高く設定することで、損失関数が少数クラスに強い重みをかけモデルが少数クラスをより重視して学習する",
+        "コスト感応型学習はリサンプリング（SMOTE等）と比較して常に精度が低い",
+        "コスト感応型学習はデータを削除/追加することなく不均衡を解消するリサンプリング技術",
+        "SageMakerの組み込みアルゴリズムはコスト感応型学習に対応していない"
+      ],
+      "answers": [0],
+      "explanation": "コスト感応型学習（Cost-Sensitive Learning）詳細：■仕組み：損失関数L(y_true, y_pred)において少数クラス（陽性）の重みを大きくすることで、少数クラスの誤分類ペナルティを増加 ■実装方法：①sklearn：LogisticRegression(class_weight='balanced')→サンプル数逆比例で自動設定、または辞書{0:1, 1:10}で手動設定②XGBoost：scale_pos_weight = (負例数)/(正例数)（例：1000/100=10）③PyTorch：nn.BCEWithLogitsLoss(pos_weight=torch.tensor([9.0]))④LightGBM：is_unbalance=True・class_weight='balanced' ■リサンプリングとの比較：①コスト感応：元データを変更せずパラメータのみ変更・実装が容易・元の分布情報を保持②SMOTE：少数クラスの合成サンプル追加・データセット自体を変更③組み合わせ：SMOTE + cost_weight で更に改善することも。",
+      "tags": ["MLアルゴリズム", "クラス不均衡", "コスト感応型学習", "class_weight"]
+    },
+    {
+      "id": "MLA-136",
+      "category": "データエンジニアリング",
+      "difficulty": 2,
+      "question": "Amazon Redshift と Amazon Athena の機械学習用途での使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Redshiftは事前ロードされた構造化データのDWH分析（繰り返しクエリ・高速・MPP）でML特徴量の事前計算・集計に使用し、Athenaはアドホックな探索的分析でS3上の生データ（ログ・JSON・Parquet等）を即席でクエリして特徴量検討に適する",
+        "RedshiftとAthenaは完全に同一のサービスで名前が違うだけ",
+        "AthenaTはRedshiftより常に高速であるため全てのML用途でAthenaが推奨される",
+        "RedshiftはS3データのクエリに非対応であり全てのデータを事前ロードが必須"
+      ],
+      "answers": [0],
+      "explanation": "Redshift vs Athena 比較：■Amazon Redshift（DWH）：①クラスター（DC/DS/RA3ノード）またはServerlessで常時起動②MPP（大規模並列処理）：複数ノードで高速クエリ③ソート/配布キー：クエリ対象テーブルのスキャン最適化④マテリアライズドビュー：計算済み集計を保持⑤繰り返しクエリに最適（クエリ結果キャッシュ）⑥Redshift ML：SageMakerと統合してSQL内でML予測（CREATE MODEL）⑦コスト：インスタンス時間課金 ■Amazon Athena：①S3のデータをその場でSQLクエリ（サーバーレス）②スキャンデータ量課金（$5/TB）③Glue Data Catalog：スキーマ定義③アドホック分析・ワンタイムクエリに最適④Parquet/ORC：10倍以上コスト削減⑤Redshift Spectrum：Redshiftから直接S3のAthenaデータをクエリ ■ハイブリッド：構造化高速クエリ→Redshift、非構造化探索→Athena。",
+      "tags": ["データエンジニアリング", "Redshift", "Athena", "DWH"]
+    },
+    {
+      "id": "MLA-137",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "ML モデルのセキュリティ対策として、SageMaker エンドポイントへのアクセスを制限する方法の組み合わせとして正しいものはどれですか？",
+      "choices": [
+        "VPC内のプライベートエンドポイント化（VPC Config設定）・IAMポリシーで呼び出し元ロール/ユーザーを制限・リソースベースポリシー・API GatewayとLambdaによるAPI認証層追加・SageMaker特定エンドポイントへのSCPを組み合わせる",
+        "SageMakerエンドポイントは常にパブリックであり外部からのアクセス制御は不可能",
+        "SageMakerへのアクセス制御にはS3バケットポリシーのみで対応可能",
+        "VPC内のプライベートエンドポイント設定はSageMakerではサポートされていない"
+      ],
+      "answers": [0],
+      "explanation": "SageMakerエンドポイントのセキュリティ設計：■ネットワーク分離：①VPC Config：Estimator・create_endpoint_config()にVpcConfig（SubnetIds・SecurityGroupIds）を設定→エンドポイントをプライベートサブネットに配置②VPC Endpoint（PrivateLink）：VPCからインターネット経由せずに安全にSageMaker API/Runtimeにアクセス③インターネット接続なし（IsolationMode）：エンドポイントコンテナのアウトバウンドを完全ブロック ■IAMによるアクセス制御：①sagemaker:InvokeEndpoint の特定EndpointNameへの制限（条件キー：sagemaker:ResourceTag等）②ロールベースのアクセス（Lambda/ECS Taskロールにのみ権限付与） ■API Gateway + Lambda：①外部クライアントはAPI GW認証（Cognito JWT・API Key）②Lambda内でAWS SDKでエンドポイント呼び出し（IAMロール経由）→多層防御 ■CloudTrail：全InvokeEndpoint呼び出しのログ記録。",
+      "tags": ["MLOps", "セキュリティ", "VPC", "IAM"]
+    },
+    {
+      "id": "MLA-138",
+      "category": "AWSAIサービス",
+      "difficulty": 3,
+      "question": "Amazon Bedrock Agents でマルチターン会話とタスク実行を実現する仕組みとして正しいものはどれですか？",
+      "choices": [
+        "Bedrockエージェントはオーケストレーターとして会話履歴を管理し、必要に応じてAction Groups（Lambda関数）を呼び出してAPI実行、Knowledge Basesから情報を検索し、複数ステップのタスクを自律的に計画・実行（ReActパターン）する",
+        "Bedrock AgentsはLambdaなしに独自にデータベースや外部APIに直接接続できる",
+        "Bedrock Agentsはシングルターンの回答生成のみをサポートしマルチターン会話は不可",
+        "Bedrock Agentsはリアルタイムストリーミング応答に対応していない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Bedrock Agents アーキテクチャ詳細：■コンポーネント：①Foundation Model（オーケストレーター）：会話の理解・計画・推論（ReAct: Reasoning + Action）②Action Groups：Lambda関数×OpenAPI仕様でカスタムアクション定義（API呼び出し・DB操作・外部サービス連携）③Knowledge Bases：RAGで静的知識をベクター検索④Memory（オプション）：セッション間の会話履歴保持 ■動作フロー：①ユーザー入力→Agentがタスク分解②必要なActionを決定（Thought）→Lambda関数実行（Action）→結果確認（Observation）③情報不足→Knowledge Base検索④マルチステップで繰り返し⑤最終回答生成 ■Advanced機能：①Inline Agent：コードでAgentを動的作成②Multi-Agent Collaboration：複数エージェントが協調（Supervisor Agentが専門Agentを呼び出し）③Prompt Chaining vs Agent：単純→Chaining、自律的タスク分解→Agent。",
+      "tags": ["AWSAIサービス", "Bedrock Agents", "マルチターン", "ReAct"]
+    },
+    {
+      "id": "MLA-139",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "機械学習での欠損値処理（Missing Value Imputation）の手法として適切な組み合わせはどれですか？",
+      "choices": [
+        "MCAR（完全ランダム欠損）→平均/中央値/最頻値補完、MAR（ランダム欠損）→多重代入法・モデルベース補完、MNAR（非ランダム欠損）→ドメイン知識でのカスタム処理または欠損フラグ特徴量追加が適切",
+        "欠損値は全て行削除（dropna）で対処するのが最善であり補完は精度を悪化させる",
+        "全ての欠損値を0で埋めることが業界標準の対処方法である",
+        "欠損値の処理はモデル学習後に実施しトレーニングデータには欠損値があって良い"
+      ],
+      "answers": [0],
+      "explanation": "欠損値処理のベストプラクティス：■欠損メカニズムの分類：①MCAR（Missing Completely At Random）：欠損が完全にランダム→行削除でも無偏推定維持・数値→平均/中央値、カテゴリ→最頻値で補完②MAR（Missing At Random）：欠損が他の観測変数に依存→Multiple Imputation（多重代入法・MICE等）・KNN Imputation・回帰補完・IterativeImputer③MNAR（Missing Not At Random）：欠損が欠損値自体に依存→欠損フラグ特徴量（is_missing列追加）・ドメイン知識カスタム処理・感度分析 ■実装：sklearn SimpleImputer（均一補完）・IterativeImputer（多変量補完）・KNNImputer ■重要：TestデータにはTrainデータから学習したImputerを適用（fit→transformのパターン）→テストデータリーケージ防止 ■SageMaker Data Wrangler：欠損値処理をGUIで設定可能。",
+      "tags": ["MLアルゴリズム", "欠損値処理", "MCAR MAR MNAR", "補完"]
+    },
+    {
+      "id": "MLA-140",
+      "category": "SageMaker高度",
+      "difficulty": 2,
+      "question": "SageMaker Model Card の主な目的と含まれる情報として正しいものはどれですか？",
+      "choices": [
+        "Model Cardはモデルの目的・用途・性能・制限・倫理的考慮事項・トレーニングデータ・評価結果等を文書化した責任あるAIのための標準化されたドキュメントで、規制コンプライアンス・監査・組織内モデル共有に使用される",
+        "Model Cardはモデルのアーキテクチャコードのみを記録するデータシート",
+        "Model CardはSageMaker Pipelinesの設定ファイルを指す別名",
+        "Model Cardは精度メトリクスのみを記録しモデルの倫理・制限事項は対象外"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Model Card詳細：■目的：責任あるAI（Responsible AI）のためのモデル透明性・説明責任のドキュメント化 ■含まれる情報：①Model Overview：名前・バージョン・開発者・リリース日・目的・用途②Intended Uses：ユースケース・対象ユーザー・Out-of-scope uses（使用すべきでないケース）③Training Details：データセット（説明・前処理）・アルゴリズム・ハイパーパラメータ④Evaluation Results：評価指標（精度・AUC等）・評価データセット・スライス評価（人口統計別等）⑤Ethical Considerations：既知のバイアス・公平性評価・潜在的リスク⑥Limitations：適用外ケース・パフォーマンス限界 ■SageMaker統合：①Studio UIから作成・管理②Clarifyの評価結果・Experimentsのメトリクスを自動インポート③Model Registryと紐付け④PDF/HTMLエクスポート対応⑤MLコミュニティ標準（Google・Meta Model Card Toolkit互換）。",
+      "tags": ["SageMaker高度", "Model Card", "責任あるAI", "ドキュメント"]
+    },
+    {
+      "id": "MLA-141",
+      "category": "MLOps",
+      "difficulty": 3,
+      "question": "AWS CodePipeline を使用した ML CI/CD パイプラインで、モデルトレーニングを自動化する際の正しいアーキテクチャはどれですか？",
+      "choices": [
+        "CodeCommit/GitHub→CodePipeline→CodeBuild（Lint・テスト・SageMaker Pipelines実行）→SageMaker Model Registry（評価・承認）→SNS通知（Manual Approval）→CloudFormation/CDKでSageMaker Endpoint更新の自動化パイプライン",
+        "ML CI/CDにはCodePipelineは使用できずStep Functionsのみが対応",
+        "CodeBuildはSageMaker SDKを呼び出せないため別途EC2で実行する必要がある",
+        "ML CI/CDではモデルの品質評価は自動化できず常に手動で実施する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "ML CI/CD with CodePipeline 詳細アーキテクチャ：■Source Stage：①CodeCommit/GitHub/S3にコードプッシュまたはスケジュール②変更検知でPipeline自動起動 ■Build Stage（CodeBuild）：①Dockerコンテナ内でPythonコード実行②Unit Test（pytest）・Lint（flake8）・型チェック③SageMaker SDK でPipeline実行（pipeline.start()）④SageMaker Pipelinesが非同期でML処理（前処理→訓練→評価） ■Model Register Stage：①Pipeline完了後にModel Registryにモデル登録②Pending Approvalステータスで待機 ■Approval Stage：①CloudWatchメトリクス・Clarifyレポートを確認②SNS経由で承認担当者に通知③Manual ApprovalまたはLambdaで自動承認（閾値ベース） ■Deploy Stage：①CloudFormation ChangeSet実行（SageMaker Endpointリソース更新）またはLambdaでupdate_endpoint()②Blue/GreenまたはAll-At-Once③CloudWatchでデプロイ後の健全性確認。",
+      "tags": ["MLOps", "CI/CD", "CodePipeline", "MLパイプライン"]
+    },
+    {
+      "id": "MLA-142",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon Translate と Amazon Comprehend の組み合わせによる多言語テキスト処理パイプラインとして最も適切なものはどれですか？",
+      "choices": [
+        "Comprehendで英語テキストの感情・エンティティ分析→TranslateでJSONフィールドを保持したまま日本語等に翻訳→再びComprehendで翻訳後のテキスト分析、またはTranslateで多言語を英語に統一してからComprehend分析を行うパイプライン",
+        "TranslateとComprehendは統合できないため個別システムとして独立して使用する",
+        "Comprehendは英語のみをサポートしており多言語処理には使用できない",
+        "TranslateはAWSサービスのAPIとの連携には対応していない"
+      ],
+      "answers": [0],
+      "explanation": "Translate + Comprehend 多言語パイプライン：■Amazon Translate：①100以上の言語間のリアルタイム・バッチ翻訳②Active Custom Translation：カスタム用語集（固有名詞・ブランド名の翻訳維持）・並列データ（ドメイン特化翻訳）③TranslateDocument：HTMLフォーマット・タグを保持した翻訳④TranslateText：シンプルなテキスト翻訳（最大5000バイト）⑤Auto Detection：ソース言語自動検出 ■典型的パイプライン（多言語→英語→分析）：①多言語テキスト（日本語・スペイン語等）②Translate→英語に統一③Comprehend（sentiment・entities・key phrases・PII）で分析④S3/DynamoDB/Redshiftに結果保存 ■ユースケース：①グローバルカスタマーレビュー分析②多言語ソーシャルメディア監視③多言語チケット分類→サポート自動ルーティング。",
+      "tags": ["AWSAIサービス", "Translate", "Comprehend", "多言語処理"]
+    },
+    {
+      "id": "MLA-143",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "ガウス混合モデル（Gaussian Mixture Model, GMM）とK-Meansの違いとして正しいものはどれですか？",
+      "choices": [
+        "GMMは各クラスターをガウス分布（平均・共分散）でモデル化しEMアルゴリズムでソフトアサインメント（各サンプルが各クラスターに属する確率）を求め、K-Meansは各点を最近傍クラスター重心にハードアサインする決定的クラスタリング",
+        "K-MeansはGMMと同一のアルゴリズムで実装の違いのみ",
+        "GMMは必ず楕円形のクラスターしか識別できずK-Meansの方が汎用性が高い",
+        "K-Meansはソフトクラスタリングでありサンプルは複数クラスターに属することができる"
+      ],
+      "answers": [0],
+      "explanation": "GMM vs K-Means詳細比較：■K-Means：①各点を1クラスターにハードアサイン（ハードクラスタリング）②クラスター形状：球状（等分散）前提③最小化：各点と所属クラスター重心の二乗距離和④ Lloyd's algorithmで収束⑤確率論的解釈なし ■GMM（Gaussian Mixture Model）：①確率モデル：データがK個のガウス分布の混合から生成されたと仮定②EMアルゴリズム：E-ステップ（各サンプルの各クラスター所属確率を計算）・M-ステップ（各ガウス分布のパラメータを更新）を繰り返し③ソフトアサインメント：各サンプルが各クラスターに属する確率（0〜1）を出力④クラスター形状：楕円形（共分散行列で制御）→K-Meansより柔軟⑤BICによるクラスター数選択が可能 ■SageMaker：K-Means組み込みアルゴリズム（大規模分散対応）・GMMはカスタムアルゴリズム（sklearn等）。",
+      "tags": ["MLアルゴリズム", "GMM", "K-Means", "クラスタリング"]
+    },
+    {
+      "id": "MLA-144",
+      "category": "データエンジニアリング",
+      "difficulty": 3,
+      "question": "AWS での機械学習データパイプラインにおいて、ストリーミングデータからリアルタイム特徴量を計算してオンライン特徴量ストアに書き込むアーキテクチャとして適切なものはどれですか？",
+      "choices": [
+        "Kinesis Data Streams→Lambda（特徴量計算）またはKinesis Data Analytics for Apache Flink（ウィンドウ集計）→SageMaker Feature Store Online Store（put_record）でリアルタイム特徴量を更新し、推論時にOnline Storeからミリ秒でフェッチ",
+        "リアルタイム特徴量計算はバッチ処理のみで実現可能でストリーミング処理は不可能",
+        "Feature StoreのOnline StoreへはS3経由でのみ書き込み可能",
+        "KinesisとFeature Storeの統合にはEC2インスタンスのポーリングが唯一の方法"
+      ],
+      "answers": [0],
+      "explanation": "リアルタイム特徴量更新アーキテクチャ：■パターン1（Lambda）：①イベント（ユーザー行動・センサーデータ等）→Kinesis Data Streams②Lambda関数：シャード毎に並列起動→特徴量計算（集計・変換等）→feature_store.put_record()③低レイテンシー・シンプル・小〜中規模向け ■パターン2（Kinesis Data Analytics for Apache Flink）：①ストリーミングSQL/Flink Java APIでウィンドウ集計（直近1時間の合計等）②Flink Sink→Kinesis→Lambda→Feature Store③複雑なステートフル集計・スライディングウィンドウに対応 ■Feature Store Online Storeの制約：①最新値のみ保持（履歴なし）②レコード識別子でGet/Put（テーブルスキャン不可）③スループット制限（デフォルト：10,000 TPS/Feature Group）→本番では予めクォータ増加申請 ■推論パターン：エンドポイントコンテナ内でget_record()→リアルタイム特徴量取得→モデル推論。",
+      "tags": ["データエンジニアリング", "ストリーミング特徴量", "Kinesis", "Feature Store"]
+    },
+    {
+      "id": "MLA-145",
+      "category": "SageMaker高度",
+      "difficulty": 2,
+      "question": "SageMaker Managed Warm Pools を使用するのに適したユースケースと設定として正しいものはどれですか？",
+      "choices": [
+        "繰り返しの開発・実験段階で同一インスタンスタイプのジョブを頻繁に実行する際にWarm Pool（訓練完了後もインスタンスを指定時間保持）を使用することで、次のジョブのインスタンス起動時間（通常数分）をスキップして数秒で開始できる",
+        "Warm Poolsは本番環境の推論エンドポイントのコスト削減に使用される機能",
+        "Managed Warm PoolsはSageMaker Serverless Inferenceにのみ適用される",
+        "Warm Poolsを使用すると同じデータで再訓練が自動的に実行されるため注意が必要"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Managed Warm Pools詳細：■問題：Training Job起動時間（インスタンスプロビジョニング＋DockerPull）が通常2〜10分→反復実験で待機時間が累積 ■Warm Pool：①ジョブ完了後にインスタンスを「ウォーム状態」で保持（指定時間まで）②次のジョブが同じインスタンスタイプ・コンテナを要求→即座に割り当て（数秒で開始）③コスト：保持時間中は安価なWarm Pool料金で課金（フルインスタンス料金ではない） ■設定：ResourceConfig.KeepAlivePeriodInSeconds（例：300=5分間Warm状態保持）→最大3600秒（1時間）まで設定可能 ■ユースケース：①ハイパーパラメータ探索（同一コンテナ・インスタンスで多数試行）②インタラクティブな開発サイクル③同日中に繰り返す実験 ■制約：同一インスタンスタイプ・AMI（コンテナが異なってもインスタンスタイプが同じなら再利用）。",
+      "tags": ["SageMaker高度", "Managed Warm Pools", "トレーニング高速化", "開発効率"]
+    },
+    {
+      "id": "MLA-146",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "SageMaker エンドポイントで Asynchronous Inference（非同期推論）を使用する適切なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "リクエストの処理時間が長い（1〜15分）、大きなペイロード（最大1GB）、または結果をすぐに必要としない用途（ビデオ分析・大規模文書処理・LLM長文生成等）に適しており、キューベースで負荷ピーク時もリクエストを失わずに処理できる",
+        "Asynchronous Inferenceはミリ秒レイテンシーが必要なリアルタイムAPIに最適",
+        "非同期推論は小さなペイロード（1KB以下）にのみ対応している",
+        "SageMaker Asynchronous Inferenceはバッチ変換ジョブと同一のサービス"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker推論タイプ詳細比較：■Asynchronous Inference（非同期推論）：①ユースケース：処理時間15分以下・ペイロード最大1GB②仕組み：①クライアントがリクエスト→SageMakerキューに入れ即座にAck返却②バックグラウンドでエンドポイントが処理③結果をS3に保存→クライアントがポーリングまたはSNS通知④エラーもS3に保存 ③Auto Scaling：キューサイズに基づくスケーリング（インスタンス数0含む）→アイドル時コスト最小化 ■適切なユースケース：①大規模文書要約（数千トークンのLLM推論）②ビデオの内容分析③医療画像診断（高解像度CT等）④バッチ的なスコアリング（リアルタイム不要） ■Batch Transform との違い：Async→リクエスト毎・インタラクティブ・キューベース；Batch Transform→大量データの一括変換・ジョブ単位・エンドポイント不要。",
+      "tags": ["MLOps", "Asynchronous Inference", "非同期推論", "大規模推論"]
+    },
+    {
+      "id": "MLA-147",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon Bedrock での Prompt Engineering ベストプラクティスとして Claude モデルを使用する場合の適切なプロンプト構造はどれですか？",
+      "choices": [
+        "Claude APIではSystem promptでAIの役割・ルール・コンテキストを定義し、Human/Assistantのマルチターン形式でConverse APIを使用し、XMLタグ（<instructions>・<examples>等）で構造化、Few-Shotで具体例を提供することで一貫した高品質な出力を得られる",
+        "Claudeプロンプトではシステムプロンプトは使用できずユーザーメッセージのみに全情報を含める",
+        "少ないトークンで回答を得るためプロンプトはできるだけ短く単語のみで構成すべき",
+        "ClaudeはOpenAIのGPT-4と完全に同じプロンプト形式を使用するため同一のシステムプロンプトが使える"
+      ],
+      "answers": [0],
+      "explanation": "Claude Prompt Engineering ベストプラクティス：■Bedrock Converse API構造：①System：AIの役割（「あなたはAWS認定エキスパートです」）・ルール・コンテキスト・回答形式指定②Messages：{role: 'user', content: ...}と{role: 'assistant', content: ...}の交互マルチターン ■Claudeのコンテキスト活用：①XMLタグ：<instructions>・<context>・<examples>・<output_format>でセクションを明確に分離②長いコンテキスト（200K tokens）の有効活用③Chain-of-Thought：「ステップバイステップで考えてください」で推論精度向上 ■Few-Shot例示：2〜5件の入出力ペアで望む形式・スタイルを示す ■特有のテクニック：①「まず答えを考えてから回答してください」②Prefill：assistant: {で始まりを指定③ConstMAX Tokens：max_tokens設定で回答長制御 ■Bedrock Prompt Management：プロンプトをテンプレートとして保存・バージョン管理。",
+      "tags": ["AWSAIサービス", "Bedrock", "Claude", "プロンプトエンジニアリング"]
+    },
+    {
+      "id": "MLA-148",
+      "category": "MLアルゴリズム",
+      "difficulty": 3,
+      "question": "ニューラルネットワークの正則化技術として Dropout と Batch Normalization の仕組みと効果の違いとして正しいものはどれですか？",
+      "choices": [
+        "Dropoutは訓練時にランダムにニューロンを無効化（確率p）してモデルアンサンブル効果・共適応防止でオーバーフィット抑制、Batch NormalizationはミニバッチのActivationを正規化（平均0・分散1）して勾配消失防止・学習率への感度低下・安定した学習を実現",
+        "DropoutはBatch Normalizationと同一の効果を持ち相互に置き換え可能",
+        "Batch Normalizationはモデルの過学習を増加させるため使用は推奨されない",
+        "Dropoutは推論時にも訓練時と同じ確率でニューロンをランダムに無効化する"
+      ],
+      "answers": [0],
+      "explanation": "正則化技術の詳細比較：■Dropout：①訓練時：各ニューロンをdrop確率p（通常0.2〜0.5）で独立にランダム無効化→残りを1/(1-p)でスケーリング②推論時：全ニューロン有効（スケーリングのみ）③効果：モデルアンサンブル・共適応（co-adaptation）防止・過学習抑制④適用：FC層に多用、CNN層は少なめ ■Batch Normalization（BatchNorm）：①ミニバッチ内のActivationをμ=0・σ=1に正規化②学習可能パラメータγ（スケール）・β（シフト）で最終変換③効果：勾配消失/爆発の軽減・学習率の許容範囲拡大・内部共変量シフト減少→安定学習④推論時：実行時の移動平均μとσを使用 ■組み合わせ：通常Conv→BN→ReLU→Dropoutの順⑤注意：BatchNormとDropoutを同時使用すると推論時の統計がずれる可能性があるため注意（Layer Norm代替も検討）。",
+      "tags": ["MLアルゴリズム", "Dropout", "Batch Normalization", "正則化"]
+    },
+    {
+      "id": "MLA-149",
+      "category": "SageMaker高度",
+      "difficulty": 2,
+      "question": "SageMaker Studio Lab とSageMaker Studioの違いとして正しいものはどれですか？",
+      "choices": [
+        "Studio Labは無料のJupyterLabベース学習環境（AWSアカウント不要・CPU/GPU無料枠あり）でML学習・実験向け、SageMaker Studioは本番ML開発・MLOps向けの有償フルマネージドIDE（Data Wrangler・Pipelines・Feature Store等との完全統合）",
+        "Studio LabとStudioは完全に同一のサービスで価格の違いのみ存在する",
+        "SageMaker Studio Labでは本番SageMakerサービス（Pipelines・Feature Store等）がそのまま使用できる",
+        "Studio Labは企業ユーザー向けのサービスで個人は使用できない"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Studio Lab vs Studio比較：■SageMaker Studio Lab：①完全無料（AWSアカウント不要）②JupyterLabベース③CPU/GPUインスタンスの無料時間制限付き（CPU:4時間/GPU:4時間/day等）④ストレージ：15GB永続⑤主な用途：ML学習・Kaggle・個人プロジェクト・チュートリアル⑥本番SageMakerサービスとの統合なし⑦AWS コミュニティアカウントで登録 ■Amazon SageMaker Studio（本番MLプラットフォーム）：①AWSアカウント必須・有償②フルマネージドJupyterLabベースIDE③Domain/UserProfileで組織管理④完全統合：Data Wrangler・Pipelines・Experiments・Feature Store・Model Registry・Clarify・Debugger・Canvas等⑤Role Based Access（IAM）⑥VPC統合・セキュリティ機能⑦MLOps全ライフサイクル管理 ■SageMaker Studio Classic→Studio（新UI）への移行が進行中。",
+      "tags": ["SageMaker高度", "Studio Lab", "Studio", "IDE"]
+    },
+    {
+      "id": "MLA-150",
+      "category": "データエンジニアリング",
+      "difficulty": 3,
+      "question": "機械学習パイプラインにおいて、Training-Serving Skew（学習・推論間のスキュー）を防止するためのベストプラクティスはどれですか？",
+      "choices": [
+        "学習・推論の特徴量計算に同一コードベース（Feature Storeの同一Feature Group・またはSageMaker Processing Jobと推論コンテナで同一前処理スクリプト）を使用し、Scaler/Encoderを学習時にfitしてアーティファクトとして保存・推論時に同じアーティファクトをloadして変換する",
+        "Training-Serving SkewはMLモデルの宿命であり完全に防止することはできない",
+        "推論時は毎回特徴量計算ロジックを新規実装することで最新の手法を適用できる",
+        "BatchTransformとRealtime Inferenceの特徴量計算は独立していても問題ない"
+      ],
+      "answers": [0],
+      "explanation": "Training-Serving Skewの原因と防止策：■スキューの原因：①学習時（offline）と推論時（online）で異なるコードで特徴量計算→微妙な実装差異②学習時のStandardScalerのfit結果が推論時に再fitされる③学習時のNullフィルタリング条件と推論時の処理が不一致④特徴量の計算順序の差異 ■防止ベストプラクティス：①Feature Store：同一Feature Groupを学習（Offline Store）・推論（Online Store）で使用→同一のFeature定義③Preprocessing Artifact保存：学習時にscaler.pkl・encoder.pkl等をS3に保存→推論コンテナで同一アーティファクトをload④共有ライブラリ：前処理ロジックをPyPIパッケージ化してtrain/serveの両コンテナで参照⑤SageMaker Pipelines：ProcessingStepの出力をTrainingStepとServeコンテナで共有 ■検出：SageMaker Model Monitor + Clarify でオンライン・オフライン分布比較→スキュー検出・アラート。",
+      "tags": ["データエンジニアリング", "Training-Serving Skew", "特徴量一貫性", "前処理"]
     }
   ]
 }
