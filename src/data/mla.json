@@ -2252,6 +2252,156 @@
       "answers": [0],
       "explanation": "Training-Serving Skewの原因と防止策：■スキューの原因：①学習時（offline）と推論時（online）で異なるコードで特徴量計算→微妙な実装差異②学習時のStandardScalerのfit結果が推論時に再fitされる③学習時のNullフィルタリング条件と推論時の処理が不一致④特徴量の計算順序の差異 ■防止ベストプラクティス：①Feature Store：同一Feature Groupを学習（Offline Store）・推論（Online Store）で使用→同一のFeature定義③Preprocessing Artifact保存：学習時にscaler.pkl・encoder.pkl等をS3に保存→推論コンテナで同一アーティファクトをload④共有ライブラリ：前処理ロジックをPyPIパッケージ化してtrain/serveの両コンテナで参照⑤SageMaker Pipelines：ProcessingStepの出力をTrainingStepとServeコンテナで共有 ■検出：SageMaker Model Monitor + Clarify でオンライン・オフライン分布比較→スキュー検出・アラート。",
       "tags": ["データエンジニアリング", "Training-Serving Skew", "特徴量一貫性", "前処理"]
+    },
+    {
+      "id": "MLA-151",
+      "category": "MLOps",
+      "difficulty": 2,
+      "question": "SageMaker Pipelines でのパイプライン定義の変更をCI/CDで管理する際のベストプラクティスはどれですか？",
+      "choices": [
+        "パイプライン定義JSONをGitリポジトリでバージョン管理し、変更時はCodePipelineでパイプライン定義を自動更新（pipeline.upsert()）した後にパイプライン実行をトリガー、Experiment Nameとパイプライン実行IDで変更の追跡を可能にする",
+        "パイプライン定義はSageMakerコンソールのみで管理しコードによる変更は推奨されない",
+        "パイプライン定義の変更ごとにパイプラインを削除・再作成する必要がある",
+        "パイプライン定義はバイナリ形式のため通常のGitではバージョン管理できない"
+      ],
+      "answers": [0],
+      "explanation": "SageMaker Pipelines IaC・CI/CDのベストプラクティス：■パイプライン定義のバージョン管理：①pipeline.definition()でJSONとして出力→Gitコミット②Python SDK（Estimator/Processor等の設定）をモジュール化して管理 ■pipeline.upsert()：①既存パイプラインを更新（なければ作成）②変更を適用しながら実行履歴を保持（pipelineのARNは変わらない）③idempotent（冪等）操作 ■CI/CDとの統合：①CodeCommitへのプッシュ→CodePipeline→CodeBuild（pipeline.upsert()実行）→最初の実行やスケジュール実行②パラメータ変更（学習率等）もコードで管理→レビュープロセスを経て本番反映 ■追跡：①execution.describe()でパイプライン実行情報②experiment_config={'ExperimentName': ..., 'TrialName': execution.name}でExperimentsと連携③Model Registry Approval WorkflowでモデルのGitコミットを紐付け。",
+      "tags": ["MLOps", "Pipelines", "GitOps", "CI/CD"]
+    },
+    {
+      "id": "MLA-152",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon SageMaker と AWS Lambda を組み合わせたサーバーレス推論アーキテクチャとして適切な構成はどれですか？",
+      "choices": [
+        "API GatewayでHTTPリクエスト受信→Lambda（軽量前処理・認証）→SageMaker Runtime InvokeEndpoint（またはServerless Inference）→Lambda（後処理・レスポンス整形）→クライアントへ返却、またはLambda内に軽量モデルを直接デプロイ（1MB以下の圧縮モデル）",
+        "LambdaはSageMakerエンドポイントを呼び出せないため別のサービスが必要",
+        "サーバーレスMLアーキテクチャではAPI GatewayをSageMakerに直接接続する必要がある",
+        "LambdaはMLモデルを実行できないためデータ前処理のみに使用できる"
+      ],
+      "answers": [0],
+      "explanation": "Lambda + SageMaker推論アーキテクチャパターン：■パターン1（API GW + Lambda + SageMaker Endpoint）：①API Gateway（認証・スロットリング）②Lambda：リクエスト検証・特徴量変換・sagemaker_runtime.invoke_endpoint()③SageMakerエンドポイント（リアルタイム）：モデル推論④Lambda：レスポンス後処理・JSONフォーマット⑤利点：SageMakerのMLOps機能（監視・Model Registry）を活用できる ■パターン2（Lambda内モデル実行）：①Lambda Layer or Container Image（最大10GB）にモデルファイル（ONNX・TFLite・scikit-learn等）を含める②Lambda実行時にモデルをロード→推論③適合：軽量モデル（線形モデル・小規模NN）・超低レイテンシー要件（コールドスタートリスクあり）④SageMaker不要でシンプル ■Lambda制約：実行時間15分・メモリ10GB・エフェメラルストレージ10GB・コールドスタート（Provisioned Concurrencyで軽減）。",
+      "tags": ["AWSAIサービス", "Lambda", "サーバーレス推論", "API Gateway"]
+    },
+    {
+      "id": "MLA-153",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "ML モデルの評価において、Confusion Matrix から計算される Precision と Recall のトレードオフが重要となるユースケースとして正しいものはどれですか？",
+      "choices": [
+        "医療診断（癌検出）ではFalse Negative（実際に陽性を陰性と誤判断）のコストが高くRecallを重視、スパムフィルタリングではFalse Positive（正常メールをスパムと誤判断）のコストが高くPrecisionを重視する",
+        "PrecisionとRecallはどちらも常に最大化できるためトレードオフは存在しない",
+        "F1スコアが最大の閾値では常にPrecisionとRecallが等しくなる",
+        "Confusion MatrixはRecallとPrecisionの計算には使用されず別の指標から算出する"
+      ],
+      "answers": [0],
+      "explanation": "Precision・Recall・F1の詳細：■Confusion Matrix：①TP（True Positive）：陽性を陽性と正しく予測②FP（False Positive）：陰性を陽性と誤予測（Type I error）③FN（False Negative）：陽性を陰性と誤予測（Type II error）④TN（True Negative）：陰性を正しく陰性と予測 ■Precision：TP/(TP+FP)→陽性と予測した中で実際に陽性の割合（予測の精度）■Recall：TP/(TP+FN)→実際の陽性のうち陽性と予測できた割合（見つける力）■F1：2×P×R/(P+R)（調和平均）■トレードオフ：①医療診断（Cancer検出）→FN=見逃し命に関わる→Recall重視（閾値を下げる）②スパムフィルタ→FP=重要メール削除→Precision重視（閾値を上げる）③詐欺検出→FNのコスト高（詐欺見逃し）→Recall重視 ■F1βスコア：F1=(1+β²)×P×R/(β²×P+R)でβ>1→Recall重視・β<1→Precision重視。",
+      "tags": ["MLアルゴリズム", "Precision", "Recall", "Confusion Matrix"]
+    },
+    {
+      "id": "MLA-154",
+      "category": "SageMaker高度",
+      "difficulty": 3,
+      "question": "SageMaker Ground Truth を使用した RLHF（Reinforcement Learning from Human Feedback）ワークフローで人間フィードバックデータを収集する場合の正しい手順はどれですか？",
+      "choices": [
+        "Ground Truth RankingタスクでLLM生成テキスト複数案をワーカーが比較ランキング→収集データ（preference dataset）をReward Modelのトレーニングに使用→Reward ModelをPPOアルゴリズムで基盤モデルのRLHFファインチューニングに活用",
+        "RLHFワークフローではGround Truthは使用できずAmazon Mechanical Turkのみで対応",
+        "RLHF Reward Modelのトレーニングに必要なフィードバックデータはAWSが自動生成する",
+        "Ground Truth RLHFは画像分類のみに対応しテキスト生成モデルのRLHFには使用できない"
+      ],
+      "answers": [0],
+      "explanation": "RLHF（人間フィードバックからの強化学習）ワークフロー：■Step 1 - 比較データ収集（Ground Truth）：①LLM（基盤モデル）で同じプロンプトに対し複数の応答を生成②Ground Truth Ranking Task：ワーカーが応答の品質を比較・ランキング（より良い応答を選択）③ワーカー：Mechanical Turk・Private（社内専門家）④大量のPreference Pairを収集（数万〜数十万件）⑤Ground Truth Active Labelingで効率化 ■Step 2 - Reward Model訓練：①Preference Data（入力テキスト・応答ペア・ランキング）でReward Model訓練②Reward Model：任意の応答に対してスカラースコアを予測③SageMaker Training Jobで実行 ■Step 3 - RLHFファインチューニング：①PPO（Proximal Policy Optimization）等のRLアルゴリズム②Reward Model + KL Divergence制約でLLMを最適化③HuggingFace TRL（Transformer Reinforcement Learning）ライブラリが標準的実装。",
+      "tags": ["SageMaker高度", "Ground Truth", "RLHF", "人間フィードバック"]
+    },
+    {
+      "id": "MLA-155",
+      "category": "データエンジニアリング",
+      "difficulty": 2,
+      "question": "機械学習パイプラインで大規模画像データセットを効率的にS3から読み込む際のベストプラクティスとして正しいものはどれですか？",
+      "choices": [
+        "画像をTFRecord（TensorFlow）またはRecordIO形式に変換してSageMaker Pipe Mode・FastFile Modeで読み込み、S3 Transfer AccelerationとCloudFrontキャッシュを組み合わせ、画像をリージョン内S3バケットに配置して転送コスト・レイテンシーを最小化する",
+        "大規模画像データセットは必ずローカルディスクにコピーしてから使用する必要がある",
+        "画像はJPEG形式のまま個別ファイルとして保存することが最も効率的",
+        "S3からの画像読み込みにはIAMロールは不要でパブリックアクセスで対応する"
+      ],
+      "answers": [0],
+      "explanation": "大規模画像データ読み込み最適化：■データ形式変換のメリット：①TFRecord：複数の小さいファイルを大きなシャードにまとめる→S3の多数小ファイルIOオーバーヘッド削減②RecordIO：MXNet/SageMaker最適化形式③Parquet（tabular特徴量付き）：画像バイナリ+メタデータを統合 ■SageMaker入力最適化：①FastFile Mode：初回アクセス時のみS3からダウンロード（FUSEマウント）→全データ事前ダウンロード不要②Pipe Mode：シーケンシャルなストリーミング読み込み③ShardedByS3Key：複数インスタンスで並列読み込み ■S3配置最適化：①同一リージョン：EC2/SageMakerと同じリージョンのS3→データ転送コスト無料・低レイテンシー②S3 Prefix設計：多数オブジェクトへの並列アクセスにはランダムプレフィックス（S3は自動的にパーティション分散） ■推奨インスタンス：画像処理はEFAネットワーク対応インスタンス（p3dn・p4d）で高速分散訓練。",
+      "tags": ["データエンジニアリング", "画像データ", "TFRecord", "S3最適化"]
+    },
+    {
+      "id": "MLA-156",
+      "category": "MLOps",
+      "difficulty": 3,
+      "question": "SageMaker Model Monitor で入力データのドリフトを検出した際に自動的にアラートを発報し、次のアクションを実行するための完全な設定として正しいものはどれですか？",
+      "choices": [
+        "MonitoringScheduleでS3Captureを有効化→DataQualityJobで制約違反をCloudWatch Metricsに送信→CloudWatch Alarmでモデル出力の分布変化を検出→EventBridge RuleでSNS通知・PagerDuty・SlackへのLambda webhook通知を実行",
+        "Model Monitorはアラートを自動送信できずコンソールで手動確認が必要",
+        "CloudWatchとModel Monitorは統合されていないため別途カスタム実装が必要",
+        "SNS通知はModel Monitorから直接設定できるがEventBridgeとの統合は不可能"
+      ],
+      "answers": [0],
+      "explanation": "Model Monitor アラート自動化の完全設定：■Step 1 - データキャプチャ設定：EndpointConfig.DataCaptureConfig（SamplingPercentage・DestinationS3Uri）でリアルタイム入出力をS3にキャプチャ ■Step 2 - スケジュール設定：monitor.create_monitoring_schedule()でMonitoringSchedule・MonitoringJobDefinition（前処理コンテナ・ベースラインS3パス・CloudWatch出力）を設定 ■Step 3 - CloudWatch Metrics：DataQualityジョブが違反を検出→CloudWatch Metrics（feature_baseline_drift_*）を送信 ■Step 4 - CloudWatch Alarm：特定メトリクスが閾値超過でALARM状態 ■Step 5 - アラート配信：①EventBridge Rule：Alarm StateChange→SNS Topic→Email/SMS②Lambda → Slack（Webhook）・PagerDuty API・JIRA Ticket作成③オプション：直接SageMaker Pipelinesの再訓練トリガー ■実務：違反の重要度に応じてinformational→warning→critical閾値を多段設定。",
+      "tags": ["MLOps", "Model Monitor", "CloudWatch Alarm", "アラート自動化"]
+    },
+    {
+      "id": "MLA-157",
+      "category": "AWSAIサービス",
+      "difficulty": 2,
+      "question": "Amazon SageMaker の組み込みアルゴリズム「Factorization Machines（FM）」の主なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "高次元スパースデータでの特徴量交互作用を効率的に学習し、クリック率（CTR）予測・商品レコメンデーション・評価予測等の推薦システムで使用されるアルゴリズム",
+        "Factorization Machinesは画像分類にのみ特化したアルゴリズムで推薦システムには非対応",
+        "FMはK-Meansと同一のクラスタリングアルゴリズムであり異なる用途への使用は誤り",
+        "FMはFeature StoreのOnline Storeに特化したクエリ最適化技術"
+      ],
+      "answers": [0],
+      "explanation": "Factorization Machines（FM）詳細：■仕組み：①線形モデルに2次の特徴量交互作用項を追加：ŷ = w0 + Σwi*xi + ΣΣ<vi,vj>xi*xj②交互作用の低ランク分解：<vi,vj>（k次元潜在ベクトルの内積）でパラメータ数をO(n²)からO(nk)に削減③高次元スパースデータでも効率的に学習可能 ■主なユースケース：①CTR（クリック率）予測：ユーザーID・アイテムID・コンテキスト特徴量の交互作用②評価予測（Matrix Factorizationの一般化）③推薦システム（ユーザー×アイテムの嗜好モデリング） ■SageMaker組み込みFM：①Distributed SGD：大規模データに対応②CPU（スパースデータ）・GPU（密データ）対応③バイナリ分類・回帰・推薦の3タスク対応④入力：LibSVM形式（疎ベクトル効率的表現） ■FFM（Field-aware FM）：特徴量のフィールド情報も考慮した発展形（LightFMライブラリ）。",
+      "tags": ["AWSAIサービス", "Factorization Machines", "推薦システム", "CTR予測"]
+    },
+    {
+      "id": "MLA-158",
+      "category": "MLアルゴリズム",
+      "difficulty": 2,
+      "question": "ナイーブベイズ分類器（Naive Bayes）の「ナイーブ」な仮定と、それでも実用的に使用される理由として正しいものはどれですか？",
+      "choices": [
+        "「クラスが与えられた条件のもとで全特徴量が条件付き独立」という現実には成立しない強い仮定を置くが、計算効率が非常に高く・少データでも機能し・テキスト分類・スパムフィルタで高精度を発揮するため実用的",
+        "ナイーブベイズは特徴量間の相関を完全に考慮するため高精度な確率推定が可能",
+        "ナイーブベイズは「全ての特徴量が均等に重要」という仮定でそれ以外の仮定はしない",
+        "ナイーブベイズは確率論に基づかず経験則のみでクラスを決定する"
+      ],
+      "answers": [0],
+      "explanation": "Naive Bayes 詳細：■ベイズの定理：P(class|features) ∝ P(features|class)×P(class)■ナイーブ仮定：P(f1,f2,...,fn|class) = P(f1|class)×P(f2|class)×...×P(fn|class)（特徴量間の条件付き独立）■種類：①Gaussian NB：連続特徴量（ガウス分布仮定）②Multinomial NB：テキスト分類（単語頻度）③Bernoulli NB：バイナリ特徴量（単語有無）④Complement NB：不均衡テキストデータに強い ■利点：①計算：O(n)で非常に高速②少データ：P(fi|class)のパラメータ数が少ないため少数データでも推定安定③テキスト分類で実用的精度（独立仮定が比較的成立しやすい）④リアルタイム分類・ベースラインモデルに最適 ■欠点：確率推定が歪む（0/1に偏りがち）・特徴量相関を考慮しない→Logistic Regressionより精度が落ちることが多い。",
+      "tags": ["MLアルゴリズム", "Naive Bayes", "テキスト分類", "確率モデル"]
+    },
+    {
+      "id": "MLA-159",
+      "category": "SageMaker高度",
+      "difficulty": 3,
+      "question": "SageMaker で VGG・ResNet 等の大規模な畳み込みニューラルネットワーク（CNN）をファインチューニングする際のベストプラクティスとして正しいものはどれですか？",
+      "choices": [
+        "事前学習済みの重みを転移学習（Transfer Learning）で活用し、初期段階では最後の分類層のみを訓練（Freeze）してから徐々に下位層を解凍（Unfreeze）して低い学習率で Fine-tuning（Discriminative Learning Rate）することで少量データでも高精度を実現",
+        "CNNのファインチューニングでは常に全層を同一の高い学習率で再訓練することが最善",
+        "転移学習は全く異なるドメイン（自然画像→医療画像等）には有効でなく毎回ゼロから訓練する",
+        "SageMaker JumpStartは画像分類の転移学習に対応しておらずカスタム実装が必要"
+      ],
+      "answers": [0],
+      "explanation": "CNNファインチューニングのベストプラクティス：■転移学習の価値：ImageNet等の大規模データセットで学習した特徴（エッジ・テクスチャ・形状等）は多くのドメインに汎用的→少量データ・計算リソース節約 ■段階的ファインチューニング戦略：①Phase 1（Feature Extraction）：事前学習済みモデルの全層を凍結→追加した分類層（Classifier Head）のみ訓練（学習率1e-3等）→収束まで（数エポック）②Phase 2（Fine-tuning）：徐々に後ろの畳み込みブロックを解凍→全体を低い学習率（1e-5等）で再訓練→事前学習の知識を破壊しない ■Discriminative Learning Rate：層ごとに異なる学習率（後ろの層→高い学習率・前の層→低い学習率）→fastaiライブラリで実装 ■SageMaker JumpStart：ResNet・VGG・EfficientNet・ViT等のImageNet事前学習済みモデルを1クリックでファインチューニング可能 ■データ拡張（Data Augmentation）：RandomCrop・HorizontalFlip・ColorJitter→少量データの過学習抑制に必須。",
+      "tags": ["SageMaker高度", "転移学習", "ファインチューニング", "CNN"]
+    },
+    {
+      "id": "MLA-160",
+      "category": "MLOps",
+      "difficulty": 3,
+      "question": "機械学習システムの MLOps 成熟度（Maturity Level）を向上させるにあたり、Level 0（手動プロセス）から Level 2（CI/CD パイプライン自動化）に相当するAWSでの実装として正しいものはどれですか？",
+      "choices": [
+        "Level 0：Notebookでアドホック訓練・手動デプロイ→Level 1：SageMaker Pipelinesで自動化・Feature Store・Model Registry・Model Monitor→Level 2：CodePipeline+EventBridgeでコード変更/データ変更/ドリフト検出から再訓練・評価・承認・デプロイまで完全自動化",
+        "MLOps成熟度はAWSではLevel 1までしか実現できず完全自動化は不可能",
+        "Level 2はコードを書かずに全自動化するため機械学習エンジニアが不要になる",
+        "SageMaker PipelinesはLevel 0の手動プロセスに相当し自動化には使用できない"
+      ],
+      "answers": [0],
+      "explanation": "MLOps 成熟度モデル（Google MLOps Maturity）とAWS実装：■Level 0 - 手動プロセス：①Notebookでアドホック実験②モデルをZipで渡し手動デプロイ③再訓練は手動スクリプト④モニタリングなし⑤データサイエンティスト⇔エンジニアの手動ハンドオフ ■Level 1 - MLパイプライン自動化：①SageMaker Pipelines：前処理→訓練→評価→登録を自動化②Feature Store：オンライン/オフライン特徴量一元管理③Model Registry：バージョン管理・承認ワークフロー④Model Monitor：ドリフト検出⑤Experiments：実験追跡 ■Level 2 - CI/CD パイプライン自動化：①コード変更→自動テスト→パイプライン更新（GitOps）②新データ到着またはドリフト検出→EventBridge→Pipelines自動再訓練③ConditionStep品質ゲート→自動承認→Blue/Greenデプロイ④全プロセスのコード化（IaC：CDK/Terraform）⑤完全なAuditability・再現性 ■Level 3（一部組織）：自動データ収集・継続学習・セルフヒーリングシステム。",
+      "tags": ["MLOps", "成熟度モデル", "MLOps Level", "完全自動化"]
     }
   ]
 }
