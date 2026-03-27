@@ -369,6 +369,30 @@ test.describe('画面遷移アニメーション', () => {
 });
 
 // ============================================================
+// トースト通知
+// ============================================================
+test.describe('トースト通知', () => {
+  test('トーストのbottomにsafe-area対応のCSSが設定されている', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    const hasSafeArea = await page.evaluate(() => {
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            if (rule.selectorText === '.toast') {
+              return rule.style.bottom.includes('max(') ||
+                     rule.style.bottom.includes('env(');
+            }
+          }
+        } catch (_) {}
+      }
+      return false;
+    });
+    expect(hasSafeArea).toBe(true);
+  });
+});
+
+// ============================================================
 // データ永続性
 // ============================================================
 test.describe('データ永続性（localStorage）', () => {

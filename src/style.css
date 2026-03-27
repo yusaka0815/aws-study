@@ -686,7 +686,7 @@ body {
    ============================================================ */
 .toast {
   position: fixed;
-  bottom: 24px;
+  bottom: max(24px, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%) translateY(80px);
   background: var(--bg-card);
