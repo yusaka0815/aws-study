@@ -602,6 +602,606 @@
       "answers": [0],
       "explanation": "AWS Cost and Usage Report（CUR）詳細：■特徴：①最も詳細なコストデータ（リソースID・使用量・料金・タグ等）②S3バケットへのCSV/Parquet形式での定期保存（毎時・毎日・毎月）③データ粒度：時間単位（最細かい）または月単位 ■活用方法：①Athena：S3上のCURをSQLクエリ（コスト分析・配賦計算）②QuickSight：可視化ダッシュボード③Cost Intelligence Dashboard：AWSが提供する分析テンプレート ■含まれる情報：①サービス・リソースID別コスト②On-Demand/Reserved/Savings Plans/Spot料金③タグによるコスト配賦④Support料金 ■設定：①Billing and Cost Management→Cost & Usage Reports②S3バケット名・プレフィックス・時間粒度・フォーマット設定③Athena統合：自動的にCrawlerとGlueデータカタログ設定 ■Cost Explorerとの違い：①CUR：生データ・最詳細・バッチ分析向け②Cost Explorer：UI・ドリルダウン・RI推奨・即時確認。",
       "tags": ["CUR", "コスト管理", "Athena", "QuickSight"]
+    },
+    {
+      "id": "SOA-041",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 インスタンスの ユーザーデータ（User Data）スクリプトが初回起動後に再実行されない理由と、再実行させるための方法として正しいものはどれですか？",
+      "choices": [
+        "User Dataはデフォルトで初回起動時のみ実行される。再実行させるには/var/lib/cloud/instances/{instance-id}/sem/config_scriptsファイルを削除してインスタンスを再起動するか、mime-multipartでcloud-init設定でfrequency: alwaysを指定する",
+        "User Dataは全ての起動（再起動・停止起動を含む）で毎回自動実行される",
+        "User Dataスクリプトを再実行するにはAMIを再作成する必要がある",
+        "User Dataはroot権限では実行されないため、管理者権限の操作は実行できない"
+      ],
+      "answers": [0],
+      "explanation": "EC2 User Data詳細：■デフォルト動作：①cloud-initがUser Dataを初回起動時のみ実行②/var/lib/cloud/以下に実行済みフラグが記録 ■再実行方法：①semファイル削除：rm /var/lib/cloud/instances/$(curl -s http://169.254.169.254/latest/meta-data/instance-id)/sem/config_scripts→再起動で再実行②cloud-init設定：#cloud-config + frequency: alwaysで毎回実行 ■User Dataの特性：①root権限で実行（sudo不要）②最大16KB（IMDSv2でより大きいサイズ可）③Base64エンコード自動/手動③起動ログ：/var/log/cloud-init.log・/var/log/cloud-init-output.log ■Shebang：#!/bin/bash（シェルスクリプト）または#cloud-config（YAML） ■SSM Run Commandとの違い：User Dataは起動時の初期化、Run Commandは起動後の任意タイミングでの実行 ■トラブルシューティング：/var/log/cloud-init-output.logでエラー確認。",
+      "tags": ["EC2", "User Data", "cloud-init", "初期化"]
+    },
+    {
+      "id": "SOA-042",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 Intelligent-Tiering の仕組みと、使用を推奨するシナリオとして正しいものはどれですか？",
+      "choices": [
+        "Intelligent-TieringはアクセスパターンをMLで監視して自動的に最適なストレージティア（Frequent Access/Infrequent Access/Archive Instant Access等）に移動し、モニタリング料金は発生するが取り出し料金はかからない。アクセスパターンが不明・変動するオブジェクトに最適",
+        "Intelligent-TieringはS3 GlacierとS3 Standardを切り替えるのみのシンプルな機能",
+        "Intelligent-Tieringの使用には最低オブジェクトサイズの制限はなく全サイズに適用できる",
+        "Intelligent-TieringはGlacier Deep Archiveへの自動移行はサポートしない"
+      ],
+      "answers": [0],
+      "explanation": "S3 Intelligent-Tiering詳細：■ティア構成：①Frequent Access（頻繁アクセス・Standard料金）②Infrequent Access（30日間アクセスなし→Standard-IA料金）③Archive Instant Access（90日間→Glacier Instant Retrieval料金・即時取り出し）④Archive Access（オプション・90日以上・数時間での取り出し）⑤Deep Archive Access（オプション・180日以上・12時間取り出し） ■料金：①ストレージ料金（ティアに応じた料金）②Monitoring/Automation料金（$0.0025/1000オブジェクト/月）③取り出し料金なし（Frequent/Infrequent/Archive Instantは無料）④Archive/Deep Archiveの取り出しは有料 ■推奨シナリオ：①新規データ（アクセスパターン不明）②季節性のあるコンテンツ③ユーザーコンテンツ（個人ごとにアクセスパターンが異なる）④1000オブジェクト以上のデータセット（モニタリングコスト効率）■最小サイズ：128KB以下は常にFrequent Access扱い（移行されない）。",
+      "tags": ["S3", "Intelligent-Tiering", "コスト最適化", "ストレージ"]
+    },
+    {
+      "id": "SOA-043",
+      "category": "ECS",
+      "difficulty": 2,
+      "question": "Amazon ECS の Fargate と EC2 起動タイプの選択基準として正しいものはどれですか？",
+      "choices": [
+        "FargateはサーバーレスでEC2インスタンスの管理が不要でコンテナごとにvCPU/メモリを指定し、EC2起動タイプはEC2クラスターを管理してGPUインスタンス・カスタムAMI・ホスト内ネットワーク・高密度配置等の高度な設定が可能でコスト効率が高い",
+        "FargateとEC2起動タイプは同じ機能でコストのみが異なる",
+        "FargateはEC2起動タイプより常にコストが高いため、大規模環境ではEC2を使用すべき",
+        "EC2起動タイプはGPUをサポートせず、GPU処理にはFargateのみが対応している"
+      ],
+      "answers": [0],
+      "explanation": "ECS Fargate vs EC2詳細：■Fargate（サーバーレス）：①EC2インスタンス管理不要②コンテナ単位でvCPU(0.25〜16)/メモリ(0.5〜120GB)を指定③パッチ適用・スケーリングはAWSが管理④起動時間：数秒〜数十秒⑤コスト：vCPU/メモリ使用時間に課金⑥ユースケース：シンプルなWebアプリ・マイクロサービス・バッチジョブ ■EC2起動タイプ：①EC2クラスター（インスタンス群）を管理②高度な設定：GPU/Inferentia/カスタムAMI/ホストネットワーキング（hostモード）/大容量ローカルストレージ③高密度配置（binpacking）でコスト最適化④コスト：EC2インスタンス料金（Fargetより安い場合多い）⑤管理オーバーヘッド：OSパッチ・ECSエージェント更新・クラスタースケーリング必要 ■選択：①管理不要・シンプル→Fargate②GPU・高密度・コスト最適化→EC2③ハイブリッド：Fargate（通常ワーク）+EC2（GPU/特殊要件）。",
+      "tags": ["ECS", "Fargate", "EC2起動タイプ", "コンテナ"]
+    },
+    {
+      "id": "SOA-044",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "Amazon CloudWatch の GetMetricStatistics と GetMetricData API の違いとして正しいものはどれですか？",
+      "choices": [
+        "GetMetricStatisticsは単一メトリクスの統計値取得（最大1440データポイント）に特化し、GetMetricDataは複数メトリクスの同時取得・数式処理・ページネーションをサポートし、大量データの一括取得やメトリクス計算（合計/比率等）に適している",
+        "GetMetricStatisticsとGetMetricDataは完全に同じ機能を提供する",
+        "GetMetricDataはリアルタイムメトリクスのみ取得でき、過去データは取得できない",
+        "GetMetricStatisticsはより高機能で、GetMetricDataの上位互換"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Metrics API詳細：■GetMetricStatistics（旧API）：①単一メトリクス②統計：Average/Sum/Maximum/Minimum/SampleCount③最大データポイント：1440④1時間より古い粒度：1分以上必要⑤ページネーションなし（最大1440ポイント）⑥用途：シンプルな単一メトリクス取得 ■GetMetricData（新API・推奨）：①複数メトリクスを1つのAPIコールで取得（最大500）②MetricDataQuery：Metric指定 OR 数式（Expression）③数式例：FILL(m1, 0)/RATE(m1)/SUM([m1, m2])④ページネーション：大量データ対応⑤細粒度：1秒メトリクス（高解像度メトリクス）対応⑥ページネーション：無制限のデータポイント ■使い分け：①シンプルな単一メトリクス→GetMetricStatistics（下位互換維持）②複数メトリクス・計算・大量データ→GetMetricData（推奨）■CloudWatch Dashboardは内部でGetMetricDataを使用■コスト：GetMetricData：$0.01/1000メトリクス要求。",
+      "tags": ["CloudWatch", "API", "メトリクス取得", "GetMetricData"]
+    },
+    {
+      "id": "SOA-045",
+      "category": "Security Hub",
+      "difficulty": 2,
+      "question": "AWS Security Hub の機能と他のセキュリティサービスとの統合として正しいものはどれですか？",
+      "choices": [
+        "Security HubはGuardDuty・Inspector・Macie・Firewall Manager等のAWSセキュリティサービスからの知見を一元集約してASFF（Amazon Security Finding Format）で標準化し、CIS Benchmarkや PCI DSSコンプライアンスチェックを自動実行する",
+        "Security HubはEC2インスタンスのOSレベルの脆弱性スキャンのみを行うサービス",
+        "Security Hubは全て自動修復機能を内蔵しており、検出された問題を自動的に解決する",
+        "Security Hubは単一アカウントのみをサポートし、Organizationsとの統合は不可能"
+      ],
+      "answers": [0],
+      "explanation": "AWS Security Hub詳細：■知見（Finding）のソース：①GuardDuty（脅威検出）②Inspector（脆弱性スキャン）③Macie（S3機密データ）④Firewall Manager（WAF/SG設定）⑤AWS Config（コンプライアンス）⑥IAM Access Analyzer⑦サードパーティ統合（CrowdStrike等） ■ASFF（Amazon Security Finding Format）：全知見を統一フォーマットに正規化（相関分析が容易） ■コンプライアンス標準：①CIS AWS Foundations Benchmark②PCI DSS③AWS Foundational Security Best Practices（AFSBP）④NIST SP 800-53 ■自動化：Security Hub→EventBridge Rule→Lambda/Systems Manager Automation→自動修復 ■Organizations統合：管理アカウントから全アカウントのSecurity Hubを一元管理・知見の集約 ■Score/Insight：リソース別・コントロール別のコンプライアンススコア■コスト：セキュリティチェック$0.001/チェック/アカウント/月（最初30日無料トライアル）。",
+      "tags": ["Security Hub", "セキュリティ", "コンプライアンス", "GuardDuty"]
+    },
+    {
+      "id": "SOA-046",
+      "category": "Route53",
+      "difficulty": 2,
+      "question": "Route 53 の Routing Policies（ルーティングポリシー）の種類と使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Simple（単純）・Weighted（加重）・Latency（レイテンシー）・Failover（フェイルオーバー）・Geolocation（地理的）・Geoproximity（地理的近接）・Multivalue Answer（複数値回答）・IP-based の8種類があり、用途に応じて選択する",
+        "Route 53のルーティングポリシーはSimpleとWeightedの2種類のみ",
+        "Failoverポリシーは自動フェイルオーバーを提供するが、プライマリとセカンダリの両方が同時に応答することはない",
+        "GeolocationとGeoproximityは同じ機能でロケーション指定の方法のみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "Route 53 ルーティングポリシー詳細：■Simple：①単一リソースへのルーティング②複数値返却：クライアントがランダム選択 ■Weighted（加重）：①重み付けによる分散（例：90%→Production、10%→Canary）②テスト/Blue-Green ■Latency（レイテンシー）：①レイテンシーが最も低いAWSリージョンへルーティング②ユーザー体験向上 ■Failover：①Active-Passive②Health Check必須③Primary失敗時にSecondaryへ自動切り替え ■Geolocation：①ユーザーの国/大陸に基づいてルーティング②コンテンツの地域化・規制対応 ■Geoproximity（Traffic Policy）：①地理的距離+バイアス（Bias値）でルーティング②Traffic Policy Recordで設定 ■Multivalue Answer：①最大8つのレコードをランダムに返却②Health Check付きでDNSレベルのロードバランシング ■IP-based：①CIDRブロックに基づいてルーティング②特定のISP/オフィスIPからのアクセス制御。",
+      "tags": ["Route53", "ルーティングポリシー", "DNS", "フェイルオーバー"]
+    },
+    {
+      "id": "SOA-047",
+      "category": "Systems Manager",
+      "difficulty": 2,
+      "question": "AWS Systems Manager Patch Manager を使用してEC2インスタンスに自動パッチ適用する設定として正しいものはどれですか？",
+      "choices": [
+        "Patch Managerでパッチベースライン（パッチ承認ルール）を定義し、メンテナンスウィンドウ（パッチ適用時間帯）を設定してPatch GroupタグでインスタンスとベースラインをマッピングすることでOSパッチを自動適用・コンプライアンス状態を管理できる",
+        "Patch ManagerはWindowsのみをサポートし、LinuxのパッチはAWSが自動的に適用する",
+        "Patch Managerを使用するにはインスタンスのインバウンドSSHポートを開放する必要がある",
+        "パッチ適用後のコンプライアンス確認はAWS Configのみが担当し、Patch Managerには確認機能がない"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager Patch Manager詳細：■パッチベースライン：①OS別（Windows/Amazon Linux/Ubuntu等）②承認ルール：重要度（Critical/High等）・分類（SecurityUpdates/BugFix等）・自動承認日数③拒否リスト：特定パッチを明示的に除外 ■Patch Group：①EC2インスタンスタグ：Key=Patch Group, Value=Production（またはDevelopment等）②パッチベースラインとグループのマッピング設定 ■メンテナンスウィンドウ：①パッチ適用の時間枠（例：毎週土曜深夜2時）②Targets：Patch GroupまたはTag指定③Tasks：AWS-RunPatchBaseline ドキュメント実行 ■パッチコンプライアンス：①Compliant/Non-Compliant状態をInventoryに記録②Config Rules連携：ec2-managedinstance-patch-compliance-status-check ■対応OS：Windows Server・Amazon Linux・Ubuntu・RedHat・CentOS・SUSE等 ■SSMエージェント必須：インスタンスにSSMエージェントとIAMロール（AmazonSSMManagedInstanceCore）が必要。",
+      "tags": ["Systems Manager", "Patch Manager", "パッチ管理", "コンプライアンス"]
+    },
+    {
+      "id": "SOA-048",
+      "category": "EBS",
+      "difficulty": 2,
+      "question": "Amazon EBS の スナップショット（Snapshot）の増分バックアップの仕組みと Fast Snapshot Restore（FSR）として正しいものはどれですか？",
+      "choices": [
+        "EBSスナップショットは増分バックアップで初回のみフルバックアップ・以降は変更ブロックのみ保存。FSRを有効にすると特定のAZでスナップショットから作成したEBSボリュームのウォームアップが不要になり最大IOPS性能を即時発揮できる",
+        "EBSスナップショットは毎回フルバックアップでストレージ使用量が累積的に増加する",
+        "FSRはスナップショットをより高速に作成する機能でボリューム復元速度には関係しない",
+        "スナップショットを削除すると、そのスナップショットの後に作成された全スナップショットも連鎖的に削除される"
+      ],
+      "answers": [0],
+      "explanation": "EBS Snapshot詳細：■増分バックアップ：①1回目：全ブロックをS3にコピー（実際の使用ブロックのみ）②2回目以降：前回からの変更ブロックのみコピー③削除：他のスナップショットが参照していないブロックのみ削除（連鎖削除なし）→古いスナップショットを削除しても後続スナップショットは影響なし ■FSR（Fast Snapshot Restore）：①有効化：特定リージョン×AZの組み合わせでFSR有効②動作：スナップショットから作成したEBSボリュームが初期化済み状態→インスタンスにアタッチ後即最大IOPS③デフォルト：スナップショットからの新規ボリュームは初回アクセス時にS3からデータがロードされる（Lazy Loading）→初期パフォーマンス低下 ■コスト：FSRは$0.75/有効化/時間（高コスト→重要な復旧に限定）■代替：事前に一度フルスキャン（dd/fioコマンド）してウォームアップ→FSRより安価 ■スナップショット共有：別アカウントへの共有・暗号化スナップショットはKMS CMKも共有要。",
+      "tags": ["EBS", "スナップショット", "Fast Snapshot Restore", "バックアップ"]
+    },
+    {
+      "id": "SOA-049",
+      "category": "IAM",
+      "difficulty": 2,
+      "question": "AWS IAM Identity Center（旧 AWS SSO）の機能とシングルサインオンの設定として正しいものはどれですか？",
+      "choices": [
+        "IAM Identity Centerは複数のAWSアカウントとビジネスアプリケーション（Salesforce・Office 365等）へのSSOを提供し、Active Directory/Azure AD等の外部IdPとのSCIM/SAML 2.0統合、ユーザー/グループへのPermission Setの割り当てでアクセス制御できる",
+        "IAM Identity CenterはAWSアカウントのSSO専用で、SaaSアプリケーションへのSSOはサポートしない",
+        "IAM Identity Centerを使用するにはOrganizationsが必須で、単一アカウントでは利用できない",
+        "IAM Identity Centerはフェデレーション機能のみで、独自のユーザーディレクトリは持てない"
+      ],
+      "answers": [0],
+      "explanation": "IAM Identity Center詳細：■機能：①複数AWSアカウントへのSSO（Organizationsと統合）②アプリケーションSSO（SAML 2.0対応：Salesforce/Box/Slack等）③ユーザーポータル：単一URLで全サービスにアクセス ■IdP統合：①Identity Center内蔵ディレクトリ（独自ユーザー管理）②Active Directory（AWS Managed Microsoft AD / セルフマネージドAD）③外部IdP（Okta/Azure AD等）：SAML 2.0 + SCIM（自動プロビジョニング）■Permission Set：①IAMポリシーセットを定義②ユーザー/グループ×AWSアカウントに割り当て③例：PowerUserAccess→開発チーム→dev/staging/prod アカウント ■フロー：ユーザーポータルログイン→アカウント/ロール選択→一時的な認証情報（AssumeRoleWithSAML）取得→AWSコンソールアクセス ■CLIでの利用：aws configure sso→ブラウザ認証→~/.aws/config にSSOプロファイル保存 ■無料：Organizations使用時は追加料金なし。",
+      "tags": ["IAM Identity Center", "SSO", "フェデレーション", "Organizations"]
+    },
+    {
+      "id": "SOA-050",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon RDS の Performance Insights を使用してデータベースパフォーマンスの問題を診断する方法として正しいものはどれですか？",
+      "choices": [
+        "Performance Insightsは DBLoad（データベース負荷）をDBMax vCPUs（最大並列実行数）と比較して表示し、wait events（I/O待ち・ロック待ち等）を分析することで、ボトルネックになっているSQLクエリを特定してインデックス追加やクエリ最適化の判断ができる",
+        "Performance InsightsはCPU使用率のみを監視し、SQLクエリレベルの分析はできない",
+        "Performance Insightsを有効にすると自動的にスロークエリを書き直して最適化する",
+        "Performance InsightsはAuroraでのみ使用可能で、RDS MySQLやPostgreSQLでは使用できない"
+      ],
+      "answers": [0],
+      "explanation": "RDS Performance Insights詳細：■DBLoad：①アクティブセッション数（平均）②DBMax vCPUs以上→パフォーマンス問題の可能性③時系列グラフで可視化 ■Wait Events（待機イベント）：①io/file/read：ディスクI/O待ち（インデックス不足等）②lock：ロック競合（長時間トランザクション）③cpu：CPU過負荷（複雑なクエリ）④network：ネットワーク待ち ■Top SQLs：①DBLoad寄与が高いSQLをランキング表示②各SQLのDBLoad・Wait Event分解③Full SQL文表示（ダイジェストではなく実際のクエリ）④実行計画への連携 ■対応エンジン：MySQL 5.7+/PostgreSQL 10+/Oracle/SQL Server/Aurora MySQL/PostgreSQL ■保持期間：7日間（無料）/最大2年（有料：$0.02/vCPU/月）■Insights無効時：CloudWatch RDS Metrics（CPU/IOPS/接続数）で大まかな監視のみ■Slow Query Log：Performance Insightsより詳細だがパース・分析が手間。",
+      "tags": ["RDS", "Performance Insights", "パフォーマンス診断", "SQL"]
+    },
+    {
+      "id": "SOA-051",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC の Network ACL（NACL）とセキュリティグループ（SG）の違いとして正しいものはどれですか？",
+      "choices": [
+        "NACLはサブネットレベルでステートレス（インバウンドとアウトバウンド両方のルールが必要）・ルール番号順に評価・Denyルールが設定可能。SGはインスタンスレベルでステートフル（インバウンド許可で戻りトラフィック自動許可）・Denyルール設定不可・全ルールが評価される",
+        "NACLとSGは同じ機能でOSIレイヤーのみが異なる",
+        "SGにDenyルールを設定することができ、NACLにはDenyルールがない",
+        "NACLはステートフルでSGはステートレスである"
+      ],
+      "answers": [0],
+      "explanation": "NACL vs SG詳細：■NACL（Network ACL）：①適用対象：サブネット（サブネット内全インスタンスに影響）②ステートレス：インバウンド許可しても戻りトラフィック（アウトバウンド）の明示許可が必要③ルール評価：番号順（最小番号が先、最初にマッチしたルールが適用）④Allow/Denyルール設定可能⑤デフォルト：全許可（デフォルトNACL）または全拒否（カスタムNACL）⑥リターントラフィック：1024-65535の一時ポート（エフェメラルポート）のアウトバウンド許可が必要 ■SG（Security Group）：①適用対象：ENI（インスタンス・LB等）②ステートフル：インバウンド許可した通信の戻りは自動許可③ルール評価：全ルール評価して許可ルールが1つでもあれば許可④Allowルールのみ（Deny不可）⑤デフォルト：全インバウンドDeny・全アウトバウンドAllow（デフォルトSG）⑥SG参照：他のSGをソース/デスティネーションとして指定可能（IPではなくSG ID指定）。",
+      "tags": ["VPC", "NACL", "セキュリティグループ", "ステートレス"]
+    },
+    {
+      "id": "SOA-052",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "Amazon CloudWatch Events（現 EventBridge）の Scheduled Events（スケジュールされたイベント）と Cron 式の設定として正しいものはどれですか？",
+      "choices": [
+        "EventBridgeのスケジュールではcron(分 時 日 月 曜日 年)形式またはrate(数 unit)形式を使用し、cron(0 9 ? * MON-FRI *)は平日9時に実行、rate(5 minutes)は5分ごとに実行。Lambda/Step Functions/ECS等を定期実行できる",
+        "EventBridgeのcron式はLinuxのcrontab形式と完全に同一でフィールド数も同じ",
+        "スケジュールの最小間隔は15分で、1分間隔のスケジュールは設定できない",
+        "EventBridgeスケジュールはLambda関数のみをターゲットとして設定できる"
+      ],
+      "answers": [0],
+      "explanation": "EventBridge スケジュール詳細：■Cron式（6フィールド）：cron(分 時 日 月 曜日 年)※Linuxは5フィールド、AWSは6フィールド（年追加）■特殊文字：* (全て), ? (日または曜日の片方に使用), - (範囲), , (複数値), / (間隔), L (最終), W (直近平日) ■例：①cron(0 9 ? * MON-FRI *) = 平日9時②cron(0 0 1 * ? *) = 毎月1日0時③cron(*/5 * * * ? *) = 5分ごと ■Rate式：rate(value unit) unit: minute/minutes/hour/hours/day/days ①rate(5 minutes) = 5分ごと②rate(1 day) = 毎日③最小：rate(1 minute) ■ターゲット：Lambda・Step Functions・ECS Task・Kinesis・SNS・SQS等 ■EventBridge Scheduler（新機能）：①EventBridegeルールよりも高機能②タイムゾーン指定③柔軟なスケジュール（ワンタイム・繰り返し）④Universal Target：500以上のAPIアクション。",
+      "tags": ["EventBridge", "スケジュール", "Cron", "自動化"]
+    },
+    {
+      "id": "SOA-053",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 インスタンスの ENA（Enhanced Networking）と SR-IOV の関係として正しいものはどれですか？",
+      "choices": [
+        "ENAはSR-IOV（Single Root I/O Virtualization）技術を使用してネットワーク仮想化のオーバーヘッドを削減し、最大100Gbpsのネットワーク帯域幅と低レイテンシを実現する。最新世代のインスタンスタイプでは自動的に有効化される",
+        "ENAはNVMeストレージの高速化技術でネットワークとは無関係",
+        "SR-IOVを使用するにはLinux OSのみをサポートし、Windowsでは動作しない",
+        "ENAはPlacement Groupを使用する場合のみ有効化できる"
+      ],
+      "answers": [0],
+      "explanation": "ENA（Enhanced Networking）詳細：■SR-IOV：①物理NICを仮想分割してVMに直接割り当て②ハイパーバイザーを介さないため低レイテンシ・高スループット ■ENA（Elastic Network Adapter）：①AWS独自のSR-IOV実装②最大100Gbps（c5n/p3dn等）・最大25Gbps（C5/R5/M5等）・従来は10Gbps ■有効化確認：ethtool -i eth0 → driver: ena（Amazon LinuxはデフォルトENA）■Intel 82599 VF：旧SR-IOV実装（10Gbps上限）■EFA（Elastic Fabric Adapter）：①ENAの拡張版②HPC/ML向け③libfabric API経由でOS bypassが可能④Message Passing Interface（MPI）対応⑤Cluster Placement Groupと組み合わせて超低レイテンシ通信 ■対応インスタンス：最新世代（C5/M5/R5/P3/G4等）は全てENA対応 ■Windows：ENAドライバーのインストールが必要（AWS提供）。",
+      "tags": ["EC2", "ENA", "Enhanced Networking", "SR-IOV"]
+    },
+    {
+      "id": "SOA-054",
+      "category": "CloudTrail",
+      "difficulty": 2,
+      "question": "CloudTrail の Trail を組織全体（Organizations）に適用して集中管理する設定と利点として正しいものはどれですか？",
+      "choices": [
+        "OrganizationsのManagement AccountでOrganization Trailを作成すると全メンバーアカウントのAPI活動が自動的に1つのS3バケットに記録され、メンバーアカウントが個別に無効化できない中央集中型の監査証跡が実現できる",
+        "Organization TrailはManagement Accountのみの操作を記録し、メンバーアカウントの操作は含まれない",
+        "Organization Trailを作成するとメンバーアカウントのCloudTrailが自動的に無効化される",
+        "Organization Trailは各メンバーアカウントのManagement Consoleから個別に無効化できる"
+      ],
+      "answers": [0],
+      "explanation": "CloudTrail Organization Trail詳細：■設定：①Organizationsの管理アカウント（Management Account）またはDelegated Adminアカウントから作成②「Apply trail to my organization」にチェック③S3バケット：管理アカウント所有の集中バケット ■特徴：①全メンバーアカウントのAPI活動を自動記録（自動で新規アカウントも対象）②メンバーアカウントはTrailを無効化・変更・削除できない（Read Onlyで参照のみ）③各アカウントのCloudTrail画面にOrganization Trailが表示される ■S3バケット構造：BucketName/AWSLogs/OrganizationId/AccountId/Region/Year/Month/Day/ファイル.json.gz ■既存メンバーアカウントの個別Trail：Organization Trailとは別に継続（二重記録の可能性）→不要であれば削除推奨 ■CloudWatch Logs統合：Organization Trailを組織用CloudWatch Logsに転送→集中ログ分析 ■コスト：管理アカウントのS3ストレージコスト（複数アカウント分）。",
+      "tags": ["CloudTrail", "Organizations", "監査", "集中管理"]
+    },
+    {
+      "id": "SOA-055",
+      "category": "Auto Scaling",
+      "difficulty": 2,
+      "question": "EC2 Auto Scaling のライフサイクルフック（Lifecycle Hook）の用途として正しいものはどれですか？",
+      "choices": [
+        "ライフサイクルフックはインスタンスの起動時（Pending）または終了時（Terminating）に処理を一時停止し、カスタムアクション（ソフトウェアインストール・ログ取得・接続解除等）を実行後にcomplete-lifecycle-actionコマンドで再開する",
+        "ライフサイクルフックはEC2インスタンスのOSが起動した後にのみトリガーされる",
+        "ライフサイクルフックで一時停止できる時間は最大5分固定",
+      "ライフサイクルフックはAuto Scaling以外のEC2インスタンス停止にも自動的に適用される"
+      ],
+      "answers": [0],
+      "explanation": "Auto Scaling Lifecycle Hook詳細：■フックタイプ：①autoscaling:EC2_INSTANCE_LAUNCHING：Pending→Pending:Wait状態（インスタンス起動後・InService前）②autoscaling:EC2_INSTANCE_TERMINATING：Terminating→Terminating:Wait状態（終了前） ■Wait状態での処理：①SNS/SQS/EventBridgeに通知→Lambda実行②タイムアウト：デフォルト3600秒（1時間）、最大172800秒（48時間） ■起動フックのユースケース：①ソフトウェアインストール・設定適用②ApplicationLoadBalancerのウォームアップ③インベントリへの登録④ヘルスチェック完了待ち ■終了フックのユースケース：①実行中のジョブの完了待ち（Graceful Shutdown）②ログ・メトリクスのS3/CloudWatchへの転送③接続プールからの切り離し ■complete-lifecycle-action：処理完了後にCOMPLETEまたはABANDON（インスタンスを廃棄）を送信 ■RecordLifecycleActionHeartbeat：タイムアウト延長（最大172800秒まで）。",
+      "tags": ["Auto Scaling", "Lifecycle Hook", "起動処理", "終了処理"]
+    },
+    {
+      "id": "SOA-056",
+      "category": "EFS",
+      "difficulty": 2,
+      "question": "Amazon EFS（Elastic File System）のパフォーマンスモードとスループットモードの選択として正しいものはどれですか？",
+      "choices": [
+        "パフォーマンスモード：General Purpose（推奨・低レイテンシ）またはMax I/O（超並列ワークロード・高スループット但し高レイテンシ）。スループットモード：Elastic（バースト自動・推奨）またはProvisioned（固定スループット保証）またはBursting（ストレージ量比例・バースト可能）",
+        "EFSはシングルAZのみをサポートし、Multi-AZ接続には別のファイルシステムが必要",
+        "EFSのスループットはストレージサイズに関わらず常に一定で設定変更できない",
+        "EFSはLinuxのみをサポートし、Windowsのファイル共有にはEFSを使用できない"
+      ],
+      "answers": [0],
+      "explanation": "EFS パフォーマンス詳細：■パフォーマンスモード：①General Purpose（デフォルト・推奨）：低レイテンシ（1桁ms）・ウェブアプリ・CMS・開発環境②Max I/O：高スループット・高並列性（数千のEC2/Lambda）・ビッグデータ分析・メディア処理・高レイテンシ（数十ms）→One Zone/Elastic Throughputでは使用不可 ■スループットモード：①Elastic（推奨・新規作成デフォルト）：使用量に応じて自動スケール（読み取り最大3GB/s・書き込み最大1GB/s）②Bursting：ストレージ量×50KB/s（クレジット蓄積でバースト最大100MB/s）③Provisioned：固定スループット保証（最大1024MB/s、ストレージと独立） ■ストレージクラス：①Standard：Multi-AZ（6ウェイ複製）②Standard-IA：低コスト・取り出し料金あり③One Zone：1AZ（バックアップあり）④One Zone-IA：最低コスト ■EFS Lifecycle Management：30/60/90日後にIAクラスに自動移行 ■接続：NFS v4.1プロトコル・LinuxのみサポートNFSマウントポイント。",
+      "tags": ["EFS", "パフォーマンスモード", "スループットモード", "ファイルシステム"]
+    },
+    {
+      "id": "SOA-057",
+      "category": "Inspector",
+      "difficulty": 1,
+      "question": "Amazon Inspector v2 の機能とスキャン対象として正しいものはどれですか？",
+      "choices": [
+        "Inspector v2はEC2インスタンス（ゲストOS・ソフトウェアパッケージの脆弱性）・ECRコンテナイメージ（CVEデータベース照合）・Lambda関数（コードの脆弱性）を継続的にスキャンし、発見事項をSecurity Hubに自動送信する",
+        "Inspector v2はネットワークの設定（セキュリティグループ・NACLルール）のみをスキャンする",
+        "Inspector v2のスキャンは月1回の定期実行のみで継続的な監視は行わない",
+        "Inspector v2はEC2のみをサポートしLambdaとECRのスキャンには対応していない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Inspector v2詳細：■スキャン対象：①EC2：Systems Managerエージェント経由でゲストOSのパッケージ脆弱性（CVE）・ネットワーク到達可能性（セキュリティグループ設定）②ECR：コンテナイメージのOSパッケージとプログラミング言語ライブラリのCVE③Lambda：関数コードと依存パッケージの脆弱性 ■継続的スキャン：①新しいCVE情報が公開されると自動再スキャン②ECRへのイメージプッシュ時に自動スキャン③EC2への変更（パッケージ更新等）で自動スキャン ■Inspector v1 vs v2：①v1：EC2のみ・エージェント必要②v2：EC2/ECR/Lambda・Inspectorの管理を簡素化・Security Hub統合 ■Finding：①SEVERITY：Critical/High/Medium/Low/Informational②CVSS Score③推奨する修正（パッケージアップデート等）④関連リソース ■Organizations：管理アカウントから全メンバーアカウントを一元管理 ■無効化：Inspector有効化後はデフォルトで継続スキャン（意図的に無効化必要）。",
+      "tags": ["Inspector", "脆弱性スキャン", "EC2", "ECR", "Lambda"]
+    },
+    {
+      "id": "SOA-058",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の Requester Pays（リクエスタ支払い）機能の使用場面として正しいものはどれですか？",
+      "choices": [
+        "Requester Pays設定のバケットではデータ転送料金とリクエスト料金をバケット所有者ではなくデータを取得したリクエスタが負担する。公開データセット・共有コンテンツを配布する場合にデータ所有者のコストを削減できる",
+        "Requester Pays設定ではバケット所有者のストレージ料金もリクエスタが負担する",
+        "Requester Paysを設定するとバケットが自動的にパブリックアクセス可能になる",
+        "Requester Pays設定は匿名ユーザーでも使用でき、課金は自動的にリクエスタのアカウントに転送される"
+      ],
+      "answers": [0],
+      "explanation": "S3 Requester Pays詳細：■課金の移転：①データ転送料金（OUT）：リクエスタ負担②APIリクエスト料金（GET/LIST等）：リクエスタ負担③ストレージ料金：バケット所有者が引き続き負担 ■認証要件：①匿名アクセスは不可（AWSアカウントでの認証が必須）②リクエストヘッダー：x-amz-request-payer: requester を付与③CLIオプション：--request-payer requester ■ユースケース：①公開研究データセット（ゲノムデータ・気象データ等）の配布②大規模コンテンツアーカイブ（映像・文書）の共有③商用データセットの配布（配布コストをゼロに） ■制限：①組織内（同一Organizationsメンバー）へのアクセスが一般的②クロスアカウント：相手がAWSアカウントを持ちリクエスタ支払いヘッダーを付与すれば可 ■設定：バケットプロパティ→Requester Pays: Enabled■注意：Lifecycle Policy・Replication等のAWS内部操作はバケット所有者が課金負担。",
+      "tags": ["S3", "Requester Pays", "コスト管理", "データ配布"]
+    },
+    {
+      "id": "SOA-059",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC Endpoint（VPCエンドポイント）の Gateway 型と Interface 型の違いとして正しいものはどれですか？",
+      "choices": [
+        "Gateway Endpoint（S3・DynamoDB専用）はルートテーブルにエントリを追加してプライベート接続を実現しコスト無料。Interface Endpoint（PrivateLink）はENIをサブネットに作成してプライベートIPでAWSサービスに接続し時間とデータ転送で課金される",
+        "Gateway EndpointとInterface Endpointは同じ技術で名前が異なるだけ",
+        "Interface EndpointはS3とDynamoDBにのみ使用可能",
+        "Gateway Endpointは設定が複雑でInterface Endpointの方が常に推奨される"
+      ],
+      "answers": [0],
+      "explanation": "VPC Endpoint 詳細：■Gateway Endpoint：①対象：S3・DynamoDBのみ②仕組み：ルートテーブルにプレフィックスリスト（pl-XXXXXXXX）のエントリ追加③プライベートサブネットからS3/DynamoDBへのトラフィックがインターネット/NAT GWを経由しない④コスト：無料⑤制限：他のVPC（ピアリング先）・オンプレミスから使用不可（VPC内のみ） ■Interface Endpoint（PrivateLink）：①対象：100以上のAWSサービス（API GW・EC2・KMS・SSM・CloudWatch等）②仕組み：ENI（プライベートIP）をサブネットに作成③プライベートDNS：サービスのデフォルトDNS名がENIのIPを返す④コスト：$0.01/時間/AZ + $0.01/GB（データ転送）⑤On-premises/他VPCからも使用可能（Direct Connect/VPN経由）⑥SG設定可 ■選択：S3/DynamoDB→Gateway Endpoint（無料）、その他サービス→Interface Endpoint。",
+      "tags": ["VPC", "VPC Endpoint", "PrivateLink", "プライベート接続"]
+    },
+    {
+      "id": "SOA-060",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation の Cross-Stack References（クロススタック参照）とNested Stacks（ネストされたスタック）の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Cross-Stack Referencesは独立したスタック間でExport/Fn::ImportValueで値を共有し（共有インフラのARN等）、Nested Stacksは大規模テンプレートをサブテンプレートに分割してモジュール化・再利用性を高める。前者は疎結合、後者は密結合の再利用性",
+        "Cross-Stack ReferencesとNested Stacksは同じ機能でどちらを使っても結果は同じ",
+        "Nested Stacksは最大深度2レベルまでに制限されている",
+        "Cross-Stack Referencesで参照されているExport値は参照中でも自由に更新・削除できる"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormation スタック参照詳細：■Cross-Stack References（クロススタック参照）：①独立した別スタックの出力値を参照②設定：Export Stackで Outputs: ExportedVpcId: Value: !Ref VPC, Export: Name: sharedNetwork-VpcId③参照スタックで: !ImportValue sharedNetwork-VpcId④制限：ExportされているValueを参照中のスタックがある間は更新・削除不可⑤疎結合：スタックを独立してデプロイ・更新可能 ■Nested Stacks（ネストされたスタック）：①親スタックが子スタック（AWS::CloudFormation::Stack）を包含②子テンプレートをS3に配置③親テンプレートからParametersを渡し・Outputsを受け取る④密結合：親スタック更新時に子スタックも更新⑤テンプレートサイズ制限（51200バイト）を分割して回避 ■使い分け：共有VPC/IAMロール等の共通インフラ→Cross-Stack。再利用可能モジュール（DBスタック・APIスタック等）→Nested Stacks。",
+      "tags": ["CloudFormation", "Cross-Stack", "Nested Stacks", "スタック設計"]
+    },
+    {
+      "id": "SOA-061",
+      "category": "CloudFront",
+      "difficulty": 2,
+      "question": "Amazon CloudFront の Cache Behavior（キャッシュ動作）の設定と TTL 管理として正しいものはどれですか？",
+      "choices": [
+        "Cache Behaviorでパスパターン別にキャッシュ設定（TTL・圧縮・ヘッダー転送・Cookie・クエリ文字列）を定義し、Cache-Control/Expiresヘッダーで各オブジェクトのTTLを制御。Invalidation APIまたはファイルバージョニングでキャッシュを更新する",
+        "CloudFrontはキャッシュTTLを変更することができず、デフォルト値（24時間）固定",
+        "CloudFrontキャッシュを無効化するにはCloudFrontディストリビューションを削除・再作成が必要",
+        "Cache BehaviorはCloudFrontディストリビューションに1つのみ設定できる"
+      ],
+      "answers": [0],
+      "explanation": "CloudFront Cache Behavior詳細：■TTL設定：①Minimum TTL（デフォルト0）②Maximum TTL（デフォルト86400秒=1日）③Default TTL（デフォルト86400秒）④Cache-Controlヘッダー：max-age（秒）またはs-maxage（CDN向け）がDefault TTLより優先 ■キャッシュキー：①デフォルト：URLパス（クエリ/ヘッダーは含まない）②カスタマイズ：Cache PolicyでQuery Strings/Headers/Cookiesを含める→キャッシュミス増加に注意 ■Invalidation（無効化）：①CreateInvalidation API：/path/*でキャッシュを即座にパージ②コスト：$0.005/パス（毎月1000パス無料）③代替：バージョニング（main.v2.js等）でキャッシュを回避→推奨 ■Compress Objects Automatically：gzip/Brotli圧縮を自動適用 ■パスパターンマッチ：①デフォルト（*）が最後に評価②/api/*：API Gatewayに転送③/static/*：S3から配信 ■Cache Policy（新機能）：Managed PoliciesまたはカスタムPolicy。",
+      "tags": ["CloudFront", "Cache Behavior", "TTL", "Invalidation"]
+    },
+    {
+      "id": "SOA-062",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon Aurora の クラスター構成と Read Endpoint の動作として正しいものはどれですか？",
+      "choices": [
+        "Auroraクラスターエンドポイント（Writer Endpoint）は常にプライマリインスタンスを指し、Reader Endpointは全Read Replicaへのロードバランシングを自動提供。フェイルオーバー時はWriter EndpointのDNSが自動更新されて新しいプライマリに切り替わる",
+        "Aurora Reader Endpointは複数のRead ReplicaのうちCPU使用率が最も低いものに固定接続する",
+        "Aurora Writer Endpointに接続するとRead ReplicaのデータとPrimary Instanceのデータは常に同一でレプリカラグは発生しない",
+        "Auroraのフェイルオーバーは手動操作が必要でReader EndpointはフェイルオーバーをサポートしないためWriter Endpointのみを使用すべき"
+      ],
+      "answers": [0],
+      "explanation": "Aurora クラスター詳細：■Writer Endpoint：①常にプライマリ（Writerインスタンス）を指すDNSエンドポイント②フェイルオーバー時：レプリカがプライマリに昇格→DNS自動更新（60〜120秒）③アプリはWriter Endpointに接続し続ければフェイルオーバーを意識しない ■Reader Endpoint：①クラスター内の全Read ReplicaへのDNSラウンドロビン②新しいRead Replicaが追加されると自動的に含まれる③レプリカスケールアウト：Auto Scaling設定で自動増減 ■Custom Endpoint：①特定のインスタンスグループ（例：大容量インスタンスのみ）へのエンドポイント②分析クエリ専用Read Replica等に活用 ■Replication Lag：Auroraは同期レプリケーションに近い（ストレージ共有型）→レプリカラグは通常数ms ■Multi-Master：全ノードが書き込み可能（Aurora MySQL限定）→コンフリクト処理が必要 ■Aurora Global Database：クロスリージョンレプリケーション（1秒以内、最大5リージョン）。",
+      "tags": ["Aurora", "クラスターエンドポイント", "Reader Endpoint", "フェイルオーバー"]
+    },
+    {
+      "id": "SOA-063",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Instance Metadata Service v2（IMDSv2）の仕組みとIMDSv1との違いとして正しいものはどれですか？",
+      "choices": [
+        "IMDSv2はPUT→GETのセッション指向プロトコルで、まずPUT /latest/api/token でトークンを取得してからGETリクエストのヘッダーに付与する。SSRF攻撃によるメタデータ窃取を防止し、IMDSv1（GETのみ）より安全",
+        "IMDSv2はIMDSv1と全く同じプロトコルで、バージョン番号のみが異なる",
+        "IMDSv2を有効にするとIAMロールの認証情報はIMDSから取得できなくなる",
+        "IMDSv2はコンテナ（ECS/EKS）でのみサポートされEC2インスタンスでは使用できない"
+      ],
+      "answers": [0],
+      "explanation": "IMDSv2詳細：■IMDSv1（非推奨）：①GETリクエストのみ（認証なし）②SSRF攻撃で：攻撃者がEC2内のウェブアプリ脆弱性→169.254.169.254のメタデータ取得→IAM認証情報窃取 ■IMDSv2（推奨）：①Session-Oriented（セッション指向）②Step1：PUT http://169.254.169.254/latest/api/token でX-aws-ec2-metadata-token-ttl-seconds: 21600ヘッダー付きリクエスト→トークン取得③Step2：GETリクエストにX-aws-ec2-metadata-token: TOKEN ヘッダー付与④SSRF防止：PUTメソッドはSSRF攻撃で通常使用されないため窃取困難 ■設定：①RequireIMDSv2：IMDSv1を無効化してv2のみ②Optional：v1とv2の両方を許可（デフォルト）③メタデータ無効化：http-put-response-hop-limit=1（コンテナでは2が必要） ■AWS推奨：EC2インスタンス作成時はIMDSv2必須（RequireIMDSv2）を設定推奨 ■Config Rules：ec2-imdsv2-check ルールで非準拠インスタンスを検出。",
+      "tags": ["EC2", "IMDSv2", "SSRF", "セキュリティ"]
+    },
+    {
+      "id": "SOA-064",
+      "category": "Systems Manager",
+      "difficulty": 2,
+      "question": "AWS Systems Manager Automation を使用してEC2の定期的な停止/起動スケジュールを自動化する設定として正しいものはどれですか？",
+      "choices": [
+        "SSM AutomationのRunbookドキュメント（AWS-StopEC2Instance等）をEventBridgeスケジュールルールのターゲットとして設定し、dev/stagingインスタンスの業務外時間（夜間・週末）の自動停止で最大70%のEC2コスト削減が実現できる",
+        "Systems Manager AutomationはLambda関数を通じてのみ実行可能で、EventBridgeから直接呼び出すことはできない",
+        "SSM Automationは手動実行のみをサポートし、スケジュールによる自動実行は不可能",
+        "SSM AutomationでEC2を停止するとEBSボリュームも自動削除される"
+      ],
+      "answers": [0],
+      "explanation": "SSM Automation詳細：■Runbook（ドキュメント）：①AWS提供マネージドドキュメント：AWS-StopEC2Instance, AWS-StartEC2Instance, AWS-RestartEC2Instance等②カスタムドキュメント：YAML/JSONで独自ワークフロー定義③ステップ：aws:executeAwsApi, aws:waitForAwsResourceProperty, aws:runCommand等 ■EventBridgeスケジュール連携：①EventBridge Rule：cron/rate設定②ターゲット：SSM Automation（直接サポート）③IAMロール：EventBridgeがSSM Automationを実行する権限 ■コスト削減例：t3.medium(dev×10台)：24h/day×$0.042/h vs 業務時間10h停止×$0.042/h×14h/day→58%削減 ■タグベースの実行：AutomationでResourceGroupまたはTag（Environment=dev）でインスタンスを指定→一括実行 ■Maintenance Window統合：定期メンテ作業のスケジュール管理と組み合わせ ■Step Functions vs SSM Automation：①SSM：インフラ操作（EC2/RDS/S3等のAWS操作）②Step Functions：ビジネスロジック・マイクロサービス統合。",
+      "tags": ["Systems Manager", "Automation", "EventBridge", "コスト最適化"]
+    },
+    {
+      "id": "SOA-065",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の Object Lambda を使用してS3オブジェクト取得時にデータを動的変換する仕組みとして正しいものはどれですか？",
+      "choices": [
+        "S3 Object LambdaはGetObjectリクエストをLambda関数に転送してデータを動的変換（PII除去・フォーマット変換・透かし追加等）した結果をクライアントに返す。複数のバージョンのデータをS3に保持せず1つのオブジェクトで複数のユーザーニーズに対応できる",
+        "S3 Object LambdaはS3にオブジェクトを書き込む際（PUT時）にのみ動作する",
+        "S3 Object LambdaはCloudFront経由でのみ使用可能で、直接のS3 APIアクセスには使用できない",
+        "S3 Object LambdaはS3バケット全体に適用され、特定のオブジェクトのみへの適用はできない"
+      ],
+      "answers": [0],
+      "explanation": "S3 Object Lambda詳細：■仕組み：①クライアント→S3 Object Lambda Access Point→Lambda→S3 Access Point（元オブジェクト取得）→Lambda変換→クライアントに結果返却 ■設定：①S3 Access Point（元バケットへのアクセス）を作成②Object Lambda Access Pointを作成③Lambda関数を指定（GetObject呼び出し時に実行） ■ユースケース：①PII（個人情報）マスキング：ユーザー役割に応じてメールアドレス等を伏字③フォーマット変換：JSON→CSV・XML→JSON④画像リサイズ：解像度変換⑤透かし（ウォーターマーク）追加⑥行フィルタリング：特定の行のみを返す ■Lambda入力：S3 Object LambdaからはS3オブジェクトのPresigned URLが提供される→Lambdaが元のS3オブジェクトを取得して加工 ■コスト：Lambda実行料金＋S3 Object Lambda Access Point処理料金 ■注意：GetObjectのみサポート（HeadObject/ListObjectsは変換不可）■Byte Range Fetch：部分取得（Range: bytes=0-1023）も対応。",
+      "tags": ["S3", "Object Lambda", "データ変換", "PII"]
+    },
+    {
+      "id": "SOA-066",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Burstable Performance Instances（T2/T3/T3a）の CPU クレジットの仕組みと Unlimited モードの考慮点として正しいものはどれですか？",
+      "choices": [
+        "T系インスタンスはCPU使用率がベースライン以下の時にクレジットを蓄積し、スパイク時にクレジットを消費。Unlimitedモードではクレジット枯渇後も有料でCPUバーストが継続し、高負荷が続くと追加コストが発生する",
+        "T系インスタンスはCPUクレジットが尽きるとインスタンスが自動的に停止する",
+        "T3インスタンスのUnlimitedモードはデフォルトで無効化されており、有効化するとCPU性能が向上する",
+        "T2インスタンスはT3インスタンスと同じCPUクレジット設計でUnlimitedモードの動作も同一"
+      ],
+      "answers": [0],
+      "explanation": "Burstable Instance CPUクレジット詳細：■クレジットの仕組み：①ベースライン：インスタンスサイズによる（例：t3.micro=10%、t3.medium=20%）②クレジット蓄積：アイドル/低使用時にCPUクレジット蓄積③クレジット消費：ベースライン超過時に消費④Max蓄積：24時間分のクレジット上限（t3.medium: 576クレジット）⑤1クレジット = 1 vCPU × 1分 × 100% ■Standardモード（T2デフォルト）：クレジット枯渇→CPU使用率がベースラインに制限（スロットリング） ■Unlimitedモード（T3/T3aデフォルトON・T2は手動設定）：クレジット枯渇後もバースト継続→余分なCPU時間を後払い（$0.05/vCPU-hour、一部インスタンスタイプにより異なる） ■コスト注意：T3 Unlimitedで継続的高負荷→C5(固定パフォーマンス)より高コストになることも ■監視：CloudWatch メトリクス：CPUCreditBalance（クレジット残量）・CPUSurplusCreditBalance（未払いクレジット）。",
+      "tags": ["EC2", "T系インスタンス", "CPUクレジット", "バースト"]
+    },
+    {
+      "id": "SOA-067",
+      "category": "Elasticache",
+      "difficulty": 2,
+      "question": "ElastiCache for Redis のバックアップ戦略（RDB スナップショットと AOF）の違いとして正しいものはどれですか？",
+      "choices": [
+        "RDB（Redis Database）スナップショットは定期的なポイントインタイムのメモリスナップショット（高速復元・データ損失あり）、AOF（Append Only File）は全ての書き込み操作をログに追記（データ損失少なし・復元に時間かかる）。ElastiCacheはRDBスナップショットをサポートしAOFはElastiCacheではサポートされない",
+        "ElastiCacheではRDBとAOFの両方が完全にサポートされている",
+        "ElastiCacheのスナップショットは全てのRedisバージョンとクラスターモードで使用可能",
+        "スナップショットはElastiCache専用ストレージに保存されS3には保存されない"
+      ],
+      "answers": [0],
+      "explanation": "ElastiCache Redis バックアップ詳細：■RDB Snapshots（スナップショット）：①特定時点のメモリ全体のスナップショット②S3への保存③スケジュール設定（毎日）：自動スナップショット④保持期間：1〜35日⑤手動スナップショット：いつでも作成・永久保存⑥復元：スナップショットから新しいクラスターを作成⑦データ損失：最後のスナップショット以降のデータは失われる ■AOF（Append Only File）：①全書き込みをログファイルに追記②ElastiCache Redisでは非サポート（セルフマネージドRedisでのみ使用可能）③データ損失リスクが少ないが復元時間が長い ■ElastiCacheのDurability：①シングルノード：スナップショットからの復元のみ②Multi-AZ/レプリカ：プライマリ障害時にレプリカが自動昇格（データ損失ほぼなし）③Global Datastoreでクロスリージョン復旧 ■バックアップウィンドウ：自動スナップショットの実行時間帯設定（低トラフィック時を選択）。",
+      "tags": ["ElastiCache", "Redis", "バックアップ", "スナップショット"]
+    },
+    {
+      "id": "SOA-068",
+      "category": "WAF",
+      "difficulty": 2,
+      "question": "AWS WAF の Rate-Based Rules（レートベースルール）の設定と DDoS 対策への応用として正しいものはどれですか？",
+      "choices": [
+        "Rate-Based Rulesは5分間の時間窓で特定のIPアドレスからのリクエスト数を計測し、設定した閾値を超えたIPを自動的にブロック・カウント・CAPTCHAで対応し、アプリケーション層のDDoS攻撃やブルートフォース攻撃を緩和できる",
+        "Rate-Based RulesはSNS通知のみを行い実際のブロックはAWS Shieldが担当する",
+        "Rate-Based Rulesの時間窓は60秒固定で変更できない",
+        "Rate-Based Rulesは全てのIPアドレスに対して1つのカウンターのみを持ち、IP別のカウントはできない"
+      ],
+      "answers": [0],
+      "explanation": "WAF Rate-Based Rules詳細：■設定項目：①Rate limit：5分間のリクエスト数上限（最小100）②Aggregation key：通常はIPアドレス（またはIPとその他の組み合わせ）③Action：Block/Count/CAPTCHA/Challenge ■動作：①5分間のローリングウィンドウで集計②上限超過→設定アクションを実行③上限を下回ったら自動的に解除（不正IPリストの自動管理） ■ユースケース：①ログインエンドポイント（/api/login）のブルートフォース対策：Rate limit=100/5min②スクレイピング防止：Rate limit=500/5min→CAPTCHA③DDoS緩和：大量リクエストのブロック ■Scope-down statement：レートカウントを特定のリクエスト（特定パス・ヘッダー等）に限定→精度向上 ■Aggregation key（新機能）：①IP②ForwardedIPHeader③HTTPMethod + QueryString④カスタム組み合わせ ■AWS Shield Advanced連携：volumetric DDoS（Layer3/4）→Shield Advanced、Application Layer DDoS（Layer7）→WAF Rate-Based Rules。",
+      "tags": ["WAF", "Rate-Based Rules", "DDoS対策", "ブルートフォース"]
+    },
+    {
+      "id": "SOA-069",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation の Wait Condition と CreationPolicy の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "CreationPolicyはEC2・Auto Scalingリソースに設定してcfn-signalでリソースの成功通知を待つ（cfn-hupと連携してソフトウェア設定完了を確認）。Wait ConditionはCloudFormation外部のプロセス（CodeDeploy完了等）からの通知待ちに使用する",
+        "CreationPolicyとWait Conditionは同じ機能でどちらを使用しても結果は同じ",
+        "Wait ConditionはEC2インスタンスにのみ適用でき、他のリソースには使用できない",
+        "cfn-signalはWindowsインスタンスでのみ使用可能でLinuxには別のシグナル方法が必要"
+      ],
+      "answers": [0],
+      "explanation": "Wait Condition vs CreationPolicy詳細：■CreationPolicy：①対象：AWS::AutoScaling::AutoScalingGroup、AWS::EC2::Instance、AWS::CloudFormation::WaitConditionHandle②cfn-signal：EC2内でソフトウェアインストール後にCloudFormationに成功通知③設定：CreationPolicy: ResourceSignal: Count: 1, Timeout: PT15M（15分待機）④一般的：EC2の設定が完了してから次リソース作成 ■Wait Condition：①独立したWaitConditionHandleリソース（Pre-signed URL）②外部プロセスがURL宛にHTTP PUTでシグナル③ユースケース：CloudFormation外のCodeDeployジョブ完了・データベースマイグレーション完了④非EC2リソースへの適用 ■cfn-signal コマンド：/opt/aws/bin/cfn-signal -e $? --stack MyStack --resource MyEC2Instance --region ap-northeast-1 ■cfn-hup：EC2上の設定変更を監視してスタック更新時に再設定適用（cfn-initと組み合わせ）■共通：タイムアウト時はCREATE_FAILEDになりロールバック。",
+      "tags": ["CloudFormation", "Wait Condition", "CreationPolicy", "cfn-signal"]
+    },
+    {
+      "id": "SOA-070",
+      "category": "Cost Management",
+      "difficulty": 2,
+      "question": "AWS Budgets でコスト超過を事前に検知して自動アクションを実行する設定として正しいものはどれですか？",
+      "choices": [
+        "AWS Budgetsでコスト・使用量・RI利用率・Savings Plans適用率の予算を設定し、閾値（実際のコスト・予測コスト）を超えたらSNS通知・IAMポリシーによるサービス利用制限・Auto Scalingの停止等のアクションを自動実行できる",
+        "AWS Budgetsは通知のみの機能で、コスト超過時の自動アクション（制限・停止）は実行できない",
+        "AWS BudgetsはOrganizationsが必須で、単一アカウントでは予算設定できない",
+        "AWS Budgetsのコストデータはリアルタイムで更新されるため超過は即座に検知できる"
+      ],
+      "answers": [0],
+      "explanation": "AWS Budgets詳細：■予算タイプ：①Cost Budget（コスト予算）：月次コストに対する閾値②Usage Budget（使用量予算）：特定サービスの使用量（EC2時間数等）③RI Coverage/Utilization：RI適用率④Savings Plans Coverage/Utilization ■Budget Actions：閾値超過時のアクション：①IAMポリシーのアタッチ：特定ロールに制限ポリシーを適用（例：新規EC2起動を拒否）②SCP（Service Control Policy）の適用：Organizationsアカウントの操作を制限③Auto Scalingの停止（EC2インスタンスの停止）④Email/SNS通知 ■通知設定：①閾値：実際のコストの80%・100%・予測コストの100%等②複数の通知設定可能③Email最大10件・SNS Topic ■コスト：①無料：最初2つの予算②有料：$0.02/予算/日 ■注意：コストデータは8〜12時間遅れ（リアルタイムではない）→閾値を80〜90%に設定して事前検知推奨。",
+      "tags": ["AWS Budgets", "コスト管理", "予算アクション", "自動化"]
+    },
+    {
+      "id": "SOA-071",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Dedicated Host と Dedicated Instance の違いとして正しいものはどれですか？",
+      "choices": [
+        "Dedicated Hostは特定の物理サーバーを専有して「ソケット数・コア数」を把握でき、BYOL（Bring Your Own License）ライセンス活用に必須。Dedicated Instanceは同一アカウントの専有ハードウェアだがホストの制御なし。両方とも他テナントと物理的に分離",
+        "Dedicated HostとDedicated Instanceは完全に同じ機能で価格のみが異なる",
+        "Dedicated InstanceはWindowsライセンスのBYOLに対応しているがDedicated HostはBYOLに非対応",
+        "Dedicated HostはEC2インスタンスの自動スケーリングと組み合わせることができない"
+      ],
+      "answers": [0],
+      "explanation": "Dedicated Host vs Dedicated Instance詳細：■Dedicated Instance：①専有ハードウェアで実行（他のAWSアカウントと共有しない）②停止→再起動時に同一ホストとは限らない③ホスト情報（ソケット数・コア数）は見えない④コスト：単独テナンシーの追加料金 ■Dedicated Host：①特定の物理ホストを専有②ホスト内のインスタンス配置を制御可能③ソケット/コア/ハードウェア情報が見える④インスタンス→ホストへのアフィニティ設定可能⑤コスト：ホスト全体の時間課金（インスタンス数に関わらず）■BYOL（Bring Your Own License）：①Windows Server・SQL Server・RHEL等のソフトウェアライセンスをAWS上で利用②多くのライセンスは物理ソケット/コア数ベース→Dedicated Hostで物理情報を把握③Oracle DBはDedicated Hostで特定制約あり ■Auto Scaling対応：Dedicated Hostは手動配置管理→Auto Scalingとの直接連携は限定的（Launch Template/Configuration で tenancy設定は可能）。",
+      "tags": ["EC2", "Dedicated Host", "Dedicated Instance", "BYOL"]
+    },
+    {
+      "id": "SOA-072",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch の Application Insights でアプリケーションの問題を自動検出する仕組みとして正しいものはどれですか？",
+      "choices": [
+        "Application Insightsは.NET/Java/SQLサーバーベースのアプリケーションを分析してCloudWatchメトリクス・ログ・X-Rayトレースを関連付け、パフォーマンス問題や可用性の問題を自動検出して問題の根本原因候補を提示する",
+        "Application InsightsはECサイト専用のサービスで汎用アプリには使用できない",
+        "Application InsightsはAWS X-Rayを無効化してから使用する必要がある",
+        "Application Insightsは収集したデータを外部SIEMにのみ転送する機能"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Application Insights詳細：■サポートするアプリケーション：①.NET IIS Webアプリ②SQL Server（EC2上）③Java Webアプリ④SAP HANA⑤Active Directory⑥SharePoint⑦Exchange Server ■動作：①リソースグループ（EC2・ELB・RDS等）からアプリコンポーネントを自動検出②推奨メトリクス・ログ・X-Rayトレースの設定を自動適用③異常検出アルゴリズムで問題を自動分析 ■Problem Detection：①CloudWatch Alarms・Logsの異常を関連付け②「同時間帯に発生した事象」を1つの「Problem」として集約③Root Cause Analysis（RCA）候補を提示（例：メモリ不足→GC過多→スループット低下）■ダッシュボード：Insights Dashboard→問題のタイムライン表示 ■OpsCenter統合：検出した問題をSystems Manager OpsCenter OpsItemとして作成→チケット管理 ■コスト：CloudWatch Metrics/Logsの通常料金に加えて分析料金（問題あたり$0.10）。",
+      "tags": ["CloudWatch", "Application Insights", "問題検出", "RCA"]
+    },
+    {
+      "id": "SOA-073",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 Auto Scaling の Instance Refresh（インスタンスリフレッシュ）の仕組みとして正しいものはどれですか？",
+      "choices": [
+        "Instance RefreshはAuto Scalingグループ内のインスタンスを新しいLaunch Template/Configurationに基づいて順次入れ替える機能で、MinHealthyPercentageを設定して稼働率を維持しながらローリング方式でAMI更新・設定変更をゼロダウンタイムで適用できる",
+        "Instance RefreshはAuto Scalingグループ内の全インスタンスを同時に入れ替える（One-shotアップデート）",
+        "Instance Refreshを使用するにはAuto Scalingグループを一時停止する必要がある",
+        "Instance Refreshは手動操作のみで、スケジュールや自動トリガーによる実行は不可能"
+      ],
+      "answers": [0],
+      "explanation": "Auto Scaling Instance Refresh詳細：■動作フロー：①新しいLaunch Template（バージョン指定）を作成または既存バージョンを更新②StartInstanceRefresh API/コンソールから開始③設定に基づいて順次インスタンスを入れ替え ■設定パラメータ：①MinHealthyPercentage：健全インスタンスの最低割合（デフォルト90%）②InstanceWarmup：新インスタンスが健全と判断されるまでの時間（秒）③Checkpoints：一時停止ポイントを設定（段階的なデプロイ）④SkipMatching：既に最新のLaunch Templateを使用しているインスタンスをスキップ ■ステータス：InProgress/Successful/Failed/Cancelling/Cancelled ■キャンセル：進行中でもキャンセル可能（既に入れ替え済みのインスタンスは戻らない）■Checkpoints+SNS通知：特定割合のインスタンスが入れ替わった時点で一時停止→検証→再開の段階的デプロイ ■CI/CD連携：CodeDeploy + EC2 Auto Scalingまたは直接Instance Refreshを使用したデプロイパイプライン。",
+      "tags": ["Auto Scaling", "Instance Refresh", "ローリングアップデート", "AMI更新"]
+    },
+    {
+      "id": "SOA-074",
+      "category": "Kinesis",
+      "difficulty": 2,
+      "question": "Kinesis Data Streams の Shard 数の計算と Resharding（シャード再分割）の方法として正しいものはどれですか？",
+      "choices": [
+        "必要シャード数 = max(受信データMBps÷1, リクエスト数÷1000)で計算し、シャードを増やすSplit（1シャード→2シャード）またはシャードを減らすMerge（2シャード→1シャード）で動的に調整可能。オープンシャード数は課金に影響する",
+        "Kinesisのシャード数は初期設定後に変更できない",
+        "シャードの追加にはストリームを一度削除して再作成する必要がある",
+        "Reshardingはプロデューサーを停止しなければ実行できない"
+      ],
+      "answers": [0],
+      "explanation": "Kinesis Data Streams Sharding詳細：■シャード制限：①受信：1MB/秒/シャードまたは1000レコード/秒/シャード②送信：2MB/秒/シャード（Enhanced Fan-Out使用時5MB/秒）③必要シャード数：CEIL(MAX(受信MB÷1, 受信レコード数÷1000)) ■Resharding：①Split：1シャードを2シャードに分割（ハッシュキー範囲を半分に）②Merge：隣接する2シャードを1シャードにまとめる（ハッシュキー範囲が隣接している必要）③Resharding中：元シャードはClosed状態（新データは受け取らないが既存データは読み取れる）④連続的なResharding：1つのシャードにつき1回ずつしか操作できない（制限あり） ■コスト：オープンシャード（アクティブ）$0.015/時間→不要なシャードはマージでコスト削減 ■UpdateShardCount API：シャード数を直接指定（スケールアップ/ダウン）→内部でSplit/Mergeを自動実行 ■スロットリング対策：シャード数を増やす・Exponential BackoffでRetry・PartitionKeyを均等分散。",
+      "tags": ["Kinesis", "Sharding", "Resharding", "スケーリング"]
+    },
+    {
+      "id": "SOA-075",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC の Direct Connect と Site-to-Site VPN の違いと選択基準として正しいものはどれですか？",
+      "choices": [
+        "Direct ConnectはAWSと専用線で物理的に接続し安定した帯域・低レイテンシ・セキュリティを提供するが開通まで数週間〜数ヶ月かかり高コスト。Site-to-Site VPNはインターネット経由の暗号化接続で数時間で開通・低コストだが帯域・レイテンシが不安定",
+        "Direct ConnectとSite-to-Site VPNは全く同じ接続品質を提供し価格のみが異なる",
+        "Direct Connectはデータ暗号化が不可能なためSite-to-Site VPNより安全性が低い",
+        "Site-to-Site VPNは10Gbpsの固定帯域を保証する"
+      ],
+      "answers": [0],
+      "explanation": "Direct Connect vs Site-to-Site VPN詳細：■Direct Connect：①専用物理回線（1Gbps/10Gbps/100Gbpsのホスト接続、50Mbps〜10GbpsのホステッドVIF）②一貫したネットワーク性能③開通まで：数週間〜数ヶ月（物理工事が必要）④コスト：ポート時間料金＋データ転送料金（高め）⑤暗号化：デフォルトなし→Direct Connect + IPSec VPNで暗号化可⑥SLA：99.9%（Standard）または99.99%（Two Locations） ■Site-to-Site VPN：①インターネット経由のIPSec VPNトンネル②帯域・レイテンシが変動③開通：数時間（ソフトウェア設定のみ）④コスト：接続時間$0.05/時間＋データ転送料金（低め）⑤スループット：最大1.25Gbps⑥冗長化：2つのVPNトンネル（自動フェイルオーバー） ■ハイブリッド構成：Direct Connect（プライマリ）+ VPN（バックアップ）→BGPルーティングで自動切り替え ■Transit Gateway統合：TGW経由で複数VPCとDX/VPN接続を集約。",
+      "tags": ["VPC", "Direct Connect", "Site-to-Site VPN", "ハイブリッド接続"]
+    },
+    {
+      "id": "SOA-076",
+      "category": "Systems Manager",
+      "difficulty": 2,
+      "question": "AWS Systems Manager OpsCenter でIT運用のインシデント管理を行う際の統合サービスとして正しいものはどれですか？",
+      "choices": [
+        "OpsCenter はOpsItemを作成・管理してインシデントを追跡し、EventBridge/CloudWatch Alarms/Security Hub/Config等が自動的にOpsItemを作成。Runbookと連携してワンクリックで修復アクション（SSM Automation）を実行でき、Incident Managerと連携した深刻インシデントのエスカレーションも可能",
+        "OpsCenter はSSHターミナルの代替サービスでEC2への接続のみを管理する",
+        "OpsCenter のOpsItemはAWS CloudTrailのイベントのみから作成される",
+        "OpsCenter はEC2インスタンスのパフォーマンスグラフのみを表示するダッシュボードサービス"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager OpsCenter詳細：■OpsItem：①インシデント・問題・変更要求を表す作業単位②関連リソース・CloudWatch Metrics/Logs・X-Rayトレースを一画面で確認③ステータス：Open/InProgress/Resolved ■自動OpsItem作成ソース：①CloudWatch Alarm（ALARM状態）②EventBridge Rule（任意のイベント）③Security Hub（重要な知見）④AWS Config（非準拠リソース）⑤SSM Incident Manager（重大インシデント）⑥Application Insights（問題検出） ■Runbook実行：OpsItemからSSM Automation Runbookを直接実行（修復ワンクリック）■Related Resources：問題に関連するEC2・RDS・S3等のリソースを紐付け■インシデント管理フロー：①OpsCenter：日常的な運用問題②Incident Manager：重大インシデント（On-Call管理・エスカレーション）③JIRA/ServiceNow統合：外部チケットシステムとの同期 ■コスト：OpsItemあたり$0.003（Standard） / $0.004（Incident Manager）。",
+      "tags": ["Systems Manager", "OpsCenter", "インシデント管理", "運用"]
+    },
+    {
+      "id": "SOA-077",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の Pre-signed URL の有効期限と安全な共有方法として正しいものはどれですか？",
+      "choices": [
+        "Pre-signed URLは作成したIAMユーザー/ロールの権限を一時的に委譲し、URLを知っている者がオブジェクトにアクセスできる。有効期限を短く設定（15分〜1時間）し、IAMロールで作成した場合の上限は役割セッション時間（最大12時間）に依存する",
+        "Pre-signed URLはS3バケットの所有者以外は作成できない",
+        "Pre-signed URLの有効期限は最大7日間で変更できない",
+        "Pre-signed URLを使用するとそのURLが公開された後もIAMポリシーで即座にアクセスを取り消せる"
+      ],
+      "answers": [0],
+      "explanation": "S3 Pre-signed URL詳細：■有効期限：①IAMユーザーで作成：最大604800秒（7日）②IAMロール（一時認証情報）で作成：STSトークンの残り有効時間まで（最大12時間が多い）③デフォルト：900秒（15分）④aws s3 presign：--expires-in オプションで指定 ■作成方法：①AWS CLI：aws s3 presign s3://bucket/key --expires-in 3600②SDK：generate_presigned_url('get_object', Params={'Bucket':..., 'Key':...}, ExpiresIn=3600)③SDKはPUT（アップロード）のPresigned URLも作成可能 ■ユースケース：①一時的なダウンロードリンク（期限付き）②信頼できる第三者へのファイル送付③クライアントから直接S3アップロード（バックエンドを通さず）④メール内のダウンロードリンク ■取り消し：Pre-signed URLをIAMポリシーで即座に無効化は困難（バケットポリシーで特定IPからのみ許可等の回避策）→短い有効期限が推奨 ■署名バージョン：Signature Version 4（SigV4）を使用。",
+      "tags": ["S3", "Pre-signed URL", "一時アクセス", "共有"]
+    },
+    {
+      "id": "SOA-078",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "Amazon DynamoDB の オンデマンド容量モードとプロビジョニング済み容量モードの切り替えに関する考慮点として正しいものはどれですか？",
+      "choices": [
+        "オンデマンドモードは使用量に応じて自動スケールし事前キャパシティプランニング不要だがプロビジョニングより高コスト。プロビジョニング済みモードはRCU/WCUを事前設定しAuto Scalingで動的調整可能。2モード間の切り替えは24時間に1回のみ可能",
+        "オンデマンドとプロビジョニングの切り替えはテーブル削除・再作成が必要",
+        "オンデマンドモードではAuto Scalingを使用できない",
+        "プロビジョニング済みモードはオンデマンドより常にコストが高い"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDB 容量モード詳細：■オンデマンドモード：①トラフィックに応じて自動スケール（事前設定不要）②課金：Read Request Units/Write Request Units（実際の使用量）③スパイクに即応（ただし過去の2倍を超えるトラフィックは一時的スロットリングあり）④コスト：プロビジョニングより高い（ただし低トラフィック時は安い）⑤適用：新規テーブル・予測困難なトラフィック・低頻度使用 ■プロビジョニング済みモード：①RCU/WCUを事前設定②Auto Scaling：CloudWatch Alarmベースで自動調整（設定が必要）③予測可能なトラフィックで低コスト④スロットリング：設定上限を超えるとProvisionedThroughputExceededException ■切り替え：①1テーブルあたり24時間に1回まで切り替え可能②プロビジョニング→オンデマンド：即時、逆も即時③グローバルテーブル：全レプリカが同じモード要件 ■コスト比較例：均一な100万リクエスト/月→プロビジョニング安価、バースティ1000万リクエスト/日（ピーク）→オンデマンド有利な場合も。",
+      "tags": ["DynamoDB", "オンデマンド", "プロビジョニング", "容量モード"]
+    },
+    {
+      "id": "SOA-079",
+      "category": "EKS",
+      "difficulty": 2,
+      "question": "Amazon EKS でワーカーノードを管理する3つの方法（Managed Node Group・Self-managed Nodes・AWS Fargate）の違いとして正しいものはどれですか？",
+      "choices": [
+        "Managed Node Groupはノードのプロビジョニング・更新・削除をAWSが管理し最も運用が楽、Self-managedはEC2ベースで完全制御可能（カスタムAMI/設定）、Fargateはサーバーレスでワーカーノード管理不要。用途に応じて混在使用可能",
+        "EKSの3つのモードは同じ機能でコストのみが異なる",
+        "Fargateモードは全てのKubernetesワークロードをサポートしDaemonSetやStatefulSetも動作する",
+        "Managed Node GroupはGPUインスタンスをサポートせずGPUにはSelf-managedが必須"
+      ],
+      "answers": [0],
+      "explanation": "EKS ワーカーノード詳細：■Managed Node Group（推奨）：①AWSがEC2のプロビジョニング・スケーリング・更新管理②AWS最適化AMI（EKS最適化）自動使用③ノードのドレイン・更新・削除を安全に実行（Drain→Cordon→Terminate）④カスタムLaunch Template対応（SSM/EFA設定等）⑤GPU/Graviton対応 ■Self-managed Nodes：①カスタムAMI・Spot Instance・Windows等の高度な要件②ユーザーがOS更新・Auto Scaling Group管理③Bottlerocket（AWSのコンテナ専用OS）も使用可能 ■AWS Fargate：①ポッドごとにマイクロVMで分離（Firecracker）②ワーカーノード（EC2）の管理不要③制限：DaemonSet不可・特権コンテナ不可・GPUなし・Persistent Volume（EBSは不可、EFSのみ）④デプロイ：Fargate Profileで対象Namespace/Labelを指定 ■コスト：Fargate（vCPU/メモリ秒課金）> Managed/Self-managed（EC2課金+管理労力）。",
+      "tags": ["EKS", "Managed Node Group", "Fargate", "ワーカーノード"]
+    },
+    {
+      "id": "SOA-080",
+      "category": "Cost Management",
+      "difficulty": 2,
+      "question": "AWS の Savings Plans と Reserved Instances の違いと選択基準として正しいものはどれですか？",
+      "choices": [
+        "Savings PlansはEC2/Fargate/Lambdaの時間あたり利用コミットメントで特定のインスタンスタイプ・リージョンに縛られない柔軟性があり、Reserved Instancesは特定インスタンスタイプ・リージョン・OSへのコミットメントで最大72%割引。安定したEC2にはRI、多様なコンピュートにはSavings Plans",
+        "Savings PlansはRDSやElastiCacheにも適用されRIの完全な代替品",
+        "Reserved InstancesはConvertible RIでもインスタンスファミリーの変更は不可",
+        "Savings PlansはEC2 Savings Plansのみで、Fargate/Lambdaには対応していない"
+      ],
+      "answers": [0],
+      "explanation": "Savings Plans vs Reserved Instances詳細：■Reserved Instances（RI）：①特定インスタンスタイプ・リージョン・OS・テナンシーへのコミットメント②スタンダードRI：最大72%割引・変更制限③コンバーティブルRI：最大66%割引・ファミリー/OS/テナンシー変更可④マーケットプレイス：不要になったRIを売却可能⑤キャパシティ予約：特定AZでキャパシティを保証（SCR=Scheduled/On-Demand RI） ■Savings Plans（推奨・柔軟）：①$/時間のコミットメント②Compute Savings Plans（最大66%）：EC2/ECS Fargate/Lambdaに適用・インスタンスタイプ/リージョン問わず③EC2 Instance Savings Plans（最大72%）：特定インスタンスファミリー/リージョン・OS/サイズは変更可④期間：1年/3年、支払い：全額前払い/一部前払い/前払いなし ■適用：リアルタイムで最もコスト効率が良いオプションを自動適用（Compute SP→EC2 SP→RI→On-Demand順） ■RDS/ElastiCache：Savings Plansは適用されない（RIのみ）。",
+      "tags": ["Savings Plans", "Reserved Instances", "コスト最適化", "コミットメント"]
     }
   ]
 }
