@@ -252,6 +252,24 @@ test.describe('CLF試験', () => {
 });
 
 // ============================================================
+// AIF試験
+// ============================================================
+test.describe('AIF試験', () => {
+  test('AIF が試験一覧に表示される', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await expect(page.locator('.exam-card').filter({ hasText: 'AIF' })).toBeVisible();
+  });
+
+  test('AIF選択後に問題が表示される', async ({ page }) => {
+    await selectExam(page, 'AIF');
+    await expect(page.locator('#screen-study')).toBeVisible();
+    const questionText = await page.locator('#question-text').textContent();
+    expect(questionText.length).toBeGreaterThan(10);
+  });
+});
+
+// ============================================================
 // MLA試験
 // ============================================================
 test.describe('MLA試験', () => {

@@ -26,6 +26,11 @@ export const EXAM_LIST = [
     file: 'data/clf.json',
   },
   {
+    examCode: 'AIF',
+    examName: 'AWS Certified AI Practitioner',
+    file: 'data/aif.json',
+  },
+  {
     examCode: 'SAA',
     examName: 'AWS Certified Solutions Architect - Associate',
     file: 'data/saa.json',
