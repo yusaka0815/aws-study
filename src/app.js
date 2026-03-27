@@ -99,12 +99,29 @@ const settings = {
 };
 
 // ============================================================
-// Service Worker 登録
+// Service Worker 登録・PWA自動更新
 // ============================================================
 async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   try {
-    await navigator.serviceWorker.register('./sw.js');
+    const reg = await navigator.serviceWorker.register('./sw.js');
+
+    // 新しいSWがインストール済みになったらすぐ有効化させる
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          // 新バージョン検出: SKIP_WAITINGを送りcontrollerchangeを誘発
+          newWorker.postMessage('SKIP_WAITING');
+        }
+      });
+    });
+
+    // SWが切り替わったら localStorage を保持したままリロード
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
   } catch (e) {
     console.warn('SW registration failed:', e);
   }
