@@ -66,9 +66,9 @@ export function renderQuestion(question, questionIndex, totalQuestions) {
     choicesEl.appendChild(btn);
   });
 
-  // 解説エリアを隠す
+  // 解説エリアを隠す・次へボタンをdisabledに
   document.getElementById('answer-area').classList.add('hidden');
-  document.getElementById('next-btn').classList.add('hidden');
+  document.getElementById('next-btn').disabled = true;
   document.getElementById('explanation-toggle').classList.add('hidden');
   document.getElementById('explanation-text').classList.add('hidden');
 
@@ -110,13 +110,23 @@ export function renderResult(question, selectedIndex, isCorrect) {
   answerIcon.textContent = isCorrect ? '○' : '×';
   answerLabel.textContent = isCorrect ? '正解！' : '不正解';
 
-  // 解説ボタンと次へボタンを表示
+  // 解説ボタンと次へボタンを表示・有効化
   document.getElementById('explanation-toggle').classList.remove('hidden');
-  document.getElementById('next-btn').classList.remove('hidden');
+  document.getElementById('next-btn').disabled = false;
 
-  // 解説は折りたたんだ状態で表示
-  document.getElementById('explanation-text').classList.add('hidden');
-  document.getElementById('explanation-toggle').textContent = '▼ 解説を見る';
+  const expEl = document.getElementById('explanation-text');
+  const toggleBtn = document.getElementById('explanation-toggle');
+
+  if (!isCorrect) {
+    // 不正解時：解説を自動展開
+    expEl.textContent = question.explanation;
+    expEl.classList.remove('hidden');
+    toggleBtn.textContent = '▲ 解説を閉じる';
+  } else {
+    // 正解時：解説は折りたたんだ状態
+    expEl.classList.add('hidden');
+    toggleBtn.textContent = '▼ 解説を見る';
+  }
 }
 
 /**

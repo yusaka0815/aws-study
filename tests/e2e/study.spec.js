@@ -114,8 +114,8 @@ test.describe('問題表示（SAA）', () => {
     expect(gap).toBeGreaterThanOrEqual(8);
   });
 
-  test('次へボタンは問題表示時は非表示', async ({ page }) => {
-    await expect(page.locator('#next-btn')).toBeHidden();
+  test('次へボタンは問題表示時はdisabled', async ({ page }) => {
+    await expect(page.locator('#next-btn')).toBeDisabled();
   });
 
   test('解説エリアは問題表示時は非表示', async ({ page }) => {
@@ -163,9 +163,9 @@ test.describe('回答処理', () => {
     await expect(correctBtn).toHaveCount(1); // 正解は1つ
   });
 
-  test('回答後は次へボタンが表示される', async ({ page }) => {
+  test('回答後は次へボタンが有効化される', async ({ page }) => {
     await page.locator('.choice-btn').first().click();
-    await expect(page.locator('#next-btn')).toBeVisible();
+    await expect(page.locator('#next-btn')).toBeEnabled();
   });
 
   test('回答後は解説ボタンが表示される', async ({ page }) => {
@@ -173,30 +173,49 @@ test.describe('回答処理', () => {
     await expect(page.locator('#explanation-toggle')).toBeVisible();
   });
 
-  test('解説ボタンをクリックすると解説が展開される', async ({ page }) => {
+  test('解説ボタンをクリックすると解説が展開または閉じられる', async ({ page }) => {
     await page.locator('.choice-btn').first().click();
-    await page.locator('#explanation-toggle').click();
-    await expect(page.locator('#explanation-text')).toBeVisible();
-    const text = await page.locator('#explanation-text').textContent();
+    const expEl = page.locator('#explanation-text');
+    const toggleBtn = page.locator('#explanation-toggle');
+    const isAutoExpanded = await expEl.isVisible();
+    if (!isAutoExpanded) {
+      // 正解時：クリックで展開される
+      await toggleBtn.click();
+      await expect(expEl).toBeVisible();
+    }
+    // 不正解時は既に展開済み
+    const text = await expEl.textContent();
     expect(text.length).toBeGreaterThan(10);
   });
 
-  test('解説を2回クリックすると閉じる', async ({ page }) => {
+  test('解説トグルで開閉が切り替わる', async ({ page }) => {
     await page.locator('.choice-btn').first().click();
-    await page.locator('#explanation-toggle').click();
-    await expect(page.locator('#explanation-text')).toBeVisible();
-    await page.locator('#explanation-toggle').click();
-    await expect(page.locator('#explanation-text')).toBeHidden();
+    const expEl = page.locator('#explanation-text');
+    const toggleBtn = page.locator('#explanation-toggle');
+    const wasVisible = await expEl.isVisible();
+    await toggleBtn.click();
+    if (wasVisible) {
+      await expect(expEl).toBeHidden();
+    } else {
+      await expect(expEl).toBeVisible();
+    }
   });
 
   test('解説ボタンに開閉を示すアイコンが表示される', async ({ page }) => {
     await page.locator('.choice-btn').first().click();
-    const closedText = await page.locator('#explanation-toggle').textContent();
-    expect(closedText).toContain('▼');
-
-    await page.locator('#explanation-toggle').click();
-    const openText = await page.locator('#explanation-toggle').textContent();
-    expect(openText).toContain('▲');
+    const expEl = page.locator('#explanation-text');
+    const toggleBtn = page.locator('#explanation-toggle');
+    // 現在の展開状態に応じてアイコンを確認
+    const isOpen = await expEl.isVisible();
+    if (isOpen) {
+      await expect(toggleBtn).toContainText('▲');
+      await toggleBtn.click();
+      await expect(toggleBtn).toContainText('▼');
+    } else {
+      await expect(toggleBtn).toContainText('▼');
+      await toggleBtn.click();
+      await expect(toggleBtn).toContainText('▲');
+    }
   });
 
   test('回答後は選択肢をクリックしても再判定されない', async ({ page }) => {
