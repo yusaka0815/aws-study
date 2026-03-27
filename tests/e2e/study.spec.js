@@ -109,6 +109,15 @@ test.describe('回答処理', () => {
     await selectExam(page, 'SAA');
   });
 
+  test('回答エリアの表示にアニメーションが適用される', async ({ page }) => {
+    await page.locator('.choice-btn').first().click();
+    await page.waitForSelector('#answer-area:not(.hidden)');
+    const animName = await page.evaluate(() =>
+      getComputedStyle(document.getElementById('answer-area')).animationName
+    );
+    expect(animName).not.toBe('none');
+  });
+
   test('選択肢をクリックすると正誤が表示される', async ({ page }) => {
     await page.locator('.choice-btn').first().click();
     await expect(page.locator('#answer-area')).toBeVisible();
