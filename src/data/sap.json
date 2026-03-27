@@ -1,0 +1,526 @@
+{
+  "examCode": "SAP",
+  "examName": "AWS Certified Solutions Architect - Professional",
+  "questions": [
+    {
+      "id": "SAP-001",
+      "category": "高可用性・耐障害性",
+      "question": "マルチリージョンのアクティブ-アクティブ構成でRTOとRPOを最小化したい。最適なデータベース戦略はどれか？",
+      "choices": [
+        "Amazon Aurora Global Databaseで主リージョンから複数リージョンへレプリカを作成し、クロスリージョンフェイルオーバーを自動化する",
+        "Amazon RDS Multi-AZ配置を使い全リージョンで同期レプリケーションを行う",
+        "Amazon DynamoDB Global Tablesでアクティブ-アクティブマルチリージョン書き込みを実現する",
+        "AとCの両方がユースケースによって適切"
+      ],
+      "answers": [3],
+      "explanation": "マルチリージョンのRTO/RPO最小化戦略：(A) Aurora Global Databaseは1秒未満のレプリケーションラグと1分以内のクロスリージョンフェイルオーバーを提供します。アクティブ-アクティブには追加設定が必要ですが、リレーショナルデータには最適です。(C) DynamoDB Global TablesはActive-Activeで全リージョンへの書き込みが可能でRPOはほぼゼロです。アプリケーションの要件（リレーショナルvsNoSQL）によってどちらかを選択するため、AとCの両方が正解です。RDS Multi-AZは単一リージョン内での可用性のみです。"
+    },
+    {
+      "id": "SAP-002",
+      "category": "コスト最適化",
+      "question": "大企業で複数のAWSアカウントのコストを一元管理し、リザーブドインスタンスとSavings Plansを組織全体で共有したい。最適な構成はどれか？",
+      "choices": [
+        "AWS Organizations管理アカウント配下にメンバーアカウントを統合し、Consolidated Billingで一括請求とリソース共有を有効化する",
+        "各アカウントで個別にリザーブドインスタンスを購入してコストを削減する",
+        "AWS Cost Explorerを使いアカウントごとのコストを個別に監視する",
+        "AWS Budgetsで各アカウントに予算アラートを設定する"
+      ],
+      "answers": [0],
+      "explanation": "AWS OrganizationsのConsolidated Billingを使うと：(1)複数アカウントの料金を管理アカウントで一括請求。(2)RIとSavings PlansはOrganization全体で共有されるため、1アカウントで購入したRIを他のアカウントが使用可能。(3)使用量が合算されてボリュームディスカウントが適用される（S3等の段階料金で有利）。各アカウント個別のRI購入は最適化されず、Cost ExplorerやBudgetsはコスト可視化・アラートツールであり共有の仕組みは持ちません。"
+    },
+    {
+      "id": "SAP-003",
+      "category": "セキュリティ",
+      "question": "社内のLDAP/Active DirectoryユーザーがAWSコンソールとCLIにSSOでアクセスできるようにしたい。最適な構成はどれか？",
+      "choices": [
+        "AWS IAM Identity Center（旧AWS SSO）とAD Connectorを組み合わせてオンプレミスADと統合する",
+        "各ユーザーに個別のIAMユーザーを作成してADのパスワードと同期する",
+        "SAML 2.0フェデレーションを使いオンプレミスADFSとAWS IAMを直接統合する",
+        "Amazon Cognitoユーザープールを使いAD認証を代替する"
+      ],
+      "answers": [0],
+      "explanation": "AWS IAM Identity Centerはエンタープライズのシングルサインオンの推奨ソリューションです。AD ConnectorはオンプレミスのActive DirectoryへのプロキシとしてID同期なしにAD認証をAWSに転送します。IAM Identity CenterはAWS Organizations全体のアカウントとアプリケーションへのアクセスを一元管理できます。SAMLフェデレーションも有効ですが、IAM Identity Centerの方が管理が容易です。個別IAMユーザーはスケールしません。"
+    },
+    {
+      "id": "SAP-004",
+      "category": "アーキテクチャ設計",
+      "question": "オンプレミスのデータセンターとAWSを接続する際、帯域幅・レイテンシ・セキュリティの全てを満たす本番環境向けの最適な接続方法はどれか？",
+      "choices": [
+        "AWS Direct Connect（専用線）で物理的な専用回線を確立する",
+        "AWS Site-to-Site VPNでインターネット経由の暗号化接続を使用する",
+        "AWS Direct Connect + Site-to-Site VPN（バックアップ）の冗長構成",
+        "AWS Transit Gatewayを使いインターネット経由で複数のVPCを接続する"
+      ],
+      "answers": [2],
+      "explanation": "本番環境のオンプレミスとAWSの接続ベストプラクティスはDirect Connect + VPNバックアップです。Direct Connectは安定した帯域幅・低レイテンシ・インターネットを経由しない安全な専用接続を提供しますが、物理回線のため障害時にサービスが停止するリスクがあります。Site-to-Site VPNをバックアップとして設定することで、Direct Connect障害時もVPN経由で接続を維持できます（自動フェイルオーバー）。VPNのみはレイテンシが不安定でインターネット経由のため本番には不十分です。"
+    },
+    {
+      "id": "SAP-005",
+      "category": "移行",
+      "question": "大規模なオンプレミスワークロードをAWSに移行するための6-R戦略（Rehost・Replatform・Refactor・Rearchitect・Retire・Retain）で、最もコストが低く速く移行できるのはどれか？",
+      "choices": [
+        "Rehost（Lift-and-Shift）：変更なしにオンプレミスのVMをAWSにそのまま移行",
+        "Refactor/Rearchitect：マイクロサービスやサーバーレスに再設計する",
+        "Replatform：一部の最適化（DBのマネージドサービス移行等）を加えながら移行する",
+        "Retire：不要なシステムを廃止する"
+      ],
+      "answers": [0],
+      "explanation": "6-R移行戦略のコスト・速度比較：Rehost（Lift-and-Shift）はアプリケーションコードの変更なしにVMをEC2にそのまま移行するため、最も速く・安く移行できます。AWS Application Migration Service（MGN）で自動化可能です。ただし、クラウドのネイティブ機能を活用できないため長期的なコスト最適化は限定的です。Refactor/Rearchitectは最もコスト・時間がかかりますが長期的には最適化されます。Retireは廃止なので移行コストは最小ですが、ビジネス価値があるシステムには使えません。"
+    },
+    {
+      "id": "SAP-006",
+      "category": "ネットワーキング",
+      "question": "複数のVPCと数十のオンプレミス拠点を効率的に接続し、スポーク間のルーティングも一元管理したい。最適なアーキテクチャはどれか？",
+      "choices": [
+        "AWS Transit Gatewayをハブとしてスポーク型接続（VPC・VPN・Direct Connect Gateway）を構築する",
+        "VPC Peeringを使い全VPCをメッシュ状に接続する",
+        "各VPCにVPNエンドポイントを設置してオンプレミスと直接接続する",
+        "AWS PrivateLinkを使い全VPC間の通信を設定する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Transit Gatewayはハブ-スポーク型のネットワーク接続を提供します：(1)数千のVPC・VPN・Direct Connect Gatewayを単一のTransit Gatewayに接続可能。(2)ルートテーブルで通信を細かく制御（セグメンテーション）。(3)クロスアカウント・クロスリージョン（Peering）もサポート。VPC Peeringのメッシュ接続はN*(N-1)/2のピアリングが必要で管理が複雑。VPN個別設定は運用コストが高い。PrivateLinkはサービスエンドポイント公開用で汎用VPC接続には不適切。"
+    },
+    {
+      "id": "SAP-007",
+      "category": "コンピュート",
+      "question": "予測困難なスパイキーなワークロードに対応しながらコストを最適化するEC2戦略として正しいものはどれか？",
+      "choices": [
+        "ベースラインをReserved Instances（またはSavings Plans）でカバーし、スパイク分をSpotインスタンスとオンデマンドで対応する",
+        "全インスタンスをSpotインスタンスにしてコストを最大化する",
+        "全インスタンスをReserved Instancesにして安定したコストを確保する",
+        "Auto Scalingグループでオンデマンドのみを使用し、スケールアップで対応する"
+      ],
+      "answers": [0],
+      "explanation": "EC2コスト最適化の3層戦略：(1)ベースライン（常時必要な容量）：RIまたはSavings Plansで最大72%割引。(2)変動需要：スポットインスタンスで最大90%割引（中断許容のワークロードに）。(3)ピーク・緊急時：オンデマンドで対応。この3層を組み合わせることで可用性を維持しながらコストを最小化できます。全Spotは中断リスクがあり可用性が低下します。全RIは過剰確保のリスクがあります。"
+    },
+    {
+      "id": "SAP-008",
+      "category": "データベース",
+      "question": "金融サービスで強整合性と高可用性を持つNoSQLデータベースが必要。毎秒数百万件の読み書きに対応しなければならない。最適なサービスはどれか？",
+      "choices": [
+        "Amazon DynamoDB（強整合性読み取り・プロビジョンドキャパシティ）",
+        "Amazon ElastiCache for Redis（Cluster Mode）",
+        "Amazon Keyspaces（Apache Cassandra互換）",
+        "Amazon Neptune"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDBは金融サービスのような高スループット・強整合性要件のNoSQLユースケースに最適です：(1)毎秒数百万のオペレーションに対応するスケール。(2)強整合性読み取りオプション（最新値を保証）。(3)Multi-AZで99.999%の可用性。(4)DynamoDB Accelerator（DAX）でキャッシュレイヤーを追加してさらに高速化可能。ElastiCacheはキャッシュ用（永続化は副次的機能）、Keyspacesは強整合性が弱い、NeptuneはグラフDB（異なるユースケース）。"
+    },
+    {
+      "id": "SAP-009",
+      "category": "セキュリティ",
+      "question": "AWS Well-Architected FrameworkのSecurity Pillarsにおけるゼロトラストアーキテクチャの実装として正しいものをすべて選べ。",
+      "choices": [
+        "VPCセキュリティグループとNACLで最小権限のネットワークアクセスを実装する",
+        "AWS PrivateLinkでサービス間通信をプライベートネットワーク内に限定する",
+        "IAMロールと最小権限ポリシーで全リソースのアクセスを制御する",
+        "AWS Verified Accessで企業アプリケーションへのゼロトラストアクセスを実装する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "AWS上のゼロトラスト実装：(1)SGとNACLでアプリケーション・サービスごとに最小権限のネットワークアクセスルールを定義（マイクロセグメンテーション）。(2)AWS PrivateLinkでVPC間・サービス間通信をインターネット経由から隔離。(3)IAMで全APIアクセスをアイデンティティベースで制御し、リソースポリシーと組み合わせて多層防御。(4)AWS Verified Accessは企業ネットワーク（VPN）なしにゼロトラストベースで企業アプリケーションへのアクセスを提供します（デバイス信頼性・ユーザーID検証）。"
+    },
+    {
+      "id": "SAP-010",
+      "category": "ストレージ",
+      "question": "グローバルに分散したチームが同一のファイルシステムを低レイテンシで共有するためのストレージソリューションとして最適なのはどれか？",
+      "choices": [
+        "Amazon FSx for Lustre + S3をデータリポジトリとして使用するHPCストレージ",
+        "Amazon EFSとAWS DataSyncで複数リージョンにデータを同期する",
+        "Amazon S3 + CloudFront（Transfer Acceleration）でグローバル配信",
+        "Amazon FSx for NetApp ONTAPでグローバルFileとFlexCloneを使用"
+      ],
+      "answers": [3],
+      "explanation": "Amazon FSx for NetApp ONTAPはグローバル分散チームのファイル共有に最適なマネージドサービスです：(1)NFS・SMB・iSCSI・NVMe over FCのマルチプロトコル対応。(2)NetApp SnapMirrorでリージョン間のレプリケーション。(3)グローバルファイルキャッシュ（ONTAP FlexCache）でリモートオフィスが高速アクセス。(4)FlexCloneでデータを瞬時にコピー（開発・テスト環境のスナップショット）。FSx for Lustreは並列HPC向けでファイル共有には不向きです。"
+    },
+    {
+      "id": "SAP-011",
+      "category": "コンテナ・サーバーレス",
+      "question": "マイクロサービスアーキテクチャでコンテナ化されたサービスを管理する際、AWS Fargateを使用する利点として正しいものをすべて選べ。",
+      "choices": [
+        "EC2インスタンスのプロビジョニング・管理が不要でコンテナのCPU/メモリリソースに対してのみ課金される",
+        "ECSとEKSの両方でFargateを使用できる",
+        "FargateはEC2起動タイプと比較してコスト効率が常に高い",
+        "FargateはVPCネットワーキング（ENI割り当て）と統合されている"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "AWS Fargateの特徴：(1)サーバーレスコンテナ実行環境でEC2インスタンスを管理不要。CPUとメモリの使用量に対してのみ課金（秒単位）。(2)Amazon ECS（Elastic Container Service）とAmazon EKS（Elastic Kubernetes Service）の両方でFargate起動タイプが利用可能。(4)各FargateタスクはVPCのサブネットにENIが割り当てられ、SGによるアクセス制御が可能。コスト効率：大量のコンテナを密集してホストするEC2起動タイプの方が安くなる場合があるため、Fargateが常に優れているわけではありません。"
+    },
+    {
+      "id": "SAP-012",
+      "category": "アーキテクチャ設計",
+      "question": "SaaSプロバイダーとして複数のテナント（企業顧客）のデータを分離・管理するマルチテナントアーキテクチャの選択肢として正しいものはどれか？",
+      "choices": [
+        "テナントごとに独立したAWSアカウント（Account-per-Tenant）でハード分離する",
+        "単一のアカウント・リソースをテナントIDでロジカル分離する（Pool Model）",
+        "重要度の高いテナントはアカウント分離、その他はプールモデルという混合アプローチを使う",
+        "全ての選択肢が有効で、SLAとコストのトレードオフで選択する"
+      ],
+      "answers": [3],
+      "explanation": "マルチテナントアーキテクチャのアプローチ：(1)Silo Model（アカウント分離）：テナントごとに別AWSアカウントで完全分離。データ漏洩リスクが最小・コンプライアンス対応しやすいが、コストが高く管理が複雑。(2)Pool Model（共有リソース）：1つのリソースをテナントIDで論理分離。コスト効率が高いが実装に注意が必要（テナント間データ混在リスク）。(3)Bridge Model（混合）：SLAやコンプライアンス要件の高いテナントはSilo、標準的テナントはPoolという現実的なアプローチ。全てが有効なパターンであり選択はユースケース次第です。"
+    },
+    {
+      "id": "SAP-013",
+      "category": "移行",
+      "question": "既存のオンプレミスOracle Databaseを最小限の変更でAWSに移行したい。Oracle Licenseを保有している場合の最適な移行先はどれか？",
+      "choices": [
+        "Amazon RDS for Oracle（または RDS Custom for Oracle）",
+        "Amazon Aurora PostgreSQL（Oracle互換モード）",
+        "EC2インスタンス上にOracle Databaseを自己管理でインストールする",
+        "AWS DMS + Amazon Aurora PostgreSQLでOracleから完全移行する"
+      ],
+      "answers": [0],
+      "explanation": "Oracle Licenseを保有していてコード変更を最小化する場合：(1)Amazon RDS for Oracle：フルマネージドでOracle機能をそのまま使用可能。BYOL（Bring Your Own License）に対応。(2)RDS Custom for Oracle：OS/DBレベルのカスタマイズが必要なOracle RAC等の高度な機能に対応。EC2への手動インストールはOS・DBパッチ管理・バックアップを自己管理する必要があり運用コストが高い。Aurora PostgreSQLへの移行はスキーマ・ストアドプロシージャの変換が必要でコード変更が発生します。"
+    },
+    {
+      "id": "SAP-014",
+      "category": "高可用性・耐障害性",
+      "question": "RTO 15分・RPO 1時間のDR要件に対応するアーキテクチャとして最適なのはどれか？",
+      "choices": [
+        "Warm Standby：縮小スケールのDRサイトを常時稼働させ、障害時に本番スケールにスケールアップする",
+        "Backup and Restore：定期バックアップをDRリージョンに保存し、障害時にリストアする",
+        "Pilot Light：最小限のコアコンポーネントのみ常時稼働させ、障害時に残りを起動する",
+        "Multi-Site Active-Active：両サイトで本番トラフィックを処理する"
+      ],
+      "answers": [0],
+      "explanation": "DR戦略とRTO/RPOのマッピング：Backup and Restore（RTO数時間〜24時間、RPO数時間〜24時間）：最もコストが低いが復旧が最も遅い。Pilot Light（RTO数時間以内、RPO数分〜1時間）：コアDBのみ稼働。Warm Standby（RTO分〜15分、RPO数分〜1時間）：DRサイトを縮小スケールで稼働。RTO15分・RPO1時間の要件に最適。Multi-Site Active-Active（RTO秒単位、RPOほぼゼロ）：最も高コスト。要件のRTO15分・RPO1時間はWarm Standbyが最適なコストパフォーマンスです。"
+    },
+    {
+      "id": "SAP-015",
+      "category": "コンテナ・サーバーレス",
+      "question": "API GatewayとLambdaを使ったサーバーレスAPIで、同時接続数が突然10万に急増した場合の対策として正しいものはどれか？",
+      "choices": [
+        "Lambda Reserved Concurrencyで特定のLambdaに同時実行数を確保し、Provisioned Concurrencyでコールドスタートを削減する",
+        "Lambda関数のメモリを最大にして処理速度を上げる",
+        "API Gatewayのキャッシュを有効にして同じリクエストの重複処理を防ぐ",
+        "SQSキューを追加してLambdaの過負荷を防ぐ"
+      ],
+      "answers": [0],
+      "explanation": "突然の大量同時接続対策：Reserved Concurrency：特定のLambda関数に専用の同時実行数を確保します（他のLambdaからの「スティール」を防ぐ）。Provisioned Concurrency：事前にLambdaインスタンスを起動しておくことでコールドスタートを排除し、レスポンスタイムを安定させます（Auto Scalingと組み合わせてピークに対応）。メモリ増加はCPU比例で高速化しますが同時接続数の問題は解決しません。API GatewayキャッシュはGETリクエストのみ有効。SQSキューは非同期処理向けでリアルタイムAPIには不適切です。"
+    },
+    {
+      "id": "SAP-016",
+      "category": "ネットワーキング",
+      "question": "AWS上のマイクロサービスを外部のインターネットからアクセスできるようにしつつ、DDoS攻撃から保護したい。最適な構成はどれか？",
+      "choices": [
+        "Amazon CloudFront + AWS WAF + AWS Shield Advancedを組み合わせて多層DDoS防御を実装する",
+        "Network Load Balancerを公開してEC2のSGで攻撃を防ぐ",
+        "AWS GuardDutyで攻撃を検出してLambdaでIPをブロックする",
+        "Route53のGeoproximity Routingで攻撃元リージョンからのトラフィックをブロックする"
+      ],
+      "answers": [0],
+      "explanation": "多層DDoS防御の構成：(1)Amazon CloudFront：エッジロケーションでコンテンツをキャッシュ・配信し、オリジンへのトラフィックを吸収。L3/L4のDDoSをエッジで吸収（AWS Shield Standard自動適用）。(2)AWS WAF：L7（HTTP/HTTPS）のSQLインジェクション・XSS・レートリミット・IP評価リストによるフィルタリング。(3)AWS Shield Advanced：DDoS攻撃時の詳細な可視化・自動軽減・料金保護・24/7 DDoS対応チームのサポート。NLBはL4のロードバランサーでWAF非対応。GuardDutyは検出ツールで攻撃軽減機能はありません。"
+    },
+    {
+      "id": "SAP-017",
+      "category": "コスト最適化",
+      "question": "EC2とRDSの使用量を最適化するための自動スケーリングと適切なインスタンスタイプ選択のベストプラクティスとして正しいものはどれか？",
+      "choices": [
+        "AWS Compute Optimizerの推奨に従ってEC2・RDS・Lambda・ECSのインスタンスタイプを最適化する",
+        "最大スペックのインスタンスを選択することで将来の需要増加に備える",
+        "全てのEC2インスタンスを同一タイプにしてオペレーション複雑性を下げる",
+        "CPU使用率のみを基準にインスタンスタイプを選択する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Compute OptimizerはMLアルゴリズムを使ってEC2インスタンス・Auto Scalingグループ・ECS on Fargate・Lambda関数・RDSインスタンス・EBSボリュームの利用状況（CPU・メモリ・ネットワーク・ディスク）を分析し、過剰プロビジョニングや過少プロビジョニングを検出してコスト最適な推奨を提示します。CloudWatch Agent（メモリ）との統合でより精度の高い推奨が可能です。最大スペック選択はコスト無駄、CPU単独では不十分です。"
+    },
+    {
+      "id": "SAP-018",
+      "category": "セキュリティ",
+      "question": "AWS Organizations配下の全アカウントに強制的なセキュリティポリシー（特定リージョンへのAWSサービス利用制限等）を適用したい。最適な方法はどれか？",
+      "choices": [
+        "AWS Organizations Service Control Policies（SCP）を組織ルートまたはOUに適用する",
+        "各アカウントに同じIAMポリシーを手動でデプロイする",
+        "AWS Config Rulesを全アカウントに適用してコンプライアンスを監視する",
+        "AWS Security Hubで全アカウントのセキュリティ設定を管理する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Organizations SCPはサービスコントロールポリシーで、Organization全体・特定のOU・特定のアカウントに強制的なガードレールを設定します。SCPは各アカウントのIAMポリシーの最大権限を制限します（IAMがAllowしてもSCPがDenyなら拒否）。例：特定リージョン以外のEC2起動禁止、特定サービスの使用禁止、rootユーザーの一部操作禁止。手動IAMデプロイはスケールしません。Config Rulesは検出・通知のみで強制はできません。Security Hubはセキュリティ状態の可視化ツールです。"
+    },
+    {
+      "id": "SAP-019",
+      "category": "データベース",
+      "question": "ゲームプラットフォームでユーザーのランキングをリアルタイムで更新・参照する機能を実装したい。最適なサービスはどれか？",
+      "choices": [
+        "Amazon ElastiCache for Redis（Sorted Sets）",
+        "Amazon DynamoDB（GSI）",
+        "Amazon RDS MySQLにインデックスを貼る",
+        "Amazon Aurora MySQL"
+      ],
+      "answers": [0],
+      "explanation": "リアルタイムリーダーボードにはRedis Sorted Sets（ZSet）が最適です。ZADD（スコア追加・更新）、ZRANK（ランク取得）、ZRANGE（上位N件取得）はO(log n)で実行でき、ミリ秒以下のレイテンシで数百万エントリのランキングを管理できます。ElastiCache for Redisはインメモリのため超低レイテンシです。DynamoDBのGSIでも実装可能ですが、ランク取得や上位N件取得はRedisのZSet専用コマンドより複雑です。RDS/AuroraはOLTP向けでリアルタイムランキングには高レイテンシです。"
+    },
+    {
+      "id": "SAP-020",
+      "category": "アーキテクチャ設計",
+      "question": "イベント駆動アーキテクチャでサービス間の疎結合を実現するためにAmazon EventBridgeを使用する利点として正しいのはどれか？",
+      "choices": [
+        "プロデューサーとコンシューマーを完全に分離し、イベントスキーマレジストリで型安全性を確保できる",
+        "EventBridgeはSNSと全く同じ機能を持つ新しい名前",
+        "EventBridgeは最大100GBまでのイベントペイロードをサポートする",
+        "EventBridgeのルールはリアルタイムではなく5分間隔でチェックされる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EventBridgeの利点：(1)プロデューサー（イベント発行側）はコンシューマー（受信側）を知らなくてよい完全な疎結合。コンシューマーの増減がプロデューサーに影響しない。(2)EventBridge Schema Registryでイベントのスキーマを管理し、コンシューマーが正しい形式でイベントを処理できることを保証。(3)フィルタリングルール（Content Filter）でコンシューマーが必要なイベントのみ受信。SNSはトピックベースでコンテントフィルタリング機能が限定的。イベントペイロードは最大256KB（64KB→256KB拡張済み）です。"
+    },
+    {
+      "id": "SAP-021",
+      "category": "移行",
+      "question": "AWS Application Migration Service（MGN）と AWS Database Migration Service（DMS）の使い分けとして正しいのはどれか？",
+      "choices": [
+        "MGNはサーバー（OS・アプリ全体）のLift-and-Shiftに使用し、DMSはデータベースの移行・レプリケーションに特化する",
+        "MGNとDMSは同一のサービスで呼び名が異なるだけ",
+        "MGNはコンテナの移行に特化し、DMSはVMの移行に使用する",
+        "DMSはサーバーの全データを含むOSレベルの移行をサポートする"
+      ],
+      "answers": [0],
+      "explanation": "MGNとDMSの使い分け：AWS Application Migration Service（MGN、旧CloudEndure）はOS・ミドルウェア・アプリケーション全体を含むサーバーをAWSにLift-and-Shiftするエージェントベースの移行サービスです。継続的なレプリケーションでカットオーバー時のダウンタイムを最小化します。AWS DMS（Database Migration Service）はRDB・NoSQL・データウェアハウスのデータをソースからターゲットに移行するサービスで、フルロード・CDC（変更データキャプチャ）・継続的レプリケーションに対応します。"
+    },
+    {
+      "id": "SAP-022",
+      "category": "ネットワーキング",
+      "question": "グローバルに分散したユーザーにAWSのアプリケーションへの安定した低レイテンシアクセスを提供したい。最適な構成はどれか？",
+      "choices": [
+        "AWS Global Acceleratorを使いAnycast IPで世界中のエッジからAWS骨格ネットワーク経由でトラフィックを転送する",
+        "Amazon CloudFrontを使いHTTPコンテンツをエッジにキャッシュして配信する",
+        "Route53のLatency Based Routingで最も近いリージョンのエンドポイントに転送する",
+        "Global AcceleratorとCloudFrontを組み合わせてHTTPとTCPの両方を最適化する"
+      ],
+      "answers": [3],
+      "explanation": "Global AcceleratorとCloudFrontの使い分けと組み合わせ：CloudFrontはHTTP/HTTPS専用でコンテンツキャッシュによるレイテンシ削減（静的・動的コンテンツ）。Global Acceleratorはプロトコルに依存せず（TCP/UDP/HTTP）Anycast IPで世界中のAWSエッジから骨格ネットワークへトラフィックを送り、パブリックインターネットのホップ数を削減します。両方を組み合わせることで、HTTPはCloudFrontでキャッシュ効率化し、非HTTP（ゲーム・IoT・TCP）はGlobal Acceleratorで安定した低レイテンシを提供できます。"
+    },
+    {
+      "id": "SAP-023",
+      "category": "コンテナ・サーバーレス",
+      "question": "Amazon EKSクラスターのコスト最適化のためにSpotインスタンスを使用する際の注意点として正しいものはどれか？",
+      "choices": [
+        "Spot Node Groupを追加し、Cluster AutoscalerとKarpenterを使用してSpotインスタンスの中断をグレースフルに処理する",
+        "全てのワーカーノードをSpotインスタンスにすることで最大コスト削減を実現する",
+        "EKSはSpotインスタンスをサポートしておらずFargateのみコスト削減できる",
+        "Spotインスタンス中断時はKubernetesが自動的にPodをONDemandノードに移行する"
+      ],
+      "answers": [0],
+      "explanation": "EKSでのSpotインスタンス使用のベストプラクティス：(1)Spot Node GroupとOn-Demand Node Groupを混在させる（ステートフル・重要ワークロードはOn-Demand、バッチ・スケールアウト用はSpot）。(2)Cluster AutoscalerまたはKarpenterでSpotノードの確保・スケールを自動化。(3)複数インスタンスタイプ・AZで分散してスポット中断の影響を局所化。(4)SIGTERM（2分前の警告）をNode Termination Handlerで捕捉してPodをドレインして移行。全ノードSpotは中断時に全サービスが停止するリスクがあります。"
+    },
+    {
+      "id": "SAP-024",
+      "category": "アーキテクチャ設計",
+      "question": "AWS Well-Architected FrameworkのReliability Pillarにおける正しい設計原則をすべて選べ。",
+      "choices": [
+        "自動的に障害から回復するシステムを設計する",
+        "水平スケーリングを採用してスケーラビリティを確保する",
+        "スケーリング能力を事前予測して固定キャパシティを確保する",
+        "障害を自動的にテストする（カオスエンジニアリング）"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "Well-Architected ReliabilityPillarの設計原則：(1)自動回復：CloudWatchアラーム→Auto HealingでEC2インスタンスを自動置換。(2)水平スケーリング：単一の大型リソースより複数の小型リソースの方が個々の障害影響が小さい。(3)スケーリング能力を事前予測して固定キャパシティを確保するのはアンチパターン（クラウドでは需要に応じたスケーリングを自動化すべき）。(4)カオスエンジニアリング：本番またはステージング環境で意図的に障害を注入して回復能力を検証（AWS Fault Injection Simulator等）。"
+    },
+    {
+      "id": "SAP-025",
+      "category": "セキュリティ",
+      "question": "PCI DSSコンプライアンス要件を満たすためのAWSセキュリティアーキテクチャとして正しいものをすべて選べ。",
+      "choices": [
+        "カード番号を扱うサーバーを専用のサブネットに隔離しSGで最小権限アクセスを設定する",
+        "AWS CloudTrailを有効にして全APIコールをS3に保存し改ざん防止（Log File Integrity Validation）を有効化する",
+        "KMSでカード番号を暗号化して保存する",
+        "AWS Security Hubを使いPCI DSS標準のコンプライアンス状況を継続的に監視する"
+      ],
+      "answers": [0, 1, 2, 3],
+      "explanation": "PCI DSS（Payment Card Industry Data Security Standard）のAWS実装：(1)ネットワーク分離：カード番号を扱うサーバーを専用VPCサブネットに隔離し、SG/NACLで必要最小限のアクセスのみ許可。(2)CloudTrail：全API操作のログ記録と改ざん検出（integrity validation）。(3)暗号化：カード番号（PANデータ）の保存時・転送時の暗号化（KMS/TLS）。(4)Security Hub PCI DSS標準：AWS設定のPCI DSS要件への適合状況を自動チェック。これら全てがPCI DSSの要件に関連します。"
+    },
+    {
+      "id": "SAP-026",
+      "category": "データ管理",
+      "question": "Amazon S3でコンプライアンス要件に従いオブジェクトを一定期間変更・削除不可にしたい（WORM: Write Once Read Many）。正しい機能はどれか？",
+      "choices": [
+        "Amazon S3 Object Lock（Compliance Mode）を使い保持期間中の削除・変更（rootユーザーも含む）を防止する",
+        "S3バケットポリシーのDenyでPUTObjectを拒否する",
+        "S3バージョニングを有効にしてオブジェクトの削除を防ぐ",
+        "S3 Glacierのボルトロックポリシーで変更不可ポリシーを設定する"
+      ],
+      "answers": [0],
+      "explanation": "S3 Object LockはWORM（Write Once Read Many）を実装するS3の機能です。2つのモード：(1)Governance Mode：特定の権限を持つユーザーはロックを解除できる（開発・テスト用）。(2)Compliance Mode：保持期間中はrootユーザーを含むいかなるユーザーも削除・変更不可（厳格なコンプライアンス要件向け）。Legal Hold（法的保留）で期間指定なしに無期限保護も可能。バケットポリシーのDenyは管理者が変更できるためWORM要件を満たしません。バージョニングは削除マーカーを付与するだけで完全削除は可能です。"
+    },
+    {
+      "id": "SAP-027",
+      "category": "コンピュート",
+      "question": "AWS Batch を使用したバッチ処理ジョブで、GPUが必要な機械学習トレーニングジョブを効率的に実行するための構成として正しいのはどれか？",
+      "choices": [
+        "AWS BatchのManaged Compute EnvironmentでGPUインスタンスタイプ（p3・p4・g4等）を指定し、コンテナ化されたJobを実行する",
+        "AWS Batchは機械学習のGPUワークロードに対応しておらずSageMakerを使う必要がある",
+        "AWS BatchはLambdaを使ってバッチ処理を実行するサービスで、EC2/GPUは使用しない",
+        "GPU MLジョブにはEMRクラスターを使いSparkの分散処理が必須"
+      ],
+      "answers": [0],
+      "explanation": "AWS Batchはマネージドバッチコンピューティングサービスで、DockerコンテナベースのJobをEC2（On-Demand・Spot・Graviton）またはFargate上で実行します。GPUインスタンス（p3.2xlarge・p4d.24xlarge・g4dn等）をCompute EnvironmentのインスタンスタイプとしてNVIDIA GPUを使ったMLトレーニング・推論バッチジョブを実行できます。SageMaker Trainingより低コストでシンプルなGPUバッチ処理に適しています。依存関係のあるJobをArray JobとJob Dependenciesで管理できます。"
+    },
+    {
+      "id": "SAP-028",
+      "category": "ネットワーキング",
+      "question": "Amazon VPCのIPアドレス管理において、大規模な組織で複数のVPCとオンプレミスのIPアドレスを重複なく管理するサービスはどれか？",
+      "choices": [
+        "Amazon VPC IP Address Manager（IPAM）",
+        "AWS Config",
+        "Amazon Route53 Private Hosted Zone",
+        "AWS Service Catalog"
+      ],
+      "answers": [0],
+      "explanation": "Amazon VPC IP Address Manager（IPAM）はOrganizations全体のIPv4/IPv6アドレス空間を一元管理するサービスです。機能：(1)IPアドレスプール（CIDR）の階層的な割り当て管理（組織→OU→アカウント→VPC）。(2)VPCのCIDR割り当て時のオーバーラップ防止。(3)既存のIPアドレス使用状況の可視化・利用率モニタリング。(4)オンプレミスのIPアドレス範囲も管理対象に含めてルート競合を防ぐ。大規模組織のIPアドレス管理を手動スプレッドシートからIPAMで自動化できます。"
+    },
+    {
+      "id": "SAP-029",
+      "category": "セキュリティ",
+      "question": "マルチアカウント環境でAWS CloudTrailのログを改ざん防止しながら集中管理するベストプラクティスはどれか？",
+      "choices": [
+        "Organizations TrailをセキュリティアカウントのS3バケットに集約し、Log File Integrity Validationを有効化し、バケットポリシーで他アカウントからの書き込みのみを許可しメンバーアカウントによる削除を防ぐ",
+        "各アカウントでCloudTrailを有効にしてローカルのS3に保存する",
+        "AWS Security Hubでクロスアカウントのイベントを集約管理する",
+        "Amazon CloudWatch Logsでクロスアカウントのログを集約する"
+      ],
+      "answers": [0],
+      "explanation": "マルチアカウントCloudTrail集中管理のベストプラクティス：(1)Organizations Trailで組織全体の全アカウントのAPIコールを1つのTrailで管理。(2)専用のセキュリティ/ログアーカイブアカウントに集約S3バケットを作成。(3)Log File Integrity Validation（SHA-256ハッシュチェーン）で改ざん検知。(4)バケットポリシーで「s3:PutObject」のみを全アカウントに許可し、「s3:DeleteObject」は完全拒否（Object Lockと組み合わせると更に堅牢）。SecurityHubやCloudWatch Logsでは代替不可です。"
+    },
+    {
+      "id": "SAP-030",
+      "category": "アーキテクチャ設計",
+      "question": "分散システムでの分散トランザクションをSagaパターンで実装する際のAWSサービスの組み合わせとして正しいのはどれか？",
+      "choices": [
+        "AWS Step Functions + Lambda + SQS（補償トランザクションを含む状態マシン）",
+        "Amazon RDS Multi-AZ + DynamoDB Streams",
+        "AWS Glue + Amazon Redshift",
+        "Amazon SQS FIFO + DynamoDB Transactions"
+      ],
+      "answers": [0],
+      "explanation": "Sagaパターンは分散トランザクションを一連のローカルトランザクションで実現し、失敗時に補償トランザクション（Compensating Transaction）でロールバックするパターンです。AWSでの実装：Step Functionsで注文処理の各ステップ（在庫確保→決済→配送手配）を状態マシンとして定義し、各ステップの成功/失敗に応じて次のステップまたは補償トランザクション（在庫解放→返金等）を実行します。SQSはステップ間の非同期メッセージングに使用します。RDS Multi-AZは単一DBの可用性。"
+    },
+    {
+      "id": "SAP-031",
+      "category": "高可用性・耐障害性",
+      "question": "Amazon Route53のヘルスチェックとフェイルオーバーDNSルーティングの設定として正しいのはどれか？",
+      "choices": [
+        "プライマリエンドポイントにフェイルオーバーレコードを設定し、Route53ヘルスチェックが失敗した場合にセカンダリエンドポイントに自動切り替えする",
+        "Route53フェイルオーバーはTTLが0に設定されている場合のみ機能する",
+        "Route53のヘルスチェックはHTTPSのみサポートし、TCPやHTTPはチェックできない",
+        "Route53フェイルオーバーの切り替えには最大24時間かかる"
+      ],
+      "answers": [0],
+      "explanation": "Route53フェイルオーバールーティングの仕組み：(1)プライマリレコードにヘルスチェックを関連付け、セカンダリレコード（フェイルオーバー先）を設定。(2)Route53ヘルスチェックはHTTP・HTTPS・TCP・HTTPS with String Matchをサポート。(3)ヘルスチェックが連続して失敗（デフォルト3回）するとレコードを「Unhealthy」として、DNSクエリにセカンダリのIPを返します。(4)Route53は低TTL（60秒等）と組み合わせることでフェイルオーバーを数分以内に完了できます。"
+    },
+    {
+      "id": "SAP-032",
+      "category": "移行",
+      "question": "オンプレミスの大規模なVMware環境をAWSに移行する際に使用できるサービスとして正しいものはどれか？",
+      "choices": [
+        "VMware Cloud on AWSでVMwareワークロードをそのままAWSで実行し、段階的にネイティブAWSサービスに移行する",
+        "Amazon EC2にVMwareハイパーバイザーをインストールしてVMを実行する",
+        "AWS Application Migration Serviceでエージェントレス移行を行う",
+        "AWS Server Migration Service（SMS）は最新の推奨ツール"
+      ],
+      "answers": [0],
+      "explanation": "VMware環境のAWS移行オプション：(A) VMware Cloud on AWS（VMC on AWS）はAWS上でVMwareの完全なSDDC（Software Defined Data Center）を提供します。オンプレミスのVMをvMotionでダウンタイムなしにAWSに移行できます（再プラットフォームなし）。その後ネイティブAWSサービスに段階的に移行できます。EC2へのVMware直接インストールはサポートされていません。Application Migration ServiceはAWSネイティブEC2への移行で、VMwareスタックごとの移行には対応しません。SMS（Server Migration Service）は非推奨でMGNに置き換えられています。"
+    },
+    {
+      "id": "SAP-033",
+      "category": "コスト最適化",
+      "question": "データ転送（Data Transfer）コストを最小化するためのベストプラクティスとして正しいものをすべて選べ。",
+      "choices": [
+        "同一リージョン内のEC2/S3間のデータ転送をVPC内で行い、インターネット経由を避ける",
+        "CloudFrontを使いエッジキャッシュからユーザーに配信してオリジンへの転送を削減する",
+        "S3 Transfer Accelerationでグローバルアップロードを高速化する（ただし追加料金が発生する）",
+        "Direct Connect（Dedicated/Hosted）でオンプレミス⇔AWS間の転送コストをPublic VIF経由で削減する"
+      ],
+      "answers": [0, 1, 3],
+      "explanation": "データ転送コスト最適化：(1)同一リージョン内はEC2→S3（同一AZ）は無料、AZ間転送は有料（$0.01/GB）のためアーキテクチャで同一AZに寄せる。VPC Endpointを使うとS3/DynamoDBへのデータ転送がインターネット（NAT GWも不要）を経由しない。(2)CloudFrontはオリジンからのデータ転送（CloudFront→Origin）より安く、エッジキャッシュで繰り返しのオリジン転送を削減。(3)S3 Transfer Accelerationは速度は速いが料金が高いため転送コスト削減ではなく高速化目的。(4)Direct Connectはインターネット転送より安い料金体系があります。"
+    },
+    {
+      "id": "SAP-034",
+      "category": "セキュリティ",
+      "question": "AWS Secrets Managerを使ってアプリケーションのデータベース認証情報を管理する際のベストプラクティスとして正しいものはどれか？",
+      "choices": [
+        "Secrets Managerの自動ローテーション機能でパスワードを定期的に更新し、アプリケーションはGetSecretValueを使って実行時に最新のシークレットを取得する",
+        "シークレットは初期設定時のみ取得してEC2インスタンスのユーザーデータに保存する",
+        "Secrets ManagerのシークレットARNをアプリのソースコードにハードコードする",
+        "全てのEC2インスタンスが同一のシークレットを使用するように設定する"
+      ],
+      "answers": [0],
+      "explanation": "Secrets Managerのベストプラクティス：(1)自動ローテーション：設定した日数ごとにパスワードをLocalのLambdaが変更（RDS・Redshift・DocumentDB等のビルトインサポートあり）。アプリが古いパスワードをキャッシュしないよう実行時にGetSecretValueで取得する。(2)IAMロールポリシーで最小権限：アプリのEC2/Lambda/ECSのロールに特定のシークレットのみ取得を許可。(3)シークレットはKMSで暗号化。インスタンスのユーザーデータ・ソースコードへの保存は平文のため不可。"
+    },
+    {
+      "id": "SAP-035",
+      "category": "ネットワーキング",
+      "question": "AWS PrivateLink（VPC Endpoint Service）を使ってSaaSサービスをVPC内で安全に公開する際の要件として正しいのはどれか？",
+      "choices": [
+        "プロデューサー側でNetwork Load Balancerを使いEndpoint Serviceを作成し、コンシューマー側でVPCエンドポイントを作成して接続する",
+        "PrivateLinkはApplication Load BalancerをEndpointとして使用する",
+        "PrivateLinkを使うとVPCのCIDRが重複していても接続できる",
+        "AとCの両方が正しい"
+      ],
+      "answers": [3],
+      "explanation": "AWS PrivateLinkの特徴：(1)構成：プロデューサー側はNLB（Network Load Balancer）をバックエンドとしたVPC Endpoint Serviceを作成します。コンシューマーはInterface VPC Endpoint（ENI）をVPCのサブネットに作成して接続します。(2)CIDRオーバーラップ対応：PrivateLinkはIPアドレスではなくAWS内部のサービス識別子を使って接続するため、プロデューサーとコンシューマーのVPC CIDRが重複していても問題なく接続できます（VPC Peeringではオーバーラップ不可）。AとCの両方が正しいです。"
+    },
+    {
+      "id": "SAP-036",
+      "category": "アーキテクチャ設計",
+      "question": "大規模Eコマースサイトで、急激なトラフィック増加時（セール等）でもシステム全体が停止しないように設計するパターンとして正しいのはどれか？",
+      "choices": [
+        "Circuit Breakerパターン：依存サービスの障害を検出して一時的に呼び出しを遮断し、フォールバック応答を返してカスケード障害を防ぐ",
+        "Sagaパターン：分散トランザクションの整合性を維持する",
+        "Bulkheadパターン：リソースプールを分離して一部の障害が全体に波及しないようにする",
+        "AとCの両方がカスケード障害防止に有効"
+      ],
+      "answers": [3],
+      "explanation": "カスケード障害防止のパターン：(A) Circuit Breakerパターン：依存する下流サービスの障害率が閾値を超えると「Open（遮断）」状態になり、即座にフォールバック応答を返します。一定時間後に「Half-Open」で試験的に接続を再開します（AWS App Mesh・Resilience Hub等で実装）。(C) Bulkheadパターン：スレッドプール・コネクションプール等のリソースをサービスごとに独立させ、あるサービスがリソースを枯渇させても他のサービスへの影響を防ぎます（ECSサービスごとの独立タスク数制限等）。AとCの両方がカスケード障害防止に有効です。"
+    },
+    {
+      "id": "SAP-037",
+      "category": "高可用性・耐障害性",
+      "question": "Amazon SQSを使ったメッセージ処理システムで、毒矢（Poison Pill）メッセージ（処理に失敗し続けるメッセージ）を適切に処理するための設定はどれか？",
+      "choices": [
+        "デッドレターキュー（DLQ）を設定してmaxReceiveCountを超えたメッセージをDLQに移動し、別途調査・再処理する",
+        "可視性タイムアウトを0秒にして即座に再処理させる",
+        "メッセージをキューから手動で削除する",
+        "SQS FIFOキューを使えば自動的に処理失敗メッセージがスキップされる"
+      ],
+      "answers": [0],
+      "explanation": "SQSのデッドレターキュー（DLQ）は処理に繰り返し失敗するメッセージ（Poison Pill）を隔離する仕組みです。maxReceiveCount（デフォルト3〜5回）を超えてメッセージが再処理された場合、自動的にDLQに移動します。DLQのメッセージはCloudWatch Alarmで監視して開発チームに通知し、内容を調査・修正後にDLQから元のキューに再移送（Redrive）できます。可視性タイムアウト0秒は無限ループを引き起こします。FIFO+DLQは順序保証と組み合わせた場合に使用します。"
+    },
+    {
+      "id": "SAP-038",
+      "category": "コスト最適化",
+      "question": "AWS Cost Anomaly Detection（コスト異常検出）の説明として正しいのはどれか？",
+      "choices": [
+        "MLアルゴリズムがコストの使用パターンを学習し、通常と異なる異常なコスト上昇を自動検出してSNS/Eメール通知する",
+        "AWS Cost Anomaly DetectionはAWS Budgetsと同一のサービス",
+        "異常検出はEC2コストのみに対応している",
+        "Cost Anomaly Detectionは検出後に自動的にリソースを停止してコストを抑制する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Cost Anomaly Detectionは：(1)ML（機械学習）でサービス・アカウント・コストカテゴリ・タグごとのコストパターンを学習。(2)通常パターンから逸脱した異常なコスト上昇を自動検出（固定閾値ではなく動的な異常検出）。(3)SNSアラートでメール/Slackに通知。(4)異常の根本原因（どのサービス・リージョン・操作が原因か）を分析。AWS Budgetsは固定額/固定率の閾値超過でアラートする別サービスです。全AWSサービスのコストに対応しています。自動リソース停止機能はありません。"
+    },
+    {
+      "id": "SAP-039",
+      "category": "データ管理",
+      "question": "Amazon S3のライフサイクルポリシーを使ってコストを最適化する設計として正しいものはどれか？",
+      "choices": [
+        "作成30日後にS3 Standard→S3 Standard-IAに移行、90日後にS3 Glacier Instant Retrieval、365日後にS3 Glacier Deep Archiveに移行するルールを設定する",
+        "ライフサイクルポリシーはS3バケット全体にのみ適用でき、プレフィックスごとの設定はできない",
+        "ライフサイクル移行にはデータ転送料金が発生し高コストになる",
+        "S3 Glacier Deep ArchiveからS3 Standardへの直接移行（復元なし）が可能"
+      ],
+      "answers": [0],
+      "explanation": "S3ライフサイクルポリシーのコスト最適化設計：データアクセス頻度が時間の経過とともに減少するパターン（ログ・バックアップ等）に対して、アクセス頻度に応じたストレージクラスへの自動移行とExpiration（期限切れ削除）を設定します。ライフサイクルルールはプレフィックスやタグでフィルタリングして特定のオブジェクトにのみ適用できます。ライフサイクル移行のデータ転送自体に料金は発生しません（ただし各ストレージクラスの最小保存期間と取り出し料金は考慮が必要）。Glacier Deep ArchiveはRestoreが必要でスタンダードに「直接移行」は不可です。"
+    },
+    {
+      "id": "SAP-040",
+      "category": "コンテナ・サーバーレス",
+      "question": "AWS Lambda関数が実行中にデータを安全に共有する方法として最も適切なものはどれか？",
+      "choices": [
+        "Lambda Layer を使ってコード・ライブラリを共有し、Lambda Extension を使ってサイドカー処理（テレメトリ・シークレット管理等）を実装する",
+        "Lambda環境変数にシークレットを平文で保存して関数間で共有する",
+        "Lambdaはステートレスなため関数間でのデータ共有は不可能",
+        "Lambda Aliasを使って関数間の設定を同期する"
+      ],
+      "answers": [0],
+      "explanation": "Lambda Layers：(1)複数のLambda関数間で共通のライブラリ（Python packages・カスタムランタイム・設定ファイル等）を共有するメカニズム。最大5つのLayerを1つの関数にアタッチ可能。バージョン管理も可能。Lambda Extensions：(2)Lambda実行環境にサイドカープロセスを追加する仕組み。AWS Distro for OpenTelemetry・Datadog Agent等のモニタリングエージェントや、Secrets Manager/SSM Parameter Storeのキャッシュ（AWS Parameters and Secrets Lambda Extension）として使用。環境変数の平文保存はセキュリティリスクです。"
+    }
+  ]
+}

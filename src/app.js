@@ -55,6 +55,11 @@ export const EXAM_LIST = [
     examName: 'AWS Certified Data Engineer - Associate',
     file: 'data/dea.json',
   },
+  {
+    examCode: 'SAP',
+    examName: 'AWS Certified Solutions Architect - Professional',
+    file: 'data/sap.json',
+  },
 ];
 
 // ============================================================

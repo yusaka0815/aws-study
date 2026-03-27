@@ -345,6 +345,24 @@ test.describe('DEA試験', () => {
 });
 
 // ============================================================
+// SAP試験
+// ============================================================
+test.describe('SAP試験', () => {
+  test('SAP が試験一覧に表示される', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await expect(page.locator('.exam-card').filter({ hasText: 'SAP' })).toBeVisible();
+  });
+
+  test('SAP選択後に問題が表示される', async ({ page }) => {
+    await selectExam(page, 'SAP');
+    await expect(page.locator('#screen-study')).toBeVisible();
+    const questionText = await page.locator('#question-text').textContent();
+    expect(questionText.length).toBeGreaterThan(10);
+  });
+});
+
+// ============================================================
 // 統計画面
 // ============================================================
 test.describe('統計画面', () => {
