@@ -14,6 +14,8 @@ import {
   showScreen, renderExamSelect, renderQuestion, renderResult,
   toggleExplanation, renderStats, showToast,
 } from './ui.js';
+import { playCorrectSound, playWrongSound } from './audio.js';
+import { requestWakeLock, releaseWakeLock } from './wake-lock.js';
 
 // ============================================================
 // 定数（変更頻度が高い設定を一か所で管理）
@@ -77,6 +79,23 @@ const appState = {
   lastQuestionId: null,     // 直前に出題した問題ID（連続出題防止用）
   answered: false,          // 現在の問題に回答済みか
   previousScreen: 'screen-select', // 設定/統計から戻る際の遷移先
+};
+
+// ============================================================
+// 設定（localStorage永続化）
+// ============================================================
+function loadSetting(key, defaultValue) {
+  const v = localStorage.getItem(`aws-study-${key}`);
+  return v === null ? defaultValue : v === 'true';
+}
+
+function saveSetting(key, value) {
+  localStorage.setItem(`aws-study-${key}`, value);
+}
+
+const settings = {
+  sound: loadSetting('sound', false),
+  wakeLock: loadSetting('wake-lock', false),
 };
 
 // ============================================================
@@ -166,6 +185,11 @@ function handleAnswer(selectedIndex) {
     updateQuestionState(prev, isCorrect, now);
   saveState(appState.userState);
 
+  if (settings.sound) {
+    if (isCorrect) playCorrectSound();
+    else playWrongSound();
+  }
+
   renderResult(appState.currentQuestion, selectedIndex, isCorrect);
 }
 
@@ -235,8 +259,29 @@ function setupNavigationListeners() {
   });
 }
 
-/** 設定画面の操作（バックアップ・インポート・リセット） */
+/** 設定画面の操作（バックアップ・インポート・リセット・トグル） */
 function setupSettingsListeners() {
+  // スリープ防止トグル
+  const toggleWakeLock = document.getElementById('toggle-wake-lock');
+  toggleWakeLock.checked = settings.wakeLock;
+  toggleWakeLock.addEventListener('change', async () => {
+    settings.wakeLock = toggleWakeLock.checked;
+    saveSetting('wake-lock', settings.wakeLock);
+    if (settings.wakeLock) {
+      await requestWakeLock();
+    } else {
+      await releaseWakeLock();
+    }
+  });
+
+  // 効果音トグル
+  const toggleSound = document.getElementById('toggle-sound');
+  toggleSound.checked = settings.sound;
+  toggleSound.addEventListener('change', () => {
+    settings.sound = toggleSound.checked;
+    saveSetting('sound', settings.sound);
+  });
+
   document.getElementById('btn-export').addEventListener('click', () => {
     exportBackup(appState.userState);
     showToast('バックアップをダウンロードしました', 'success');
@@ -280,6 +325,14 @@ async function init() {
   setupSettingsListeners();
   renderExamSelect(EXAM_LIST, selectExam);
   showScreen('screen-select');
+
+  // スリープ防止: 設定が有効なら起動時に取得、ページ再表示時に再取得
+  if (settings.wakeLock) await requestWakeLock();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && settings.wakeLock) {
+      requestWakeLock();
+    }
+  });
 }
 
 init();

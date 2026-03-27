@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.js'],
     coverage: {
       provider: 'v8',
-      include: ['src/engine.js', 'src/storage.js'],
+      include: ['src/engine.js', 'src/storage.js', 'src/audio.js', 'src/wake-lock.js'],
       reporter: ['text', 'html'],
     },
   },

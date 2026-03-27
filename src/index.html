@@ -151,6 +151,35 @@
     </header>
 
     <div class="settings-content">
+      <!-- 学習中の設定 -->
+      <div class="settings-section">
+        <div class="settings-section-title">学習中の設定</div>
+
+        <div class="settings-item">
+          <span class="settings-item-icon">🔆</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">スリープ防止</span>
+            <span class="settings-item-desc">学習中に画面が暗くならないようにする</span>
+          </span>
+          <label class="toggle-switch" aria-label="スリープ防止">
+            <input type="checkbox" id="toggle-wake-lock">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="settings-item">
+          <span class="settings-item-icon">🔊</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">効果音</span>
+            <span class="settings-item-desc">正解・不正解時に音を鳴らす</span>
+          </span>
+          <label class="toggle-switch" aria-label="効果音">
+            <input type="checkbox" id="toggle-sound">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
       <!-- バックアップ -->
       <div class="settings-section">
         <div class="settings-section-title">バックアップ</div>
