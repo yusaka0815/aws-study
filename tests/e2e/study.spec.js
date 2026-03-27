@@ -92,6 +92,14 @@ test.describe('問題表示（SAA）', () => {
     await expect(page.locator('#progress-text')).toBeVisible();
   });
 
+  test('ヘッダーボタンのgapが8px以上ある', async ({ page }) => {
+    const gap = await page.evaluate(() => {
+      const actions = document.querySelector('.header-actions');
+      return parseInt(getComputedStyle(actions).gap, 10);
+    });
+    expect(gap).toBeGreaterThanOrEqual(8);
+  });
+
   test('次へボタンは問題表示時は非表示', async ({ page }) => {
     await expect(page.locator('#next-btn')).toBeHidden();
   });
