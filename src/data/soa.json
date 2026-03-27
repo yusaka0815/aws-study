@@ -1,0 +1,607 @@
+{
+  "examCode": "SOA",
+  "examName": "AWS Certified SysOps Administrator - Associate",
+  "version": "1.0.0",
+  "questions": [
+    {
+      "id": "SOA-001",
+      "category": "CloudWatch",
+      "difficulty": 1,
+      "question": "Amazon CloudWatch のメトリクスの「名前空間（Namespace）」の役割として正しいものはどれですか？",
+      "choices": [
+        "名前空間はCloudWatchメトリクスのコンテナとして機能し、AWSサービスのメトリクスはAWS/EC2やAWS/RDS等の名前空間に分類され、カスタムメトリクスには独自の名前空間を指定することでAWSサービスメトリクスと区別できる",
+        "名前空間はCloudWatch Logsのロググループ名と同義であり、同じ設定を共有する",
+        "名前空間はIAMポリシーのリソース制限に使用され、特定の名前空間へのアクセスを制御する",
+        "名前空間は課金単位として使用され、名前空間ごとに別々に請求される"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch 名前空間詳細：■役割：メトリクスをサービスや用途ごとにグループ化するコンテナ■AWSサービス名前空間：AWS/EC2（CPU使用率等）、AWS/RDS（DB接続数等）、AWS/Lambda（実行回数等）、AWS/S3（リクエスト数等）■カスタムメトリクス名前空間：PutMetricData APIのNamespaceパラメータで指定（例：MyApp/Production）■名前空間の利点：①メトリクスの整理・フィルタリング②IAMポリシーでの細粒度アクセス制御③Dashboardでの論理的グループ化■注意：同一名前空間内でメトリクス名が重複しても、ディメンション（Dimension）が異なれば別メトリクスとして扱われる。",
+      "tags": ["CloudWatch", "メトリクス", "名前空間", "監視"]
+    },
+    {
+      "id": "SOA-002",
+      "category": "EC2",
+      "difficulty": 1,
+      "question": "EC2 インスタンスの Status Checks（ステータスチェック）の種類と違いとして正しいものはどれですか？",
+      "choices": [
+        "System Status Checkはインスタンスが動作する物理ホストのハードウェア・ソフトウェアの問題を検出し、Instance Status CheckはOSレベルの問題（カーネルパニック・ネットワーク設定等）を検出する。System Checkの失敗はAWSが対応し、Instance Checkの失敗はユーザーが対応する",
+        "Status Checkは2種類ではなく1種類で、全てのEC2問題を統合して検出する",
+        "System Status Checkに失敗した場合、インスタンスは自動的に新しいホストに移行される",
+        "Instance Status CheckはEC2のCPU使用率やメモリ使用率を監視する"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Status Checks詳細：■System Status Check（1/2）：物理ホストレベルの問題検出①ネットワーク接続不良②ホストのハードウェア障害③AWSのソフトウェア問題④電力喪失→失敗時：ホスト停止・再起動か別ホストへの移行が必要（AWSが管理）→CloudWatch Alarmで自動復旧（recover EC2アクション）設定可能 ■Instance Status Check（2/2）：OS・アプリケーションレベルの問題検出①カーネルパニック②OSの不整合③ファイルシステムのマウント失敗④ネットワークインターフェース設定誤り→失敗時：ユーザーが停止/再起動・OS修復を行う ■CloudWatch Alarm：StatusCheckFailed_System（System失敗）、StatusCheckFailed_Instance（Instance失敗）、StatusCheckFailed（両方） ■Auto Recoveryアクション：recover（同一EIPを保持したまま別ホストへ移行）。",
+      "tags": ["EC2", "Status Check", "障害検出", "監視"]
+    },
+    {
+      "id": "SOA-003",
+      "category": "IAM",
+      "difficulty": 1,
+      "question": "AWS IAM の Permission Boundary（アクセス許可の境界）の役割として正しいものはどれですか？",
+      "choices": [
+        "Permission Boundaryはユーザーやロールに設定できる最大権限の上限であり、Identity-basedポリシーで許可されていても Permission Boundaryで許可されていないアクションは実行できない。委任管理（Delegation）でサブ管理者が作成するロールの権限を制限する際に使用する",
+        "Permission BoundaryはS3バケットポリシーと同様のリソースベースポリシーの一種",
+        "Permission Boundaryを設定するとそのエンティティはBoundaryで定義された権限のみを持ち、追加のポリシーは無視される",
+        "Permission BoundaryはOrganizations SCPとまったく同じ機能であり、どちらを使っても結果は同じ"
+      ],
+      "answers": [0],
+      "explanation": "Permission Boundary詳細：■概念：IAMエンティティ（ユーザー/ロール）が持てる最大権限の上限■有効権限＝Identity-basedポリシー ∩ Permission Boundary（両方で許可されたアクションのみ有効）■例：①Identity-based：S3FullAccess②Permission Boundary：S3ReadOnly→実際の権限はS3ReadOnly■委任管理シナリオ：①管理者がBoundaryポリシー作成②サブ管理者にBoundaryのARNで限定されたロール作成権限を付与③サブ管理者は自分のBoundaryを超えるロールを作成できない■SCPとの違い：①SCP：Organizationsのメンバーアカウント全体への制限②Permission Boundary：特定のIAMエンティティへの制限■設定方法：IAMユーザー/ロールのPermissions tab→Set Boundaries■注意：Boundaryはリソースベースポリシーには影響しない。",
+      "tags": ["IAM", "Permission Boundary", "権限管理", "委任管理"]
+    },
+    {
+      "id": "SOA-004",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation の Stack Policy（スタックポリシー）の用途として正しいものはどれですか？",
+      "choices": [
+        "Stack PolicyはCloudFormationスタック内の特定リソースへの更新操作を制限するJSONポリシーで、本番環境のデータベースや重要リソースを誤って更新・削除するのを防ぐために使用する",
+        "Stack PolicyはIAMポリシーと同じ構文でCloudFormationへのAPIアクセスを制御する",
+        "Stack PolicyはCloudFormationテンプレートの読み取り権限を管理するリソースベースポリシー",
+        "Stack Policyを設定するとスタック内の全リソースが更新不可能（Immutable）になる"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormation Stack Policy詳細：■目的：スタック更新時に特定リソースを保護（誤操作防止）■スタックポリシー適用タイミング：スタック更新（Update）時のみ（作成・削除時は対象外）■JSON構造：{Statement:[{Effect:Allow/Deny, Principal:{'AWS':'*'}, Action:Update:*, Resource:LogicalResourceId/*, Condition:...}]}■例：本番RDSを保護：{Effect:Deny, Principal:{'AWS':'*'}, Action:'Update:*', Resource:'LogicalResourceId/ProdDatabase'}→RDSへの全更新をブロック■一時的な上書き：--stack-policy-during-updateオプションで特定更新時のみポリシーを上書き可能■デフォルト：Stack Policyなし→全リソース更新可能■Deny優先：AllowとDenyが競合した場合はDenyが優先■初回設定後の変更：IAM権限があれば更新可能。",
+      "tags": ["CloudFormation", "Stack Policy", "リソース保護", "変更管理"]
+    },
+    {
+      "id": "SOA-005",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Placement Groups（プレイスメントグループ）の3種類と適用ケースとして正しいものはどれですか？",
+      "choices": [
+        "Cluster（同一AZ・低レイテンシ・高スループット/HPC向け）、Spread（異なるラック・最大7インスタンス/AZ・高可用性向け）、Partition（異なるラックグループ・大規模分散処理/Hadoop・Kafka向け）の3種類がある",
+        "Placement Groupsは2種類のみ（ClusterとSpread）でPartitionは別サービス",
+        "Clusterプレイスメントグループは複数AZにまたがって配置することでさらに高い可用性を実現する",
+        "Spreadプレイスメントグループに配置できるインスタンス数に上限はなく無制限"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Placement Groups 3種類詳細：■Cluster：①全インスタンスを同一AZ内の同一ラック（クラスター）に集約②メリット：10Gbpsネットワーク（通常5Gbps）・超低レイテンシ③デメリット：ラック障害で全インスタンス影響・同AZ依存④適用：HPC・機械学習トレーニング・大規模並列処理 ■Spread：①インスタンスを異なるラックに分散配置②制限：AZあたり最大7インスタンス（ハードリミット）③メリット：単一ラック障害の影響を最小化④適用：重要なReplicated DB・小規模高可用性クラスター ■Partition：①ラックをパーティションに分割（各パーティションが独立したラック）②大規模：数百インスタンス、最大7パーティション/AZ③メリット：同一パーティション内の障害が他パーティションに非波及④適用：HBase・HDFS・Kafka・Cassandra（ラックアウェアネス対応システム）。",
+      "tags": ["EC2", "Placement Groups", "高可用性", "HPC"]
+    },
+    {
+      "id": "SOA-006",
+      "category": "ELB",
+      "difficulty": 2,
+      "question": "Application Load Balancer（ALB）の Target Group の Health Check 設定と Unhealthy しきい値の動作として正しいものはどれですか？",
+      "choices": [
+        "HealthyThresholdCountは連続して正常と判断されるチェック回数（デフォルト3）、UnhealthyThresholdCountは連続して異常と判断されるチェック回数（デフォルト3）で、Unhealthy判定されたターゲットはALBのルーティング対象から除外される",
+        "Health Checkの失敗回数がしきい値を超えると自動的にEC2インスタンスが再起動される",
+        "ALBのHealth CheckはHTTPのみをサポートし、HTTPSプロトコルのHealth Checkは不可能",
+        "Unhealthyになったターゲットはそのまま削除されTarget Groupから永久に除外される"
+      ],
+      "answers": [0],
+      "explanation": "ALB Health Check詳細：■設定パラメータ：①Protocol：HTTP/HTTPS/gRPC②Path：ヘルスチェックパス（/health等）③Port：traffic-portまたは指定ポート④HealthyThreshold：連続成功回数（2〜10、デフォルト3）⑤UnhealthyThreshold：連続失敗回数（2〜10、デフォルト3）⑥Timeout：応答待ち時間（2〜120秒）⑦Interval：チェック間隔（5〜300秒、デフォルト30秒） ■ステータス遷移：initial→healthy（起動時のチェック成功）→unhealthy（連続失敗）→healthy（連続成功で復帰） ■Draining（Deregistration Delay）：ターゲット除外時に既存接続を処理する猶予時間（0〜3600秒、デフォルト300秒） ■レスポンスコード：200〜299をデフォルトで成功と判断（カスタマイズ可能） ■Auto Scalingとの連携：Unhealthyインスタンスを自動ターミネートして代替インスタンス起動。",
+      "tags": ["ALB", "Health Check", "Target Group", "負荷分散"]
+    },
+    {
+      "id": "SOA-007",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の Lifecycle Policy（ライフサイクルポリシー）を使用してコスト最適化を行う際の設定として正しいものはどれですか？",
+      "choices": [
+        "Lifecycle Policyでオブジェクト作成から30日後にS3 Standardから S3 Standard-IAへ、90日後にS3 Glacier Instant Retrievalへ、365日後にS3 Glacier Deep Archiveへ自動移行し、730日後に削除するステージング設定でストレージコストを大幅削減できる",
+        "Lifecycle Policyは削除操作のみをサポートし、ストレージクラスの移行はできない",
+        "S3 Glacier Deep ArchiveからS3 Standardへの自動逆移行（昇格）もLifecycle Policyで設定できる",
+        "Lifecycle PolicyはS3 Standardクラスのオブジェクトのみに適用可能"
+      ],
+      "answers": [0],
+      "explanation": "S3 Lifecycle Policy詳細：■アクション2種：①Transition（移行）：あるクラスから別クラスへ②Expiration（期限切れ）：オブジェクト削除 ■移行方向（一方向のみ）：Standard→Standard-IA→Intelligent-Tiering→One Zone-IA→Glacier Instant→Glacier Flexible→Glacier Deep Archive（逆移行は不可） ■最小保存期間：Standard-IA/One Zone-IA: 30日、Glacier Instant: 90日、Glacier Flexible: 90日、Deep Archive: 180日（30日未満はStandard-IAより高くなる） ■マルチパートアップロードの削除：未完了のマルチパートアップロードをN日後に削除（コスト削減） ■バージョニング対応：古いバージョンを60日後にGlacierへ移行等 ■フィルタ：プレフィックス・タグでオブジェクトを絞り込み ■コスト例：1TB/月：Standard$23→Standard-IA$12.5→Glacier Deep Archive$1（約96%削減）。",
+      "tags": ["S3", "Lifecycle Policy", "コスト最適化", "ストレージクラス"]
+    },
+    {
+      "id": "SOA-008",
+      "category": "CloudTrail",
+      "difficulty": 1,
+      "question": "AWS CloudTrail の Management Events と Data Events の違いとして正しいものはどれですか？",
+      "choices": [
+        "Management EventsはAWSリソースの管理操作（EC2起動・IAMポリシー変更・S3バケット作成等）を記録しデフォルトで有効、Data EventsはS3オブジェクトレベル操作（GetObject・PutObject等）やLambda関数呼び出しを記録しデフォルトは無効（追加コスト）",
+        "Management EventsとData Eventsは同じ内容を記録し区別はない",
+        "Data Eventsを有効にするとManagement Eventsが自動的に無効になる",
+        "CloudTrailはデフォルトで全てのイベント（ManagementもData Events）を記録する"
+      ],
+      "answers": [0],
+      "explanation": "CloudTrail イベント種類：■Management Events（コントロールプレーンイベント）：①デフォルト有効②対象：API操作（ec2:RunInstances、iam:CreatePolicy、s3:CreateBucket等）③Read Events：Describe/List/Get系④Write Events：Create/Update/Delete系⑤コスト：最初のTrailは無料（1リージョン）追加は有料 ■Data Events（データプレーンイベント）：①デフォルト無効②対象：S3オブジェクト操作（GetObject/PutObject/DeleteObject）、Lambda関数呼び出し（Invoke）③高ボリューム→追加コスト（$0.10/100,000イベント）④Insightsと組み合わせて異常検出 ■Insights Events：通常と異なるAPI呼び出しパターン検出（追加料金） ■Trail設定：①Global：全リージョン②Single Region：指定リージョンのみ③S3バケットにJSONで保存（CloudWatch Logsにも送信可）。",
+      "tags": ["CloudTrail", "Management Events", "Data Events", "監査"]
+    },
+    {
+      "id": "SOA-009",
+      "category": "Auto Scaling",
+      "difficulty": 2,
+      "question": "EC2 Auto Scaling の動的スケーリングポリシーの種類（Simple/Step/Target Tracking）の違いとして正しいものはどれですか？",
+      "choices": [
+        "Simple Scalingは単一の閾値で一定数増減、Step ScalingはCPU 60〜80%は+2台・80〜100%は+4台等の段階的スケーリング、Target Tracking Scalingは目標値（CPU 70%等）を維持するよう自動調整する。Target Trackingが最もシンプルで推奨",
+        "3種類のポリシーは同じアルゴリズムで結果も同じ、名前が違うだけ",
+        "Target Tracking ScalingはCPUメトリクスのみ対応し、カスタムメトリクスには使用できない",
+        "Simple ScalingはStep Scalingの上位互換で、Step Scalingより多くの機能を提供する"
+      ],
+      "answers": [0],
+      "explanation": "Auto Scaling ポリシー詳細：■Simple Scaling：①1つのCloudWatch Alarm→1つのアクション②例：CPU>80%→+2台追加③クールダウン期間（デフォルト300秒）中は追加スケーリング不可④シンプルだが柔軟性低い ■Step Scaling：①複数の閾値に対して異なるアクション②例：CPU60-80%→+2台、CPU80-100%→+4台③クールダウン不使用（ウォームアップ期間あり）④段階的負荷に対応 ■Target Tracking（推奨）：①目標値を設定してAuto Scalingが自動制御②組み込みメトリクス：ASGAverageCPUUtilization/ALBRequestCountPerTarget/ASGAverageNetworkIn等③スケールイン保護（TerminationPolicy）④AWS推奨・最も使いやすい ■Scheduled Scaling：特定時刻に事前スケール（例：毎朝9時に10台）→Predictive Scalingに進化 ■Predictive Scaling（ML）：過去データからスケジュールを自動学習・予測。",
+      "tags": ["Auto Scaling", "スケーリングポリシー", "Target Tracking", "EC2"]
+    },
+    {
+      "id": "SOA-010",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon RDS の Multi-AZ と Read Replica の違いと用途として正しいものはどれですか？",
+      "choices": [
+        "Multi-AZは同期レプリケーションによる高可用性（自動フェイルオーバー）専用でRead用途には使えず、Read Replicaは非同期レプリケーションで読み取り負荷分散用（クロスリージョンも可能）でフェイルオーバーには使えないが手動でプライマリに昇格できる",
+        "Multi-AZとRead Replicaは同じ技術で用途も同じ",
+        "Multi-AZのスタンバイインスタンスは読み取りクエリも処理してスループットを向上させる",
+        "Read ReplicaはMulti-AZと組み合わせて使用することは禁止されている"
+      ],
+      "answers": [0],
+      "explanation": "RDS Multi-AZ vs Read Replica詳細：■Multi-AZ：①別AZにスタンバイインスタンス②同期レプリケーション（データ損失ゼロ）③フェイルオーバー：自動（60〜120秒、DNS切り替え）④スタンバイはRead不可（フェイルオーバー専用）⑤コスト：2台分 ■Read Replica：①非同期レプリケーション（レプリカラグ発生可能性）②読み取りクエリをアプリで振り分け③同一リージョン・クロスリージョン・クロスAZ可能④最大5台（MySQL/MariaDB/PostgreSQL）⑤プライマリ昇格：手動操作が必要（自動フェイルオーバーなし）⑥ユースケース：レポート・分析クエリ・地理的近接性 ■組み合わせ：Multi-AZ ON + Read Replicaも可（高可用性＋読み取りスケール）■RDS Proxy：複数Read Replicaへの接続プール管理 ■Aurora：Multi-AZ統合・最大15 Read Replica。",
+      "tags": ["RDS", "Multi-AZ", "Read Replica", "高可用性"]
+    },
+    {
+      "id": "SOA-011",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC の NAT Gateway と NAT Instance の違いと選択基準として正しいものはどれですか？",
+      "choices": [
+        "NAT GatewayはAWSマネージドで高可用性（AZごとに配置で冗長化）・高スループット（最大45Gbps）・スケーリング自動、NAT InstanceはEC2インスタンスで管理が必要だが低コスト・セキュリティグループ設定可能・バスティオンホスト兼用可能",
+        "NAT GatewayとNAT Instanceは同じ機能でコストのみが異なる",
+        "NAT GatewayはIPv6トラフィックを処理できるがNAT Instanceはできない",
+        "NAT Instanceは全AZで自動的に高可用性を提供するためNAT Gatewayより推奨される"
+      ],
+      "answers": [0],
+      "explanation": "NAT Gateway vs NAT Instance詳細：■NAT Gateway（マネージド）：①AWSが管理・自動スケーリング②帯域：最大45Gbps（スケールアップ自動）③高可用性：AZごとに作成（1AZ障害時は他AZのNAT GWを使用）④セキュリティグループ：設定不可（Network ACLで制御）⑤コスト：時間料金＋データ処理料金⑥IPv4専用（IPv6にはEgress-Only IGWを使用）⑦パブリックNAT GW：Elastic IPが必要 ■NAT Instance（EC2）：①ユーザーが管理②Source/Destination CheckをOFFに設定必要③スループット：インスタンスタイプに依存（上限あり）④セキュリティグループ適用可（バスティオンホスト兼用可）⑤コスト：EC2コストのみ（小規模では低コスト）⑥高可用性：手動構成（Auto Scaling+スクリプト等） ■選択：本番→NAT Gateway、開発/低コスト重視→NAT Instance。",
+      "tags": ["VPC", "NAT Gateway", "NAT Instance", "プライベートサブネット"]
+    },
+    {
+      "id": "SOA-012",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch Alarms の Composite Alarm（複合アラーム）の利点として正しいものはどれですか？",
+      "choices": [
+        "Composite AlarmはAND/ORロジックで複数のアラームを組み合わせて条件を定義できるため、個別アラームのアラームノイズ（誤検知）を減らし真の障害時のみ通知することが可能。例：CPU>80% AND NetworkIn急増の両方を満たす場合のみアラート",
+        "Composite Alarmは複数のアラームを一括削除するためのグループ機能",
+        "Composite Alarmを設定すると全子アラームのアクション（SNS通知等）が自動的に無効化される",
+        "Composite Alarmは最大2つのアラームしか組み合わせられない"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Composite Alarm詳細：■構文：ALARM('AlarmA') AND ALARM('AlarmB')またはALARM('AlarmA') OR ALARM('AlarmB')またはNOT ALARM('AlarmA')■利点①アラームノイズ削減：個別メトリクスのスパイクだけでは通知しない②真の障害検出：複数症状の同時発生=本当の問題 ■例①：（CPU>80% AND Memory>90%）=確実なリソース枯渇②（ErrorRate>5% OR Latency>2s）=ユーザー影響あり③複数AZの全ロードバランサーが異常=リージョン障害 ■動作：Composite AlarmがALARM状態になった時のみSNS通知・Auto Scaling等のアクション実行 ■子アラームの抑制（Suppression）：メンテナンス中の子アラームを無視してComposite Alarmを正常維持 ■制限：最大100の子アラーム（1つのComposite Alarmに）■コスト：$0.10/アラーム/月。",
+      "tags": ["CloudWatch", "Composite Alarm", "アラームノイズ", "監視"]
+    },
+    {
+      "id": "SOA-013",
+      "category": "Systems Manager",
+      "difficulty": 2,
+      "question": "AWS Systems Manager の Session Manager を使用してEC2インスタンスにアクセスする利点として正しいものはどれですか？",
+      "choices": [
+        "Session Managerを使用するとSSH/RDPポートの開放・バスティオンホスト・SSH鍵管理が不要になり、IAMポリシーベースのアクセス制御・セッションログのS3/CloudWatch Logs記録・プライベートサブネット内インスタンスへのアクセスが実現できる",
+        "Session ManagerはEC2インスタンスの再起動・停止のみを行うサービス",
+        "Session Managerを使用してもSSH鍵の管理は引き続き必要",
+        "Session ManagerはWindows EC2インスタンスにのみ対応しLinuxには使用できない"
+      ],
+      "answers": [0],
+      "explanation": "Systems Manager Session Manager詳細：■前提条件：①SSMエージェント（Systems Manager Agent）インストール済み（Amazon Linux 2/Windows Server 2016+は事前インストール済み）②EC2インスタンスロールにAmazonSSMManagedInstanceCoreポリシー付与③VPCエンドポイントまたはインターネット接続 ■メリット：①SSHポート22/RDPポート3389の開放不要②踏み台サーバー不要③SSH鍵管理不要④IAMポリシーで細粒度アクセス制御⑤セッション記録：S3バケット/CloudWatch Logsへの自動保存 ■対応OS：Linux/Windows/macOS ■プライベートサブネット：VPCエンドポイント（com.amazonaws.region.ssm等）で通信 ■CloudTrail連携：セッション開始/終了のAPI呼び出しを記録 ■コマンド実行：Run Commandと組み合わせてバッチ実行も可能 ■ポートフォワーディング：SSH不要でRDS/その他内部リソースへの接続も可能。",
+      "tags": ["Systems Manager", "Session Manager", "セキュアアクセス", "IAM"]
+    },
+    {
+      "id": "SOA-014",
+      "category": "ELB",
+      "difficulty": 2,
+      "question": "Network Load Balancer（NLB）と Application Load Balancer（ALB）の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "NLBはTCP/UDP/TLSの第4層（L4）での超低レイテンシ・静的IP・ElasticIP割り当て可能で、ALBはHTTP/HTTPSの第7層（L7）でのパスルーティング・ホストルーティング・認証・WebSocket対応。高性能TCPアプリにはNLB、スマートなHTTPルーティングにはALB",
+        "NLBとALBは同じ機能でコストのみが異なる",
+        "ALBはTCPトラフィックも処理でき、NLBより多機能",
+        "NLBはHTTPSを処理できないため、TLS終端にはALBが必須"
+      ],
+      "answers": [0],
+      "explanation": "NLB vs ALB詳細：■NLB（Network Load Balancer）：①L4（TCP/UDP/TLS）②超低レイテンシ（µs級）・高スループット③静的IP：AZごとに1つ（またはElastic IP割り当て可）④ターゲット：EC2/IPアドレス/ALB（ALBの前段にNLB配置可）⑤セキュリティグループ：NLB自体には設定不可（ターゲットのSGで制御）⑥Preserve Source IP：ターゲットが元のクライアントIPを確認可能 ■ALB（Application Load Balancer）：①L7（HTTP/HTTPS/gRPC/WebSocket）②パスベース・ホストベースルーティング③Lambda関数をターゲットに④認証（Cognito/OIDC統合）⑤WAF連携⑥Sticky Sessions（Cookie）⑦動的IPのみ（固定IP不可） ■使い分け：①ゲームサーバー/IoT：NLB②REST API/WebApp：ALB③固定IP必要：NLB④L7認証・WAF：ALB。",
+      "tags": ["NLB", "ALB", "ロードバランサー", "L4/L7"]
+    },
+    {
+      "id": "SOA-015",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch の Anomaly Detection（異常検出）機能の仕組みと利点として正しいものはどれですか？",
+      "choices": [
+        "Anomaly Detectionは機械学習でメトリクスの過去パターン（季節変動・週次サイクル等）を学習してベースラインバンドを構築し、バンドを外れた値を異常として検出する。固定しきい値では検出困難な動的な異常を自動検出できる",
+        "Anomaly Detectionは過去データではなくリアルタイムのデータのみを使用して異常を検出する",
+        "Anomaly Detectionは有効化すると全てのCloudWatchメトリクスに自動適用される",
+        "Anomaly Detectionで検出した異常はアラームを作成できない（通知不可）"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Anomaly Detection詳細：■仕組み：①MLモデルが過去2週間以上のデータを学習②週次・日次・時間帯のパターンを自動検出③バンド（期待値の上下範囲）を生成④バンドの外側の値を異常として検出 ■メリット：①曜日・時間帯による自然な変動（月曜朝のトラフィック増等）を考慮②静的閾値では対応できない動的なパターン ■アラーム作成：①ANOMALY_DETECTION_BAND関数を使用②しきい値の代わりにバンドを基準にアラーム設定③Standard deviation（標準偏差倍率）でバンド幅を調整 ■対応メトリクス：CloudWatchメトリクス全般（EC2/RDS/カスタム等）■学習期間：最低2週間のデータ推奨（少ないデータでも機能するが精度は低下）■除外期間：イベント期間（例：セール）を除外してモデル精度向上■コスト：有効化したメトリクスごとに課金（月$0.30/メトリクス）。",
+      "tags": ["CloudWatch", "Anomaly Detection", "機械学習", "異常検出"]
+    },
+    {
+      "id": "SOA-016",
+      "category": "AWS Config",
+      "difficulty": 2,
+      "question": "AWS Config Rules と Remediation（自動修復）の組み合わせによるコンプライアンス自動化として正しいものはどれですか？",
+      "choices": [
+        "AWS Config RulesでAWSリソースの設定が準拠しているか継続的に評価し、非準拠リソース検出時にSystems Manager AutomationドキュメントをRemediationアクションとして設定することで自動修復（例：パブリックS3バケットをプライベートに変更）できる",
+        "AWS Config RulesはEC2インスタンスのメトリクスを監視するツールでCloudWatchの代替",
+        "Remediationアクションは手動承認が必要でなく常に即時自動実行される",
+        "AWS Configは設定の評価のみを行い、自動修復機能は別サービス（AWS Detective）が担当する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Config Rules + Remediation詳細：■Config Rules評価：①Managed Rules：AWSが提供する事前定義ルール（例：ec2-instance-no-public-ip/s3-bucket-public-read-prohibited等）②Custom Rules：Lambda関数で独自ロジック③変更時評価またはスケジュール評価（定期チェック） ■Compliance Status：COMPLIANT/NON_COMPLIANT/ERROR/NOT_APPLICABLE ■Remediation（修復）：①Auto Remediation：非準拠検出後に自動実行②Manual Remediation：コンソールから手動トリガー③SSM Automation Document：修復ロジックを定義（例：AWS-DisablePublicAccessForS3Bucket）④Parameters：修復スクリプトに渡すパラメータ（ARN等） ■EventBridge連携：Config→EventBridge→Lambda/SNS独自通知 ■Conformance Pack：複数Config Rulesを1つのパッケージとしてアカウント/OU全体に展開■コスト：アクティブルール1つ$2/月＋評価回数。",
+      "tags": ["AWS Config", "Config Rules", "Remediation", "コンプライアンス"]
+    },
+    {
+      "id": "SOA-017",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 インスタンスの Spot Instance（スポットインスタンス）の中断処理とアーキテクチャ設計として正しいものはどれですか？",
+      "choices": [
+        "Spot Instanceは中断の2分前に Instance Metadata ServiceやEventBridgeでTermination Noticeが通知されるため、チェックポイント保存・作業中断・S3への状態保存等の処理を2分以内に完了する設計が必要。Spot Fleet/Auto Scalingでの複数インスタンスタイプ使用が推奨",
+        "Spot Instanceが中断される際はAWSから事前通知はなく突然停止される",
+        "Spot Instanceはリザーブドインスタンスより常に価格が高い",
+        "Spot Instanceの中断時にデータを保存するには専用のSpot Backupサービスを使用する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "Spot Instance 中断処理詳細：■中断通知：①IMDSv2（Instance Metadata Service）：http://169.254.169.254/latest/meta-data/spot/termination-timeをポーリング→値が返ればTermination Notice②EventBridge：EC2 Spot Instance Interruption Warningイベント→Lambda/SNS通知 ■2分以内のアクション：①チェックポイント保存（S3/DynamoDB）②進捗状態の記録③SQSメッセージを可視化タイムアウトで再キューイング④EBSスナップショット（2分では困難→事前スナップショット戦略） ■設計パターン：①Spot Fleet：複数インスタンスタイプ・AZで中断リスク分散②Auto Scaling Mixed Instances：On-Demand（ベース）+ Spot（スパイク）③SQS + Spot Worker：中断時にメッセージをキューに戻す ■スポット価格：オンデマンドの最大90%割引（変動相場）■Spot Hibernation：メモリ状態を保存（EBS）して再開可能（対応インスタンスタイプのみ）。",
+      "tags": ["EC2", "Spot Instance", "中断処理", "コスト最適化"]
+    },
+    {
+      "id": "SOA-018",
+      "category": "Organizations",
+      "difficulty": 2,
+      "question": "AWS Organizations の Service Control Policy（SCP）の特徴として正しいものはどれですか？",
+      "choices": [
+        "SCPはOrganizationsのOU/メンバーアカウントに適用されるアカウントレベルの最大権限の上限であり、たとえIAM管理者権限（AdministratorAccess）を持つユーザーでもSCPで拒否されたアクションは実行できない。管理アカウントにはSCPは適用されない",
+        "SCPはOrganizationsの管理アカウントにのみ適用され、メンバーアカウントには影響しない",
+        "SCPでは特定のリソースARNへのアクセスを許可することが主な用途",
+        "SCP適用時、AdministratorAccessポリシーは常にSCPより優先されるため影響を受けない"
+      ],
+      "answers": [0],
+      "explanation": "Organizations SCP詳細：■適用対象：OUまたはメンバーアカウント（管理アカウント=Master Accountには適用されない）■有効権限の計算：IAMポリシー ∩ SCP（両方で許可されたアクションのみ実行可能）■Denyを入れない場合のデフォルト：SCPはFullAWSAccess（デフォルト）→全て許可→IAMポリシーで制限■一般的なSCPユースケース：①特定リージョンのみ使用許可（Deny条件でリージョン制限）②Root User操作をブロック③特定サービスを禁止（例：BlockCloudTrailDeletion）④GuardDuty/Config/CloudTrailの無効化禁止 ■SCP継承：OU→子OUへの継承（累積的Deny）■スタック例：Root SCP → OU SCP → Account SCP：全てのSCPのAllow積集合が最終権限■Permission Boundaryとの違い：SCPはアカウントレベル、Permission BoundaryはIAMエンティティレベル。",
+      "tags": ["Organizations", "SCP", "ガバナンス", "アカウント管理"]
+    },
+    {
+      "id": "SOA-019",
+      "category": "EBS",
+      "difficulty": 2,
+      "question": "Amazon EBS のボリュームタイプと性能特性の選択基準として正しいものはどれですか？",
+      "choices": [
+        "gp3はgp2の後継でIOPSとスループットを独立設定可能（最大16000IOPS/1000MiB/s）、io2 Block Expressは最高性能（最大256000IOPS）、st1は大容量シーケンシャル処理（最大500MiB/s）、sc1は低頻度アクセスの低コスト大容量向け",
+        "全EBSボリュームタイプは同一のIOPS性能を提供し、タイプは価格のみに影響する",
+        "st1はIOPSが最も高いボリュームタイプで、データベースに最適",
+        "gp2ではIOPSとスループットを独立して設定できるが、gp3では設定不可"
+      ],
+      "answers": [0],
+      "explanation": "EBS ボリュームタイプ詳細：■汎用SSD：①gp2：IOPS=ストレージサイズ×3（最大16000IOPS）・バースト可能②gp3（推奨）：ベース3000IOPS/125MiB/s、独立設定最大16000IOPS/1000MiB/s・gp2より20%安価 ■プロビジョンドIOPS SSD：①io1：最大64000IOPS（Nitroインスタンス）②io2：io1と同価格でより耐久性99.999%③io2 Block Express：最大256000IOPS/4000MiB/s（最高性能、R5b等の専用インスタンス） ■スループット最適化HDD：①st1：最大500IOPS/500MiB/s・低コスト・高スループット②適用：BigData/DWH/ログ処理（ランダムアクセス不向き） ■コールドHDD：①sc1：最大250IOPS/250MiB/s・最低コスト②適用：低頻度アクセスアーカイブ ■選択指針：①IOPS重視（DB）→io2②コスパ（一般）→gp3③大容量シーケンシャル→st1④最安値→sc1。",
+      "tags": ["EBS", "ボリュームタイプ", "gp3", "IOPS"]
+    },
+    {
+      "id": "SOA-020",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch Logs の Metric Filter を使用してログからカスタムメトリクスを作成する手順として正しいものはどれですか？",
+      "choices": [
+        "CloudWatch Logsのロググループにメトリクスフィルターを設定してパターン（例：[ERROR]）に一致するログ出力回数をカスタムメトリクスとして記録し、そのメトリクスに対してCloudWatch Alarmを設定することでエラーレートの監視・通知が実現できる",
+        "Metric FilterはS3バケットのアクセスログにのみ適用でき、アプリケーションログには使用できない",
+        "Metric Filterで作成したメトリクスはアラームには設定できず、Dashboardのみで使用可能",
+        "Metric FilterはログをS3に転送する機能であり、メトリクスの作成は行わない"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Logs Metric Filter詳細：■設定手順：①CloudWatch Logsコンソール→ロググループ選択②Metric Filtersタブ→Create Metric Filter③Filter Pattern設定（例：{$.level = \"ERROR\"}またはテキスト：ERROR）④Metric Name/Namespace/Value/Unit設定⑤デフォルト値（マッチなし時）：0に設定推奨 ■フィルターパターン例：①{ $.statusCode = 500 }：JSON HTTPステータス500②[ip, user, username, timestamp, request, status_code = 5*, bytes]：Apache Combined log③?ERROR ?WARN：ERRORまたはWARNを含む行 ■メトリクス設定：①Metric Value：マッチした場合の値（通常1）②Dimensions：ロググループ名等のディメンション設定で細分化可能 ■Alarm連携：作成したメトリクス→CloudWatch Alarm→SNS→Slack/Email通知 ■制限：ロググループあたり最大100メトリクスフィルター■コスト：カスタムメトリクス$0.30/メトリクス/月。",
+      "tags": ["CloudWatch Logs", "Metric Filter", "カスタムメトリクス", "ログ監視"]
+    },
+    {
+      "id": "SOA-021",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC Flow Logs の出力先と分析方法の組み合わせとして正しいものはどれですか？",
+      "choices": [
+        "VPC Flow LogsはCloudWatch Logs・S3・Kinesis Data Firehoseの3つに出力でき、CloudWatch Logs Insightsでリアルタイムクエリ、AthenaでS3上のログをSQLクエリ、OpenSearch ServiceでKibanを使った可視化が可能。拒否トラフィックの特定・セキュリティ分析に使用する",
+        "VPC Flow LogsはS3のみに出力でき、他の出力先はサポートされていない",
+        "VPC Flow LogsはリアルタイムのパケットキャプチャでWiresharkと同等の詳細情報を提供する",
+        "VPC Flow Logsを有効化するとネットワーク性能が著しく低下するため本番環境では非推奨"
+      ],
+      "answers": [0],
+      "explanation": "VPC Flow Logs詳細：■ログレベル：①VPCレベル②サブネットレベル③ENIレベル（最も細かい） ■出力先：①CloudWatch Logs：リアルタイム分析・Metric Filter・Alarm連携②S3：長期保存・Athenaでアドホッククエリ③Kinesis Data Firehose：OpenSearch/S3等への転送 ■ログ形式（デフォルト）：version account-id interface-id srcaddr dstaddr srcport dstport protocol packets bytes start end action log-status ■分析ユースケース：①ACCEPT/REJECT確認：特定IPからの拒否→セキュリティグループ/NACL設定確認②最多通信先：データ漏洩の疑い③ポートスキャン検出：多数ポートへの短時間アクセス ■Athena SQL例：SELECT srcaddr, count(*) FROM flow_logs WHERE action='REJECT' GROUP BY srcaddr ORDER BY 2 DESC ■注意：Flow LogsはパケットキャプチャではなくTCP/UDPフロー単位のメタデータ。",
+      "tags": ["VPC", "Flow Logs", "セキュリティ", "ネットワーク分析"]
+    },
+    {
+      "id": "SOA-022",
+      "category": "Trusted Advisor",
+      "difficulty": 1,
+      "question": "AWS Trusted Advisor が提供するチェックのカテゴリとして正しいものはどれですか？",
+      "choices": [
+        "Trusted Advisorはコスト最適化・パフォーマンス・セキュリティ・耐障害性・サービス制限（サービスクォータ）の5つのカテゴリでベストプラクティスチェックを提供し、一部チェックはBusiness/Enterpriseサポートプラン以上で利用可能",
+        "Trusted Advisorはセキュリティチェックのみを提供するサービス",
+        "Trusted Advisorの全チェックはAWSのBasicサポートプランで無料利用可能",
+        "Trusted Advisorはアプリケーションのパフォーマンステストを自動実行するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Trusted Advisor 詳細：■5つのカテゴリ：①Cost Optimization（コスト最適化）：使用率の低いEC2・未使用EIP・アイドルDBインスタンス②Performance（パフォーマンス）：EC2使用率・EBS IOPS設定・CloudFront TTL③Security（セキュリティ）：S3公開バケット・ルートMFA未設定・セキュリティグループの危険ポート開放④Fault Tolerance（耐障害性）：RDS Multi-AZ未設定・EBSスナップショット未作成・Auto Scaling不使用⑤Service Limits（サービス制限）：VPC数・EC2インスタンス数等のクォータ使用状況 ■プラン別機能：①Developer/Basic：セキュリティ7項目のみ②Business：全チェック（約200項目）③Enterprise：全チェック＋AWS Support API連携 ■EventBridge連携：Trusted Advisor→EventBridge→Lambda→SNS通知（自動修復トリガー） ■ダッシュボード：コンソールで一覧表示・フィルタリング可能。",
+      "tags": ["Trusted Advisor", "ベストプラクティス", "コスト最適化", "セキュリティ"]
+    },
+    {
+      "id": "SOA-023",
+      "category": "ELB",
+      "difficulty": 2,
+      "question": "ALB の Access Logs（アクセスログ）を有効化してセキュリティ分析に使用する設定として正しいものはどれですか？",
+      "choices": [
+        "ALBアクセスログはS3バケットへの書き込み設定で有効化し（バケットポリシーでELBサービスアカウントからのPutObjectを許可）、ログにはクライアントIP・リクエスト・応答コード・バックエンドIPが含まれ、AthenaでSQLクエリ・WAFと連携したIPブロックに活用できる",
+        "ALBアクセスログはCloudWatch Logsにのみ出力され、S3には保存できない",
+        "ALBアクセスログはデフォルトで有効化されており追加設定は不要",
+        "ALBアクセスログのS3バケットはALBと同じリージョンに置く必要がない"
+      ],
+      "answers": [0],
+      "explanation": "ALB Access Logs詳細：■有効化手順：①ALB Attributes→Access logs: enabled②S3バケット名・プレフィックス指定③バケットポリシー：ELBサービスアカウントのPutObject許可が自動設定される ■ログ内容：timestamp elb client:port target:port request_processing_time target_processing_time response_processing_time elb_status_code target_status_code received_bytes sent_bytes request user_agent ssl_cipher ssl_protocol target_group_arn trace_id domain_name chosen_cert_arn matched_rule_priority request_creation_time actions_executed waf_error_reason ■分析ユースケース：①特定IPからの大量アクセス検出②5xxエラーの特定バックエンドへの集中③レスポンスタイム異常の特定 ■Athena連携：CREATE EXTERNAL TABLE構文でS3ログを直接クエリ■コスト：S3ストレージコストのみ（ALB追加料金なし）。",
+      "tags": ["ALB", "Access Logs", "S3", "セキュリティ分析"]
+    },
+    {
+      "id": "SOA-024",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 インスタンスの AMI（Amazon Machine Image）の種類とコピー時の注意点として正しいものはどれですか？",
+      "choices": [
+        "AMIにはAWSが提供するパブリックAMI・マーケットプレイスAMI・自作のプライベートAMIがあり、AMIのリージョン間コピー時は暗号化されたAMIのKMSキーもコピー先リージョンに存在する必要がある。AMIはEBSスナップショットから構成される",
+        "AMIは全てのリージョンで自動的に共有されており、リージョン間コピーは不要",
+        "暗号化されたAMIはコピーまたは共有が完全に禁止されている",
+        "プライベートAMIは同一AWSアカウント内でのみ使用でき、他アカウントへの共有は不可能"
+      ],
+      "answers": [0],
+      "explanation": "AMI詳細：■AMI構成要素：①EBSスナップショット（または Instance Store テンプレート）②ルートデバイスマッピング③起動権限④ブロックデバイスマッピング ■AMI種類：①AWS提供：Amazon Linux 2/2023・Windows Server等②AWS Marketplace：サードパーティ（商用ライセンス込み）③コミュニティ：一般公開④プライベート：自作（デフォルト） ■リージョン間コピー（ec2:CopyImage API）：①コピー先リージョンに新AMI作成②KMS暗号化AMI：コピー時にコピー元のCMKにアクセス権限が必要→コピー先では別CMKで再暗号化可能③AMIコピー時にスナップショットも自動コピー ■AMI共有：①AWS Organizationsアカウント間共有②暗号化AMI共有：KMS CMKも共有（Key PolicyにSharee AccountのARN追加）③暗号化AMIの共有でデフォルトKMS(aws/ebs)は不可（カスタムKMSのみ） ■AMI Deprecation：古いAMIを非推奨マークして検索結果から除外。",
+      "tags": ["EC2", "AMI", "リージョン間コピー", "暗号化"]
+    },
+    {
+      "id": "SOA-025",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch Dashboard をマルチリージョン・マルチアカウントで構築する際の設定として正しいものはどれですか？",
+      "choices": [
+        "クロスアカウントクロスリージョンDashboardを構築するには、監視対象アカウントでCloudWatchのクロスアカウントシェアリングを有効化し、中央監視アカウントにアクセス権限を付与することで1つのDashboardに複数アカウント・リージョンのメトリクスを統合表示できる",
+        "CloudWatch Dashboardは単一アカウント・単一リージョンのみで構成可能",
+        "クロスアカウントメトリクス表示にはVPCピアリングの設定が必要",
+        "マルチリージョンDashboardを使用するにはAWS Organizationsが必須"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch クロスアカウント/クロスリージョン Dashboard詳細：■設定手順：①監視対象アカウント（Sharing Account）：CloudWatch→Settings→Share data with another account→観察アカウントのIDを許可②観察アカウント（Monitoring Account）：Settings→Link shared accounts③ダッシュボード：アカウント/リージョンを切り替えながらウィジェット追加 ■対応ウィジェット：Metrics・Alarms・Logs（全てクロスアカウント表示可能）■Organizations統合：Organizations全体で一括設定（手動ではなく自動共有）■AWS CloudWatch Observability Access Manager（OAM）：①Link/Sink概念でアカウント間接続管理②SinkはMonitoring Accountに作成③LinkはSharing Accountに作成 ■CloudWatch Internet Monitor：マルチリージョンのインターネット接続性監視 ■Cost Explorer：マルチアカウントコストも一元確認（Organizations必要）。",
+      "tags": ["CloudWatch", "Dashboard", "マルチアカウント", "マルチリージョン"]
+    },
+    {
+      "id": "SOA-026",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon RDS の 自動バックアップと手動スナップショットの違いとして正しいものはどれですか？",
+      "choices": [
+        "自動バックアップは1〜35日間の保持期間で毎日自動実行されRDSインスタンス削除時に一緒に削除される（retain設定で保持可能）。手動スナップショットは明示的に作成しインスタンス削除後も保持期間なく永久に保存される",
+        "自動バックアップも手動スナップショットも全く同じ機能で、保持期間のみが異なる",
+        "手動スナップショットはリージョン間コピーができないが、自動バックアップはできる",
+        "自動バックアップはフルバックアップのみで、手動スナップショットが増分バックアップを担当する"
+      ],
+      "answers": [0],
+      "explanation": "RDS バックアップ詳細：■自動バックアップ：①毎日の自動フルバックアップ（バックアップウィンドウ中）②トランザクションログ：5分ごとにS3に保存→特定時点（Point-in-Time Recovery, PITR）への復元が可能③保持期間：1〜35日（0=無効）④削除時：デフォルトで削除（Deletion Protection/Retain設定で回避）⑤保存先：AWSが管理するS3（ユーザーはアクセス不可） ■手動スナップショット：①ユーザーが明示的に作成（またはAPI）②保持期間：なし（明示的に削除するまで永久保存）③インスタンス削除後も残存④リージョン間コピー可能⑤暗号化スナップショット：別アカウントへの共有はKMS CMK設定が必要 ■PITRの注意：バックアップウィンドウ前の5分は復元不可（トランザクションログの開始から）■Aurora：自動バックアップを無効にできない（常時有効）。",
+      "tags": ["RDS", "バックアップ", "スナップショット", "PITR"]
+    },
+    {
+      "id": "SOA-027",
+      "category": "Systems Manager",
+      "difficulty": 2,
+      "question": "AWS Systems Manager Parameter Store の Standard Parameter と Advanced Parameter の違いとして正しいものはどれですか？",
+      "choices": [
+        "Standard Parameterは無料・最大4KBの値サイズ・10000パラメータ上限。Advanced Parameterは有料・最大8KBの値サイズ・100000パラメータ上限・パラメータポリシー（有効期限通知・自動削除等）サポート",
+        "StandardとAdvancedの違いは暗号化の有無のみで、機能は同等",
+        "SecureString型パラメータはStandardでのみ使用でき、AdvancedではSecureStringは使用不可",
+        "Advanced Parameterはほぼ無制限のサイズをサポートし、大きなバイナリデータも保存できる"
+      ],
+      "answers": [0],
+      "explanation": "SSM Parameter Store Standard vs Advanced詳細：■Standard Parameter：①無料②値サイズ：最大4KB③パラメータ数：アカウントあたり10,000④ポリシー（Notification/Expiration）なし ■Advanced Parameter：①有料（$0.05/パラメータ/月）②値サイズ：最大8KB③パラメータ数：最大100,000④Parameter Policies（パラメータポリシー）サポート：Expiration（有効期限切れで通知/削除）・NoChangeNotification（変更なし通知）⑤高スループットが必要な場合に設定可能 ■SecureString：両方で使用可能（KMSで暗号化）■Parameter Storeパスの構造：/prod/db/password など階層的命名■Secrets Managerとの違い：①Parameter Store：汎用設定値・無料枠あり②Secrets Manager：シークレット専用・自動ローテーション（$0.40/シークレット/月）■Lambdaからの取得：IAMロールにssm:GetParametersの権限が必要。",
+      "tags": ["Systems Manager", "Parameter Store", "SecureString", "設定管理"]
+    },
+    {
+      "id": "SOA-028",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC Peering と Transit Gateway の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "VPC Peeringは2つのVPC間の1対1接続（推移的ルーティング不可）でシンプルだが多数のVPCではN×(N-1)/2の接続が必要になり管理が複雑。Transit Gatewayはハブ&スポーク型でN個のVPCを1つのTGWに接続してルーティングを集中管理できる",
+        "VPC PeeringとTransit Gatewayは同じ機能で規模が異なるだけ",
+        "Transit GatewayはVPC間の推移的ルーティング（A→TGW→B→TGW→C）を自動的に許可する",
+        "VPC Peeringはクロスリージョン接続をサポートしないがTransit Gatewayはサポートする"
+      ],
+      "answers": [0],
+      "explanation": "VPC Peering vs Transit Gateway詳細：■VPC Peering：①1対1接続（ピアリング接続1つ）②推移的ルーティング不可（A-B、B-CピアリングがあってもA→Cは不可）③IPアドレス重複不可④コスト：データ転送料金のみ（接続料金なし）⑤クロスリージョン・クロスアカウント可能⑥管理：10VPCで45接続、100VPCで4950接続（非現実的） ■Transit Gateway（TGW）：①ハブ&スポーク：全VPCをTGWに接続→O(N)接続②TGW Route Table：ルーティングを集中制御③推移的ルーティング：TGW経由でA→B→Cは可能（ただしRoute Table設定次第）④クロスリージョン：TGW Peering（リージョン間）⑤VPN/Direct Connect連携：オンプレミスとの接続をTGW経由で集中⑥コスト：接続料金($0.05/h)＋データ処理料金($0.02/GB) ■選択：2〜5VPC小規模→Peering、多数VPC・ハイブリッド接続→TGW。",
+      "tags": ["VPC", "VPC Peering", "Transit Gateway", "ネットワーク設計"]
+    },
+    {
+      "id": "SOA-029",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の Replication（レプリケーション）のCRR（Cross-Region Replication）とSRR（Same-Region Replication）の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "CRRは異なるリージョンへのレプリケーションで災害復旧・レイテンシ低減・コンプライアンス対応（データ地理的分離要件）に使用し、SRRは同一リージョン内のレプリケーションでログ集約・本番→テスト環境同期・データレジデンシー要件対応に使用する",
+        "CRRとSRRは同一の機能でリージョンの指定のみが異なる",
+        "レプリケーションは既存オブジェクトにも遡及適用されるため、有効化前のオブジェクトも自動コピーされる",
+        "暗号化されたS3オブジェクトはレプリケーションできないため、レプリケーション前に暗号化を解除する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "S3 Replication詳細：■前提条件：①バージョニング有効（ソース・デスティネーション両方）②IAMロール：レプリケーション実行用の権限（s3:GetObject/s3:ReplicateObject等）③異なるアカウントへのレプリケーション：デスティネーションバケットポリシーで許可 ■CRR（Cross-Region Replication）ユースケース：①DR（地理的分離）②読み取りレイテンシ低減（ユーザーに近いリージョン）③コンプライアンス（データ所在地要件） ■SRR（Same-Region Replication）ユースケース：①ログ集約（複数バケット→単一バケット）②本番環境→テスト環境の同期③データレジデンシー要件 ■注意点：①既存オブジェクト：デフォルトではレプリケートされない（S3 Batch Replicationで既存オブジェクトをレプリケート）②Deleteマーカー：デフォルトでレプリケートされない（オプションで有効化可能）③連鎖レプリケーション：A→B→Cの連鎖は不可（A→BのレプリケートはC宛に再レプリケートされない）。",
+      "tags": ["S3", "Replication", "CRR", "SRR", "DR"]
+    },
+    {
+      "id": "SOA-030",
+      "category": "Cost Management",
+      "difficulty": 2,
+      "question": "AWS Cost Explorer の機能とコスト最適化への活用方法として正しいものはどれですか？",
+      "choices": [
+        "Cost ExplorerはAWS利用コストを可視化・分析し、サービス別・リージョン別・タグ別・アカウント別のコスト分解、Reserved InstancesとSavings Plansの購入推奨（節約見込み表示）、未使用リソースの特定が可能。APIで自動取得してSlack通知も実現できる",
+        "Cost ExplorerはEC2インスタンスの性能モニタリングのみに特化したサービス",
+        "Cost Explorerの推奨は参考情報のみで、Reserved InstancesはAWSが自動購入する",
+        "Cost Explorerはリアルタイムのコストをミリ秒単位で表示できる"
+      ],
+      "answers": [0],
+      "explanation": "AWS Cost Explorer詳細：■コスト可視化：①時系列グラフ（日次・月次・年次）②フィルタリング：サービス/リージョン/AZ/タグ/アカウント（Organizations）/インスタンスタイプ③グループ化：サービス別・タグ別・アカウント別 ■RI/Savings Plans推奨：①コスト分析から最適なRI/SPを推奨②節約額の試算（例：7.5%〜72%の節約見込み）③1年/3年・全額前払い/一部前払い/前払いなしのオプション ■未使用リソース：①Underutilized EC2（CPU<10%等）②アイドルRDS③未使用Elastic IP ■Cost Anomaly Detection：機械学習で異常なコスト増加を検出→SNS通知 ■Budgets（予算）：月次予算設定→閾値超過でアラート→Cost Explorerより細かい予算管理 ■API：GetCostAndUsage等→PythonスクリプトでSlack通知自動化 ■注意：コストデータは24時間遅れ（リアルタイムではない）。",
+      "tags": ["Cost Explorer", "コスト最適化", "Reserved Instances", "予算管理"]
+    },
+    {
+      "id": "SOA-031",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation の Drift Detection（ドリフト検出）の用途と検出後の対応として正しいものはどれですか？",
+      "choices": [
+        "Drift DetectionはCloudFormationで管理されているスタックのリソースが手動変更（コンソール操作・CLIコマンド等）によってテンプレートの定義と異なる状態（ドリフト）になっていないかを検出し、検出後はスタックの再デプロイで定義された状態に戻す",
+        "Drift DetectionはCloudFormationスタックのコスト最適化提案を提供するサービス",
+        "Drift Detectionが検出した差分は自動的に修正されてテンプレートの状態に戻される",
+        "Drift Detectionは全てのAWSリソースタイプをサポートしているため検出漏れはない"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormation Drift Detection詳細：■ドリフトとは：①CloudFormationテンプレートで定義された期待状態と実際のリソース状態の差分②原因：コンソールやCLIによる手動変更・他ツールによる変更 ■検出方法：①スタック選択→Actions→Detect Drift②個別リソース検出も可能 ■ドリフト状態：DRIFTED/IN_SYNC/NOT_CHECKED/MODIFIED ■検出後の対応：①手動変更をロールバックしてテンプレートと一致させる②テンプレートを実際の状態に更新（意図的な変更の場合）③スタックインポート（Stack Import）で手動リソースをスタック管理下に取り込む ■非サポートリソース：一部のリソースタイプはドリフト検出非サポート（動的に変化するもの等）■Config Rules連携：cloudformation-stack-drift-detection-check ルール→定期的な自動ドリフト検出■プロセス：ドリフトは検出のみ（自動修正なし）→手動対応が必要。",
+      "tags": ["CloudFormation", "Drift Detection", "構成管理", "IaC"]
+    },
+    {
+      "id": "SOA-032",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 の Hibernate（ハイバネーション）機能の仕組みと制限として正しいものはどれですか？",
+      "choices": [
+        "Hibernationはインスタンスのメモリ（RAM）の内容をEBSルートボリュームに保存して停止し、再起動時にメモリの内容を復元することで通常の再起動より高速に起動できる。RAM最大150GB・サポートされたインスタンスタイプのみ・EBSルートボリュームが暗号化されている必要がある",
+        "Hibernationは全てのEC2インスタンスタイプでサポートされており制限はない",
+        "HibernationはEBSボリュームではなくS3にメモリの内容を保存する",
+        "Hibernation中はEBSの課金は発生しないが、Elastic IPの課金は継続する"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Hibernation詳細：■仕組み：①停止（Hibernate）：RAM→EBSルートボリュームに保存→インスタンス停止②起動（Start）：EBSからRAMに復元→OSが再起動せずプロセスが継続 ■メリット：①プロセスが停止前の状態を維持②起動時間が速い（RAMの初期化不要）③長時間プロセスの中断・再開 ■制限・要件：①RAM：最大150GB②ルートEBSボリューム：暗号化が必須（RAMデータを安全に保存）③ルートボリュームサイズ：RAM以上が必要④Hibernate期間：最大60日⑤サポートインスタンス：C3/C4/C5/I3/M3/M4/R3/R4/T2/T3等（制限あり）⑥スポットインスタンス：Hibernate対応（中断時にHibernate可能）⑦専用テナンシー：非対応 ■課金：Hibernate中はEBS（保存用）とElastic IPの課金のみ（EC2インスタンス課金なし）■On-Demand/Reservedのみ（Spot除く）。",
+      "tags": ["EC2", "Hibernate", "起動時間", "EBS"]
+    },
+    {
+      "id": "SOA-033",
+      "category": "WAF",
+      "difficulty": 2,
+      "question": "AWS WAF の Web ACL ルールの評価順序とデフォルトアクションとして正しいものはどれですか？",
+      "choices": [
+        "WAF Web ACLのルールは優先順位（Priority番号）の昇順に評価され、最初にマッチしたルールのアクション（Allow/Block/Count/CAPTCHA/Challenge）が適用される。全ルールにマッチしない場合はデフォルトアクション（Allow/Block）が適用される",
+        "WAFルールは全て同時に評価されて最もセキュリティが厳しいルールが適用される",
+        "デフォルトアクションはAllow固定で変更できない",
+        "WAFルールは1つのWeb ACLに最大5つまでしか設定できない"
+      ],
+      "answers": [0],
+      "explanation": "WAF Web ACL評価詳細：■評価フロー：①ルールを優先順位（Priority）の低い数字から順に評価②最初にマッチしたルールのアクションを適用して評価終了③全ルールにマッチしなかった場合：Default ActionのAllow/Blockを適用 ■アクション種類：①Allow：リクエストを通過させる②Block：リクエストを拒否（403）③Count：カウントのみ（テスト用・実際はブロックしない）④CAPTCHA：チャレンジ表示⑤Challenge：JavaScriptチャレンジ ■ルールタイプ：①単一ルール（IPセット・文字列マッチ・正規表現等）②Rule Group（複数ルールをグループ化）③Managed Rule Group：AWSが提供するマネージドルール（Core rule set/Known bad inputs等） ■優先順位：数字が小さいほど先に評価（0が最初）■一般設定：①Managed Rules→Count mode（テスト後Block）②Custom IPブロックリスト③地理的ブロック（Geo Match） ■制限：ウェブACLあたり最大1500 WCU（Web ACL Capacity Unit）。",
+      "tags": ["WAF", "Web ACL", "セキュリティ", "ルール評価"]
+    },
+    {
+      "id": "SOA-034",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 Image Builder を使用してゴールデンAMIを自動作成・管理するパイプラインの構成として正しいものはどれですか？",
+      "choices": [
+        "EC2 Image Builderでパイプラインを定義（ベースイメージ・コンポーネント・テスト・配布設定）し、自動スケジュールまたは手動でAMIを作成。OSパッチ・セキュリティ更新・ソフトウェアインストールを自動化し、作成されたAMIを複数リージョン・アカウントに配布できる",
+        "EC2 Image BuilderはDockerイメージのみをビルドするサービスでAMIは作成できない",
+        "Image Builderで作成したAMIは同一リージョンでのみ使用でき、クロスリージョン配布は不可能",
+        "Image Builderは追加コストが高く、AMIの手動作成の方が常にコスト効率が良い"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Image Builder詳細：■コンポーネント（Building Blocks）：①Image Recipe/Container Recipe（コンポーネントの組み合わせ）②Components：ビルドコンポーネント（ソフトウェアインストール）・テストコンポーネント（動作確認） ■パイプライン設定：①Source Image：AWS Marketplaceまたは自作AMI②Build Components：yumアップデート・アプリインストール等のYAMLスクリプト③Test Components：インストール確認・機能テスト④Distribution Settings：コピー先リージョン・アカウント・AMIタグ ■自動化：①週次/月次スケジュール→最新パッチ適用AMI自動作成②SNS通知：ビルド成功/失敗③EventBridge：ビルドイベントで後続処理トリガー ■ゴールデンAMI戦略：①セキュリティ基準を満たしたベースAMIをImage Builderで維持②Auto Scaling Groupが常に最新のゴールデンAMIを使用③Inspector連携：脆弱性スキャンをパイプラインに組み込み ■コスト：Image Builder自体は無料（EC2・EBS・S3等の使用料は発生）。",
+      "tags": ["EC2 Image Builder", "AMI", "ゴールデンAMI", "パイプライン"]
+    },
+    {
+      "id": "SOA-035",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch Container Insights を使用してECS/EKSのコンテナメトリクスを収集する設定として正しいものはどれですか？",
+      "choices": [
+        "Container InsightsはECS/EKS/EC2のコンテナメトリクス（CPU・メモリ・ネットワーク・ディスクI/O）をCloudWatchに自動収集し、クラスター・サービス・タスク・コンテナ単位の詳細な監視とダッシュボードを提供する。EKSではFluentBitによるログ収集も統合される",
+        "Container InsightsはEC2インスタンス上で動作するコンテナのみをサポートし、FargateのECSタスクには使用できない",
+        "Container InsightsはAWS CloudTrailのAPIログをコンテナメトリクスとして表示するサービス",
+        "Container Insightsで収集したメトリクスはCloudWatchではなく専用のContainer Insightsコンソールのみで表示される"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Container Insights詳細：■ECS対応：①EC2 Launch Type：ECSエージェントが自動収集②Fargate：CloudWatch Agentをサイドカーコンテナとして追加 ■EKS対応：①Kubernetes APIとの統合②CloudWatch Agentを DaemonSetとしてデプロイ（または Managed Nodeのアドオン）③FluentBit DaemonSet：コンテナログを CloudWatch Logsへ転送 ■収集メトリクス：①Cluster/Service/Task/Containerレベルの CPU/メモリ②ネットワーク送受信バイト③ディスクI/O読み書き④Pod数・タスク数 ■Container Insightsダッシュボード：CloudWatchコンソール→Container Insights→ECS/EKSクラスター可視化 ■Logs Insights連携：コンテナログをクエリしてパフォーマンス問題の根本原因分析 ■コスト：CloudWatch Metrics/Logs/Dashboard料金（Container Insights自体の追加料金なし）■AWS Distro for OpenTelemetry：Container Insightsとの統合で分散トレースも追加可能。",
+      "tags": ["CloudWatch", "Container Insights", "ECS", "EKS"]
+    },
+    {
+      "id": "SOA-036",
+      "category": "GuardDuty",
+      "difficulty": 2,
+      "question": "Amazon GuardDuty が検出できる脅威の種類として正しいものはどれですか？",
+      "choices": [
+        "GuardDutyはVPC Flow Logs・CloudTrail・DNS Logsを分析して、マルウェア感染の可能性のあるEC2インスタンス・IAM認証情報の不正使用・既知の悪意あるIPとの通信・暗号通貨マイニング等の脅威を検出する",
+        "GuardDutyはアプリケーションレベルのSQLインジェクションやXSSのみを検出するサービス",
+        "GuardDutyはリアルタイムのネットワークパケットキャプチャを行い全通信内容を記録する",
+        "GuardDutyを有効化するにはVPC Flow LogsとCloudTrailを事前に手動で有効化する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "GuardDuty 詳細：■データソース：①VPC Flow Logs（ネットワーク通信）②CloudTrail Management Events（API操作）③CloudTrail S3 Data Events（S3へのアクセス）④Route53 DNS Logs（DNS照会）⑤EKS Audit Logs・Runtime Monitoring（オプション）⑥Lambda（オプション） ■検出カテゴリ：①Backdoor：C&Cサーバーへの通信②CryptoCurrency：マイニングプール通信③Trojan：マルウェアの動作④UnauthorizedAccess：通常と異なる国・IPからのログイン⑤Recon：ポートスキャン・ブルートフォース⑥Persistence：不正なIAMユーザー作成・ルールの変更 ■重要：GuardDutyのデータソース（VPC Flow Logs等）を事前に有効化する必要はない（GuardDutyが独立してデータを取得） ■対応：①EventBridge→Lambda（自動対応）②Security Hubに知見を送信③Suppression Rules（誤検知の除外） ■Organizations対応：管理アカウントから全アカウントのGuardDutyを一元管理。",
+      "tags": ["GuardDuty", "脅威検出", "セキュリティ", "マルウェア"]
+    },
+    {
+      "id": "SOA-037",
+      "category": "Auto Scaling",
+      "difficulty": 2,
+      "question": "Auto Scaling のインスタンス終了ポリシー（Termination Policy）のデフォルト動作として正しいものはどれですか？",
+      "choices": [
+        "デフォルト終了ポリシーは①最も多くのインスタンスを持つAZを選択→②その中で最も古いLaunch Configuration/Templateのインスタンス→③同じ世代なら課金サイクルが最も近いインスタンスの順で終了対象を選択する",
+        "デフォルト終了ポリシーは常にランダムなインスタンスを選択する",
+        "デフォルト終了ポリシーは最も新しいインスタンス（最後に起動されたもの）を最初に終了する",
+        "デフォルト終了ポリシーはCPU使用率が最も低いインスタンスを選択する"
+      ],
+      "answers": [0],
+      "explanation": "Auto Scaling Termination Policy詳細：■デフォルト終了ポリシーの評価順序：①AZ間でインスタンス数が不均等な場合：最多インスタンスのAZを選択②同じ数の場合：最古のLaunch Configuration/Launchテンプレートを使用しているインスタンスを選択③さらに同じ場合：課金時間（次の完全な1時間）に最も近いインスタンスを選択 ■カスタム終了ポリシー：①OldestInstance：最古②NewestInstance：最新③OldestLaunchConfiguration：古いLC④ClosestToNextInstanceHour：課金サイクル最近⑤AllocationStrategy：スポット・ODのコスト最適化⑥OldestLaunchTemplate：古いLT ■Instance Protection（インスタンス保護）：特定インスタンスをスケールイン終了から保護（データ処理中等）■Scale-in保護：Auto Scaling Group設定→Instance Protection→ProtectFromScaleIn■Lifecycle Hook（終了前処理）：terminatingライフサイクルフックで終了前にバックアップ・接続解除等を実行。",
+      "tags": ["Auto Scaling", "Termination Policy", "スケールイン", "EC2"]
+    },
+    {
+      "id": "SOA-038",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "CloudWatch Logs Insights を使用してLambdaの応答時間問題を診断するクエリとして正しいものはどれですか？",
+      "choices": [
+        "fields @timestamp, @duration, @billedDuration, @memorySize, @maxMemoryUsed | filter @type = 'REPORT' | sort @duration desc | limit 20のようなクエリでLambdaのREPORTログから実行時間が長い上位20件を特定し、メモリ使用率も併せて確認できる",
+        "CloudWatch Logs InsightsはJSON形式のログのみをサポートし、Lambdaのプレーンテキストログには使用できない",
+        "Logs InsightsクエリはリアルタイムではなくS3に出力されたログファイルのみに対して実行できる",
+        "Logs InsightsはSQLと同じ構文（SELECT/FROM/WHERE）を使用する"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Logs Insights詳細：■Lambda REPORTログ：各実行後に自動出力（REPORT RequestId: xxx Duration: 1234.56 ms Billed Duration: 1235 ms Memory Size: 512 MB Max Memory Used: 128 MB Init Duration: 456.78 ms）■Logs Insightsクエリ構文：①fields：表示フィールド指定②filter：条件フィルタ（@type = 'REPORT'等）③stats：集計（avg、count、sum等）④sort：ソート⑤limit：件数制限 ■有用なLambdaクエリ：①コールドスタート検出：filter @type='REPORT' | filter @initDuration > 0 | stats avg(@initDuration)②エラー分析：filter @message like /ERROR/③メモリ不足：filter @maxMemoryUsed / @memorySize > 0.9 ■その他のクエリ例：①API Gateway：filter status >= 500 | stats count() by bin(5m)②ECS：filter container_name = 'myapp' | stats count(*) by level ■コスト：スキャンしたデータ量に応じて課金（$0.005/GB）。",
+      "tags": ["CloudWatch Logs", "Logs Insights", "Lambda", "パフォーマンス診断"]
+    },
+    {
+      "id": "SOA-039",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 の MFA Delete（MFA削除）機能の設定と用途として正しいものはどれですか？",
+      "choices": [
+        "MFA Deleteを有効化するとバージョニングが有効なS3バケットでオブジェクトの完全削除とバージョニング設定の変更にMFA認証が必須となり、ランサムウェアや誤操作によるデータ完全消去を防止できる。設定にはルートアカウントのMFA認証が必要",
+        "MFA DeleteはS3バケット全体の削除を防止するサービスで、オブジェクトの削除とは無関係",
+        "MFA DeleteはIAMユーザーであれば誰でも有効化できる",
+        "MFA Deleteを有効にするとS3へのPUT操作にもMFA認証が必要になる"
+      ],
+      "answers": [0],
+      "explanation": "S3 MFA Delete詳細：■有効化条件：①バージョニングが有効なバケット②ルートアカウントのMFA認証が必要（IAMユーザーでは有効化不可）③AWS CLI使用（コンソールからは設定不可）④コマンド：aws s3api put-bucket-versioning --bucket my-bucket --versioning-configuration Status=Enabled,MFADelete=Enabled --mfa 'arn:aws:iam::123:mfa/root-account-mfa-device XXXXXX' ■MFA Deleteが必要な操作：①特定バージョンの完全削除（VersionIdを指定した削除）②バージョニングの無効化 ■MFA Deleteが不要な操作：①Delete Marker作成（バージョニングあり時のPUT/DELETE）②新しいバージョンのアップロード ■保護範囲：ランサムウェア・内部不正・誤操作によるデータ完全消去防止 ■S3 Object Lock（Vault Lock）との違い：①MFA Delete：MFA認証で削除防止②Object Lock：WORM（Write Once Read Many）ポリシーで削除・上書き不可。",
+      "tags": ["S3", "MFA Delete", "データ保護", "バージョニング"]
+    },
+    {
+      "id": "SOA-040",
+      "category": "Billing",
+      "difficulty": 1,
+      "question": "AWS Cost and Usage Report（CUR）の特徴と活用方法として正しいものはどれですか？",
+      "choices": [
+        "CURは最も詳細なAWSコスト・使用量データをCSV形式でS3に提供し（時間単位・リソース単位）、AthenaやQuickSightと連携して詳細なコスト分析・配賦レポートを作成できる。Cost Explorerより粒度の高いデータが含まれる",
+        "CURはリアルタイムのコストを秒単位で追跡し即時アラートを送信するサービス",
+        "CURのデータはAWS Management ConsoleのBillingページでのみ確認でき、ダウンロードはできない",
+        "CURは全AWSアカウントで自動的に有効化されており追加設定は不要"
+      ],
+      "answers": [0],
+      "explanation": "AWS Cost and Usage Report（CUR）詳細：■特徴：①最も詳細なコストデータ（リソースID・使用量・料金・タグ等）②S3バケットへのCSV/Parquet形式での定期保存（毎時・毎日・毎月）③データ粒度：時間単位（最細かい）または月単位 ■活用方法：①Athena：S3上のCURをSQLクエリ（コスト分析・配賦計算）②QuickSight：可視化ダッシュボード③Cost Intelligence Dashboard：AWSが提供する分析テンプレート ■含まれる情報：①サービス・リソースID別コスト②On-Demand/Reserved/Savings Plans/Spot料金③タグによるコスト配賦④Support料金 ■設定：①Billing and Cost Management→Cost & Usage Reports②S3バケット名・プレフィックス・時間粒度・フォーマット設定③Athena統合：自動的にCrawlerとGlueデータカタログ設定 ■Cost Explorerとの違い：①CUR：生データ・最詳細・バッチ分析向け②Cost Explorer：UI・ドリルダウン・RI推奨・即時確認。",
+      "tags": ["CUR", "コスト管理", "Athena", "QuickSight"]
+    }
+  ]
+}
