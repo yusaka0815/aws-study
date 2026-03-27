@@ -176,6 +176,11 @@ body {
   color: var(--text);
 }
 
+.exam-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+}
+
 .exam-card:active {
   transform: scale(0.98);
   background: var(--bg-card-hover);

@@ -47,6 +47,18 @@ test.describe('起動・試験選択画面', () => {
     await expect(cards.nth(1)).toContainText('MLA');
   });
 
+  test('exam-cardにhoverスタイルが定義されている', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await page.locator('.exam-card').first().hover();
+    const borderColor = await page.evaluate(() => {
+      const card = document.querySelector('.exam-card');
+      return getComputedStyle(card).borderColor;
+    });
+    // ホバー時に border-color が変化していること（デフォルトの --border 色とは異なる）
+    expect(borderColor).not.toBe('rgb(51, 65, 85)'); // --border: #334155
+  });
+
   test('試験名が正しく表示される', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.exam-card');
