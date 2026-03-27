@@ -13,12 +13,13 @@ import { test, expect } from '@playwright/test';
 /** 試験選択画面でSAAを選んで問題画面に移動 */
 async function selectExam(page, examCode = 'SAA') {
   await page.goto('/');
-  await page.waitForLoadState('networkidle');
+  // exam-card が描画されるまで待機（networkidle より信頼性が高い）
+  await page.waitForSelector('.exam-card');
   await page.locator('.exam-card').filter({ hasText: examCode }).click();
   // 問題が読み込まれるまで待機
-  await page.waitForSelector('#question-text:not(:empty)');
   await page.waitForFunction(
     () => document.getElementById('question-text')?.textContent !== '問題を読み込んでいます...'
+      && document.getElementById('question-text')?.textContent !== ''
   );
 }
 
@@ -39,7 +40,7 @@ test.describe('起動・試験選択画面', () => {
 
   test('SAA・MLA の2試験が表示される', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.exam-card');
     const cards = page.locator('.exam-card');
     await expect(cards).toHaveCount(2);
     await expect(cards.nth(0)).toContainText('SAA');
@@ -48,7 +49,7 @@ test.describe('起動・試験選択画面', () => {
 
   test('試験名が正しく表示される', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.exam-card');
     await expect(page.locator('.exam-card').nth(0)).toContainText('Solutions Architect');
     await expect(page.locator('.exam-card').nth(1)).toContainText('Machine Learning');
   });
@@ -262,7 +263,7 @@ test.describe('設定画面', () => {
 
   test('試験選択画面の⚙️から設定を開いて戻ると選択画面に戻る', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.exam-card');
     await page.locator('#btn-settings-from-select').click();
     await expect(page.locator('#screen-settings')).toBeVisible();
     await page.locator('#settings-back-btn').click();
@@ -286,7 +287,7 @@ test.describe('データ永続性（localStorage）', () => {
     }
     // ページリロード
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.exam-card');
     // 試験を再選択（localStorageは保持されているはず）
     await page.locator('.exam-card').filter({ hasText: 'SAA' }).click();
     await page.waitForFunction(
