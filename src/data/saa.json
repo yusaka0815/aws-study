@@ -1052,6 +1052,606 @@
       "answers": [0],
       "explanation": "AWS Database Migration Service（DMS）と SCT：SCT（Schema Conversion Tool）：①異種DBエンジン間のスキーマ・ビュー・ストアドプロシージャの自動変換②例：Oracle→PostgreSQL、SQL Server→Aurora MySQL③自動変換できない部分は手動変更の指摘。DMS（Database Migration Service）：①ソースDBのデータをターゲットDBへ移行②同種DB（MySQL→Amazon Aurora MySQL）でも異種DB（Oracle→Aurora PostgreSQL）でも使用可能③フルロード（Full Load）：既存データ移行④CDC（Change Data Capture）：継続的なレプリケーション（本番カットオーバーまでデータ同期）⑤ダウンタイム最小化。異種DB移行はSCTでスキーマ変換→DMSでデータ移行の組み合わせ。",
       "tags": ["移行", "DMS", "SCT", "データベース移行"]
+    },
+    {
+      "id": "SAA-071",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "NATゲートウェイと NATインスタンスの違いとして正しいものはどれですか？",
+      "choices": [
+        "NATゲートウェイ：AWSフルマネージド・高可用性（マルチAZ推奨）・高帯域幅・メンテナンス不要、NATインスタンス：EC2インスタンスで実装・管理が必要・安価だがスケーリングやフェイルオーバーを手動設定",
+        "NATインスタンスはAWSマネージドでNATゲートウェイはユーザー管理",
+        "NATゲートウェイはIPv6のみ対応しNATインスタンスはIPv4のみ",
+        "両者は同じ機能でコストのみ異なる"
+      ],
+      "answers": [0],
+      "explanation": "NAT Gateway vs NAT Instance：NAT Gateway：①フルマネージド（AWSが管理）②高可用性（AZ内で冗長化・ただし複数AZにはAZ毎にNAT GWが必要）③最大45Gbpsの帯域幅（自動スケーリング）④Elastic IPが必要⑤セキュリティグループ不要。NAT Instance（EC2ベース）：①ユーザーが管理（パッチ適用・監視・フェイルオーバースクリプト）②帯域幅はインスタンスタイプに依存③セキュリティグループ設定可能④「ソース/宛先チェック」を無効化が必要⑤安価だが管理負荷大。新規構築はNAT Gatewayを推奨します。",
+      "tags": ["VPC", "NAT Gateway", "NAT Instance", "ネットワーク"]
+    },
+    {
+      "id": "SAA-072",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "AWS PrivateLink の説明として正しいものはどれですか？",
+      "choices": [
+        "VPCエンドポイントサービス（Interface Endpoint）を通じて、SaaSや自社サービスをプライベートに他のVPCに公開する仕組み。インターネットを経由せずAWSネットワーク内で安全に通信",
+        "PrivateLinkはVPC間の直接接続でVPC Peeringと同じ機能",
+        "AWS専用線接続のブランド名でDirect Connectの別称",
+        "オンプレミスからAWSへのプライベートネットワーク接続サービスでVPNの代替"
+      ],
+      "answers": [0],
+      "explanation": "AWS PrivateLinkはサービスの安全な公開と消費のための技術です。仕組み：①サービスプロバイダー（Serviceを公開する側）：VPCエンドポイントサービスを作成してNLBの後ろにサービスを配置②サービスコンシューマー（使用する側）：インターフェイスエンドポイントをVPCに作成してプロバイダーのサービスに接続③通信はAWS内部ネットワーク（インターネット経由なし）④VPCのCIDR重複も問題なし（VPC Peeringと違い）。ユースケース：SaaSプロバイダーがAWS Marketplace経由でサービス提供、企業内の別アカウントVPCへサービス公開。",
+      "tags": ["VPC", "PrivateLink", "エンドポイントサービス", "セキュリティ"]
+    },
+    {
+      "id": "SAA-073",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2インスタンスのユーザーデータ（User Data）とインスタンスメタデータ（Instance Metadata）の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "ユーザーデータ：インスタンス起動時に実行するシェルスクリプト（ソフトウェアインストール・設定等）、インスタンスメタデータ：実行中のインスタンスから自身の情報（インスタンスID・IPアドレス・IAMロールの一時認証情報等）を取得するHTTP API（169.254.169.254）",
+        "ユーザーデータはインスタンスID等の情報取得用、メタデータはシェルスクリプト実行用",
+        "どちらもインスタンス起動前に設定する必要があり変更は不可",
+        "インスタンスメタデータへのアクセスはIAM権限が必要でユーザーデータは誰でもアクセス可能"
+      ],
+      "answers": [0],
+      "explanation": "EC2の重要な設定機能：ユーザーデータ（User Data）：①起動時に1度だけ実行（デフォルト）②シェルスクリプト（Bash）またはcloud-init形式③Nginxインストール・アプリデプロイ・設定ファイル生成等のブートストラップに使用④base64エンコードで最大16KB。インスタンスメタデータ（IMDS）：①実行中インスタンスから169.254.169.254（IPv4）または[fd00:ec2::254]（IPv6）へHTTPリクエスト②インスタンスID・パブリックIP・セキュリティグループ・IAM一時認証情報等を取得③IMDSv2（セッション指向）：Token取得→使用の2ステップでSSRF攻撃対策。",
+      "tags": ["EC2", "ユーザーデータ", "メタデータ", "IMDS"]
+    },
+    {
+      "id": "SAA-074",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "Amazon S3 Select と Amazon Athena の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "S3 Select：単一のS3オブジェクト内のデータをSQLでフィルタリングして必要な部分だけ取得（アプリケーションからの直接クエリ・低レイテンシ・単純フィルタ向け）。Athena：複数のS3オブジェクト・テーブル結合・集計等の複雑な分析クエリ向け",
+        "S3 SelectはAWS GlueからのみAPIが利用でき、Athenaは全サービスから利用可能",
+        "S3 SelectとAthenaは全く同じ機能でコストのみが異なる",
+        "S3 SelectはSQL以外のクエリ言語対応でAthenaは標準SQLのみ対応"
+      ],
+      "answers": [0],
+      "explanation": "S3 Select vs Athena：S3 Select：①単一オブジェクト内をCSV/JSON/Parquet形式でSQLフィルタリング（SELECT * FROM S3Object WHERE column > 10）②オブジェクト全体を転送せず一致データだけ返すのでネットワーク転送を最大98%削減③アプリケーションが個別ファイルにクエリする場合に使用④低レイテンシ・単純フィルタ向け。Athena：①S3上の複数ファイル・複数テーブルを結合・集計・ウィンドウ関数等の複雑なSQL②データカタログ（Glue）との統合③ビッグデータ分析・BI用途④スキャンデータ量課金。データ量と複雑度でどちらを選ぶか判断します。",
+      "tags": ["S3", "S3 Select", "Athena", "分析"]
+    },
+    {
+      "id": "SAA-075",
+      "category": "IAM",
+      "difficulty": 2,
+      "question": "IAMの「権限の境界（Permissions Boundary）」の用途として正しいものはどれですか？",
+      "choices": [
+        "IAMエンティティ（ユーザー/ロール）が持てる最大の権限を制限する上限ポリシー。開発者に限定的なIAM権限委任を安全に行うために使用",
+        "VPCのセキュリティグループで設定する通信の境界線",
+        "AWSアカウントの請求上限を設定してコスト超過を防ぐ機能",
+        "マルチアカウント環境でアカウント間の通信を制限するネットワーク境界"
+      ],
+      "answers": [0],
+      "explanation": "Permissions Boundary（権限の境界）：IAMユーザーまたはロールに設定できる最大権限を定義する管理ポリシーです。動作：実際の権限=アイデンティティポリシー（Identity-based Policy）∩ 権限の境界（Permissions Boundary）の積集合。ユースケース：開発者に「IAMロール作成権限」を委任するが、開発者が自分のロールに不当に高い権限を付与しないよう制限。例：開発者にIAMRoleCreate権限を与えつつ、権限の境界で「作成できるロールはS3ReadOnly相当まで」と制限。SCPとの違い：SCPはアカウントレベル、Permissions BoundaryはIAMエンティティレベルの制限。",
+      "tags": ["IAM", "Permissions Boundary", "権限委任", "セキュリティ"]
+    },
+    {
+      "id": "SAA-076",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon Neptune の主なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "グラフデータベースでソーシャルネットワーク・不正検出・知識グラフ・レコメンデーションエンジン等のノードとエッジの関係性を持つデータを効率的に処理",
+        "Neptunは地理空間データ（地図・GPS座標）に特化したPostGIS互換のデータベース",
+        "NeptuneはS3に保存された非構造化データをグラフとして可視化するBIツール",
+        "NeptuneはリレーショナルデータベースでOracle互換のSQL方言をサポートする"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Neptuneはフルマネージドのグラフデータベースサービスです。対応グラフモデル：①プロパティグラフ（TinkerPop Gremlin）②RDF/SPARQL（W3C標準）。ユースケース：①ソーシャルネットワーク分析（友人の友人の関係・コミュニティ検出）②不正検出（取引グラフ分析で不審なパターン検出）③レコメンデーションエンジン（購買行動グラフ）④ナレッジグラフ（エンティティ間の複雑な関係）⑤ネットワーク・ITインフラ管理（依存関係マッピング）。特徴：3AZに6コピーレプリケーション・最大15リードレプリカ・高可用性。",
+      "tags": ["データベース", "Neptune", "グラフDB", "ソーシャルネットワーク"]
+    },
+    {
+      "id": "SAA-077",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon DocumentDB（MongoDB互換）と Amazon DynamoDB の選択基準として正しいものはどれですか？",
+      "choices": [
+        "DocumentDB：MongoDB互換・JSON/BSON文書モデル・複雑なクエリ・集計・インデックスが豊富。DynamoDB：キーバリュー/ドキュメント・サーバーレス・ミリ秒のレイテンシ・無制限スケール・マネージドが完全",
+        "DocumentDBはリレーショナルDB、DynamoDBはグラフDBである",
+        "DynamoDBはMongoDBと完全互換でDocumentDBは独自仕様",
+        "DocumentDBは分析用途、DynamoDBはオンライントランザクション専用"
+      ],
+      "answers": [0],
+      "explanation": "DocumentDB vs DynamoDB：Amazon DocumentDB（MongoDB互換）：①MongoDBのワークロードを最小限のコード変更で移行②JSON/BSON形式の柔軟なドキュメントモデル③リッチなクエリ・複合インデックス・集計パイプライン④クラスター形式（読み取りレプリカ最大15台）。Amazon DynamoDB：①完全サーバーレス・管理不要②キーバリュー+シンプルなドキュメント③ミリ秒以下のレイテンシ（DAX使用でマイクロ秒）④自動スケーリング（無制限）⑤グローバルテーブル（マルチリージョン/マルチマスター）⑥シンプルなアクセスパターンの大規模システム向け。",
+      "tags": ["データベース", "DocumentDB", "DynamoDB", "NoSQL"]
+    },
+    {
+      "id": "SAA-078",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon ElastiCache for Redisの「クラスターモード無効」と「クラスターモード有効」の違いとして正しいものはどれですか？",
+      "choices": [
+        "クラスターモード無効：1つのシャード（プライマリ＋最大5レプリカ）で読み取りスケールアウト、クラスターモード有効：最大500シャードで書き込みスケールアウト（大規模データ向け）",
+        "クラスターモード有効は単一AZのみ、無効はマルチAZで利用可能",
+        "クラスターモード有効はデータの永続性を提供せず、無効はAOF永続化のみ",
+        "クラスターモード無効は無料でクラスターモード有効は追加料金"
+      ],
+      "answers": [0],
+      "explanation": "ElastiCache for Redisの2つのモード：クラスターモード無効（Cluster Mode Disabled）：①単一シャード（1つのプライマリ＋最大5リードレプリカ）②全データが単一ノードに格納③読み取りスケールアウトのみ（書き込みはプライマリのみ）④最大250ノード（250GiB）⑤シンプル・フェイルオーバー容易。クラスターモード有効（Cluster Mode Enabled）：①最大500シャードに分散（データをスロットに分割）②書き込みスケールアウト可能③各シャードにプライマリ＋レプリカ④大規模データ・高書き込みスループット向け⑤クロスシャードトランザクション非対応。",
+      "tags": ["ElastiCache", "Redis", "クラスター", "シャーディング"]
+    },
+    {
+      "id": "SAA-079",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "AWS Glue と Amazon EMR の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Glue：サーバーレスETL（データ変換・クローリング・データカタログ管理）、EMR：Hadoop/Spark等のビッグデータフレームワーク実行環境（カスタマイズ性高・大規模）",
+        "Glueはリアルタイムストリーミング処理専用でEMRはバッチ処理専用",
+        "EMRはAWSが完全管理するサーバーレスサービスでGlueはEC2クラスターを手動管理",
+        "GlueはS3のみ対応でEMRはRDS・Redshift専用"
+      ],
+      "answers": [0],
+      "explanation": "Glue vs EMR：AWS Glue（サーバーレスETL）：①データクローラー：S3・RDS・DynamoDBからスキーマを自動検出してデータカタログ（AWSサービス共通メタデータストア）に登録②ETLジョブ：Spark/Python/ScalaでデータをS3・Redshift等に変換ロード③サーバーレス：クラスター管理不要④Glue DataBrew：ノーコードでデータ品質チェック・変換。Amazon EMR：①EC2またはEKS/Serverless上でApache Hadoop・Spark・Hive・Presto等を実行②フレームワークの詳細設定・チューニングが可能③大規模（ペタバイト）データ処理④カスタムライブラリ・設定が必要な場合。",
+      "tags": ["分析", "Glue", "EMR", "ETL"]
+    },
+    {
+      "id": "SAA-080",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "Amazon Kinesis Data Firehose の主な特徴として正しいものはどれですか？",
+      "choices": [
+        "ストリーミングデータをS3・Redshift・OpenSearch・Splunk等のターゲットへリアルタイムに配信するフルマネージドETLサービス（バッファリング・圧縮・暗号化・Lambda変換対応）",
+        "Kinesis Data Streamsとの主な違いはFirehoseがリアルタイムでStreamsがバッチ処理",
+        "FirehoseはSQSからメッセージを取得してRDSに格納するデータパイプライン",
+        "Firehoseはデータを永続的に保存するストリームストレージで複数コンシューマーが任意タイミングで読み取り可能"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Kinesis Data Firehose（現：Amazon Data Firehose）の特徴：①フルマネージド（シャード管理不要）②バッファリング：サイズ（1MB〜128MB）または時間（60秒〜900秒）でバッチ書き込み③Lambda変換：配信前にLambdaでデータ変換（フォーマット変換・フィルタリング）④ターゲット：Amazon S3・Redshift・OpenSearch・Splunk・MongoDB・HTTP Endpoint等⑤自動スケーリング⑥元データをS3にバックアップ可能。Kinesis Data Streamsとの違い：Streamsはカスタムコンシューマーが自分でデータを読み取る（低レイテンシ・リプレイ可能）、Firehoseはマネージドで配信先が決まっている。",
+      "tags": ["Kinesis", "Firehose", "ETL", "ストリーミング"]
+    },
+    {
+      "id": "SAA-081",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Certificate Manager（ACM）のパブリック証明書についての説明として正しいものはどれですか？",
+      "choices": [
+        "ACMが発行したパブリックSSL/TLS証明書はALB・CloudFront・API Gateway等のAWSサービスで無料で使用でき、自動更新が行われる（EC2上での直接インストールは不可）",
+        "ACMの証明書は有料でLet's Encrypt等より高コスト",
+        "ACM証明書はEC2インスタンスに直接インストールして使用する",
+        "ACMの証明書はすべてのAWSリージョンで利用可能だがCloudFrontに使用する場合はus-east-1リージョンで発行する必要はない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Certificate Manager（ACM）の特徴：①パブリック証明書は無料（Private CAは有料）②自動更新（有効期限60日前から自動更新）③使用先：ALB・NLB・CloudFront・API Gateway・Elastic Beanstalk等のAWSマネージドサービス④EC2インスタンスへの直接インストール不可（プライベート証明書はExport可能）⑤重要：CloudFrontで使用する証明書はus-east-1（バージニア北部）で発行・インポートする必要がある（CloudFrontはグローバルサービスのためus-east-1のACM証明書を使用）。ドメイン検証（DV）証明書のみ発行可能（OV/EV証明書はインポートが必要）。",
+      "tags": ["セキュリティ", "ACM", "SSL/TLS", "証明書"]
+    },
+    {
+      "id": "SAA-082",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Security Hub の主な機能として正しいものはどれですか？",
+      "choices": [
+        "複数のAWSセキュリティサービス（GuardDuty・Inspector・Macie・Firewall Manager等）の検出結果を一元化して優先順位付けし、コンプライアンス標準（CIS・HIPAA・PCI DSS等）への準拠状況を可視化するSIEM-likeサービス",
+        "Security HubはWAFのルール管理と攻撃ブロックを行うセキュリティ制御サービス",
+        "Security HubはIAMポリシーの脆弱性をスキャンして修正案を提示するサービス",
+        "Security HubはEC2インスタンスのOSパッチ適用を自動化するセキュリティ管理サービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS Security Hubはセキュリティの一元管理・コンプライアンスダッシュボードです。機能：①検出結果の統合：GuardDuty・Inspector・Macie・IAM Access Analyzer・Firewall Manager等の検出結果をASFF（Amazon Security Finding Format）に正規化して集約②コンプライアンスチェック：CIS AWS Foundations・AWS Foundational Security Best Practices・PCI DSS等のベンチマークへの準拠状況を自動確認③優先度付け：重要度（CRITICAL/HIGH/MEDIUM/LOW）でフィルタリング④マルチアカウント：Organizations統合で全アカウントのセキュリティを一元管理⑤自動対応：EventBridge+Lambda/Step Functionsでセキュリティ問題を自動修復。",
+      "tags": ["セキュリティ", "Security Hub", "コンプライアンス", "SIEM"]
+    },
+    {
+      "id": "SAA-083",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "Amazon Macie の主な用途として正しいものはどれですか？",
+      "choices": [
+        "S3バケット内のデータを機械学習で自動スキャンし、PII（個人識別情報）・金融情報・医療情報等の機密データを検出してプライバシーリスクを可視化するデータセキュリティサービス",
+        "MacieはEC2インスタンスのネットワークトラフィックを監視してDDoS攻撃を検出するサービス",
+        "MacieはAWSアカウントのIAM設定の問題を検出するアクセス管理監視サービス",
+        "MacieはAWSコストの異常を検出してコスト超過アラートを送信するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Macieはデータセキュリティとプライバシー保護サービスです。機能：①S3バケット内のデータを機械学習で自動分類（PII・クレジットカード番号・AWSキー等を検出）②S3バケット設定の継続的評価（パブリックアクセス・暗号化なし・クロスアカウントアクセス等）③データプロファイリング（どのバケットにどのような機密データがあるか把握）。ユースケース：GDPRやHIPAAコンプライアンス対応、データ漏洩防止、監査対応。Security Hubとの統合でGDPR違反のリスクのある設定を一元管理できます。",
+      "tags": ["セキュリティ", "Macie", "PII", "データプライバシー"]
+    },
+    {
+      "id": "SAA-084",
+      "category": "アーキテクチャ",
+      "difficulty": 2,
+      "question": "マイクロサービスアーキテクチャにおいて「非同期通信」を実現するAWSサービスの組み合わせとして最も適切なものはどれですか？",
+      "choices": [
+        "SQS（キューベースのデカップリング）・SNS（パブリッシュ/サブスクライブ）・EventBridge（イベントバス）を組み合わせてサービス間の疎結合な非同期通信を実現",
+        "VPC PrivateLinkのみで全てのマイクロサービス通信を実装できる",
+        "RDSの共有データベースを通じてマイクロサービス間でデータを受け渡す",
+        "Direct ConnectとVPNを組み合わせてマイクロサービス間の通信を保護する"
+      ],
+      "answers": [0],
+      "explanation": "マイクロサービスの非同期通信パターン：①SQS（メッセージキュー）：P2P非同期・プロデューサーとコンシューマーの速度差を吸収・1コンシューマーが処理②SNS（パブリッシュ/サブスクライブ）：1つのイベントを複数サービスに配信（ファンアウト）③EventBridge（イベントバス）：イベント駆動型アーキテクチャのハブ・ルールによるフィルタリング・複数AWSサービス・SaaSイベントを統合。SQS+SNSファンアウトパターン：SNSトピックから複数のSQSキューにメッセージをファンアウトして各マイクロサービスが独立して処理。Step FunctionsはワークフローオーケストレーションでLambda等を順序制御。",
+      "tags": ["アーキテクチャ", "マイクロサービス", "SQS", "SNS", "EventBridge"]
+    },
+    {
+      "id": "SAA-085",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "Well-Architected Frameworkの「信頼性の柱（Reliability Pillar）」の主な設計原則として正しいものはどれですか？",
+      "choices": [
+        "障害からの自動回復・スケーリング能力のテスト・水平スケーリング（単一障害点排除）・容量推測の廃止・自動化によるインフラ変更管理（修復を自動化）",
+        "信頼性の柱はコスト削減とパフォーマンス向上のみを対象とする",
+        "信頼性の実装には手動による監視と障害対応のみで自動化は非推奨",
+        "信頼性を高めるには単一の大規模インスタンスを使用するスケールアップのみが有効"
+      ],
+      "answers": [0],
+      "explanation": "Well-Architected Framework 信頼性の柱（Reliability）の5つの設計原則：①障害から自動回復：SLI（サービスレベル指標）を監視し閾値超過時に自動トリガー②スケーリング能力のテスト：本番と同等の負荷でテスト③水平スケーリング：単一の大型リソースを複数の小型リソースに分散（単一障害点排除）④容量推測の廃止：オートスケーリングで需要に応じて自動調整（過剰/不足プロビジョニングを排除）⑤自動化：変更・テスト・デプロイを自動化（人的ミスの排除）。AWS実装：CloudWatch+Auto Scaling、マルチAZ、Route 53ヘルスチェック＋フェイルオーバー。",
+      "tags": ["アーキテクチャ", "Well-Architected", "信頼性", "高可用性"]
+    },
+    {
+      "id": "SAA-086",
+      "category": "アーキテクチャ",
+      "difficulty": 2,
+      "question": "Well-Architected Frameworkの「パフォーマンス効率の柱（Performance Efficiency Pillar）」において「最適なリソースタイプと機能の選択」に関する説明として正しいものはどれですか？",
+      "choices": [
+        "ワークロードの特性（CPUバウンド・メモリバウンド・I/Oバウンド・GPUが必要等）に合わせてEC2インスタンスファミリー・RDS・DynamoDB・ElastiCache等最適なサービスとサイズを選択する",
+        "パフォーマンス効率は常に最大スペックのインスタンスを使用することで保証される",
+        "パフォーマンス効率の柱はネットワーク帯域幅の最適化のみを対象とする",
+        "全てのワークロードにS3+Lambda+DynamoDBのサーバーレスアーキテクチャが最も効率的"
+      ],
+      "answers": [0],
+      "explanation": "Well-Architected Framework パフォーマンス効率の設計原則：①民主化された高度な技術：マネージドサービス活用（MLはSageMakerを使い独自実装不要）②グローバル対応（数分で世界に展開）③サーバーレスアーキテクチャ（インフラ管理の排除）④頻繁な実験（A/Bテストで最適設定を見つける）⑤機械的共感（AWSサービスをどのように使うかを理解）。インスタンスタイプの選択例：CPUバウンド→コンピューティング最適化（c系）、メモリバウンド→メモリ最適化（r/x系）、GPU演算→P4/P5、スループット→ストレージ最適化（i/d系）。",
+      "tags": ["アーキテクチャ", "Well-Architected", "パフォーマンス効率", "インスタンスタイプ"]
+    },
+    {
+      "id": "SAA-087",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "S3 Intelligent-Tiering のコスト最適化の仕組みとして正しいものはどれですか？",
+      "choices": [
+        "オブジェクトのアクセスパターンを自動モニタリングして頻繁アクセス層・低頻度アクセス層・アーカイブ層の間でオブジェクトを自動移動（取り出し料金なし・ストレージ最適化）",
+        "すべてのオブジェクトを自動的に最安価なGlacier Deep Archiveに移動する",
+        "128KB以上のオブジェクトのみ自動ティアリングの対象でそれ以外は手動設定",
+        "Intelligent-Tieringは取り出し料金が高いためコスト削減にならないケースが多い"
+      ],
+      "answers": [0],
+      "explanation": "S3 Intelligent-Tieringの仕組み：①自動アクセス監視：オブジェクトのアクセスを追跡②自動ティア移動：30日間アクセスなし→Infrequent Access層（低コスト）、90日→Archive Instant Access（さらに低コスト）、オプション：180日→Archive層、730日→Deep Archive層③頻繁アクセス時は自動で元のFrequent Access層に戻す④取り出し料金なし（Instant Access・Frequent Access）⑤128KB未満のオブジェクトは常にFrequent Access層に置かれる（小オブジェクトはIntelligent-Tiering非推奨）。アクセスパターンが不明・予測できない場合に最適。",
+      "tags": ["S3", "Intelligent-Tiering", "コスト最適化", "ストレージクラス"]
+    },
+    {
+      "id": "SAA-088",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "Lambda関数の「デプロイパッケージ」と「Lambda Layers」の説明として正しいものはどれですか？",
+      "choices": [
+        "Lambda Layers：複数の関数で共有するライブラリ・依存関係・カスタムランタイムをzipファイルで提供する仕組み（関数コードのサイズ削減・共有ライブラリの一元管理）",
+        "Lambda Layersは実行時のメモリ増量オプションでパフォーマンスを向上させる",
+        "デプロイパッケージとLayersは全く同じ機能で一方のみ使えばよい",
+        "Lambda Layersを使用するとLambda関数のコールドスタートが必ず発生しなくなる"
+      ],
+      "answers": [0],
+      "explanation": "Lambda Layersはコードの共有・再利用メカニズムです。内容：①共有ライブラリ（NumPy・Pandas等のPythonパッケージ）②カスタムランタイム（サポートされていない言語環境）③共通ビジネスロジック（共有ユーティリティ関数）。動作：1つの関数に最大5つのLayerを添付可能（解凍後250MBまで）。メリット：①関数コードを小さく保つ（50MBのzipアップロード制限に収まりやすい）②ライブラリ更新時は関数を再デプロイせずLayerのみ更新③複数チームで共有（Lambda Layerとして公開も可能）。AWS Lambdaのフルマネージドデプロイパッケージサイズ：zip50MB（S3経由で250MB）。",
+      "tags": ["Lambda", "Lambda Layers", "デプロイ", "共有ライブラリ"]
+    },
+    {
+      "id": "SAA-089",
+      "category": "CloudWatch",
+      "difficulty": 2,
+      "question": "Amazon CloudWatch Logsの「サブスクリプションフィルター（Subscription Filter）」の主な用途として正しいものはどれですか？",
+      "choices": [
+        "ロググループのログイベントをリアルタイムでLambda・Kinesis Data Streams・Firehose等に転送して集中ログ管理・リアルタイム分析・S3アーカイブを実現する",
+        "CloudWatch Logsの特定ログメッセージが出現した際にCloudWatchアラームを発火させる機能",
+        "CloudWatch Logsの保持期間を自動延長するサブスクリプション設定",
+        "複数AWSアカウントのCloudWatch LogsをSaaS監視ツールに転送する有料オプション"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Logsサブスクリプションフィルターの活用：①Lambda転送：ロググループの特定パターンのログをリアルタイムでLambdaに送信して自動処理（Slack通知・チケット作成・メトリクス収集）②Kinesis Data Streams：大量ログを複数コンシューマーアプリに配信③Kinesis Data Firehose：S3・OpenSearch・Splunkへのアーカイブ。クロスアカウントログ集中管理パターン：各アカウントのCloudWatch Logs→サブスクリプションフィルター→Kinesis→中央アカウントのS3/OpenSearch。1ロググループあたり2つのサブスクリプションフィルターが設定可能。",
+      "tags": ["CloudWatch", "Logs", "サブスクリプションフィルター", "ログ管理"]
+    },
+    {
+      "id": "SAA-090",
+      "category": "高可用性",
+      "difficulty": 2,
+      "question": "EC2インスタンスのステートフルなセッション管理において「スティッキーセッション（Session Stickiness）」の問題点と解決策として正しいものはどれですか？",
+      "choices": [
+        "問題：ALBがユーザーを常に同じEC2に送り続けるためインスタンス障害時にセッションが失われる。解決策：ElastiCache（Redis）でセッションを外部管理してどのインスタンスでも同じセッションを処理可能にする",
+        "スティッキーセッションは問題がなく全ての本番アプリに推奨される設定",
+        "スティッキーセッションはDynamoDBを使用することで自動的に解決される",
+        "スティッキーセッション問題はEC2インスタンス数を増やすことで解決する"
+      ],
+      "answers": [0],
+      "explanation": "スティッキーセッションの問題と解決：問題：①特定インスタンスに負荷集中（不均等分散）②インスタンス障害時にそのインスタンスのセッションが消失③スケールイン時のセッション喪失。解決策（外部セッションストア）：ElastiCache Redis：①セッションデータをインメモリで高速保存②どのEC2インスタンスがリクエストを処理してもセッション参照・更新が可能③TTL設定で自動期限切れ。DynamoDB：持続性が必要なセッションの場合。このパターンはステートレスWebティア実現の基本で、Well-Architected Frameworkの「単一障害点排除」に直接対応します。",
+      "tags": ["高可用性", "セッション管理", "ElastiCache", "ステートレス"]
+    },
+    {
+      "id": "SAA-091",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 Auto Scalingの「ウォームアップ（Warm-up）」と「クールダウン（Cooldown）」の説明として正しいものはどれですか？",
+      "choices": [
+        "ウォームアップ：新しく起動したインスタンスがリクエストを受け付ける前の準備時間（この間はスケーリング判断に含めない）。クールダウン：スケーリングアクション後に次のスケーリングが発生しない待機時間（デフォルト300秒）",
+        "ウォームアップはインスタンスを削除する前の猶予時間、クールダウンは起動後の準備時間",
+        "クールダウン期間中は全てのインスタンスがトラフィックを受け付けない",
+        "ウォームアップとクールダウンは同じ意味で混在して使用する"
+      ],
+      "answers": [0],
+      "explanation": "Auto Scalingのウォームアップとクールダウン：Instance Warm-up：①ターゲット追跡・ステップスケーリングで使用②新インスタンス起動後、アプリが準備完了するまでの時間③ウォームアップ中のインスタンスはCloudWatchメトリクス集計に含まれない（追加スケールアウトを防ぐ）④デフォルト300秒。スケーリングクールダウン：①シンプルスケーリングポリシーで使用②スケーリングアクション完了後、次のアクションを発生させない時間③デフォルト300秒。ターゲット追跡ポリシーはクールダウン不要（インスタンスウォームアップを使用）。適切な設定でスケーリングの過剰反応（Thrashing）を防ぎます。",
+      "tags": ["EC2", "Auto Scaling", "ウォームアップ", "クールダウン"]
+    },
+    {
+      "id": "SAA-092",
+      "category": "サーバーレス",
+      "difficulty": 2,
+      "question": "AWS Step Functions の主な用途と「Express Workflow」と「Standard Workflow」の違いとして正しいものはどれですか？",
+      "choices": [
+        "Step Functionsは複数のLambda・サービスをビジュアルなワークフローで定義・実行するオーケストレーション。Standard：長時間（最大1年）・Exactly-once実行・監査証跡完全保存。Express：最大5分・高スループット（秒間10万以上）・At-least-once実行",
+        "Express WorkflowはGUIのみでYAMLは不可、Standard WorkflowはYAMLのみでGUI不可",
+        "Step FunctionsはLambdaのみを実行でき他のAWSサービスは呼び出せない",
+        "Standard WorkflowはEC2上でのみ実行可能でExpressはLambda専用"
+      ],
+      "answers": [0],
+      "explanation": "AWS Step Functionsはサーバーレスのオーケストレーションサービスです。Standard Workflow：①実行期間：最大1年②実行保証：Exactly-once（重複なし）③実行履歴：全ステップの入出力を完全保存（90日間）④費用：状態遷移回数×単価⑤長期間・監査が必要なビジネスプロセス向け。Express Workflow：①最大5分②At-least-once（重複実行あり）③CloudWatch Logsで保存（完全な履歴は残らない）④費用：実行回数×実行期間（高スループットで安価）⑤IoTデータ処理・ストリーミング・高頻度短時間処理向け。AWS SDKとの統合で350以上のAWSサービスをワークフローから直接呼び出し可能。",
+      "tags": ["サーバーレス", "Step Functions", "Standard Workflow", "Express Workflow"]
+    },
+    {
+      "id": "SAA-093",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "AWS Global Accelerator と CloudFront の違いとして正しいものはどれですか？",
+      "choices": [
+        "Global Accelerator：TCP/UDP・静的AnyCastIPアドレス（固定IP）・低レイテンシでAWSバックボーン経由・非HTTP用途（ゲーム・IoT）にも対応。CloudFront：HTTP/HTTPS・コンテンツキャッシュ・CDN・エッジでの動的コンテンツ最適化",
+        "CloudFrontは静的コンテンツのみ対応、Global AcceleratorはAPIサーバーのみ対応",
+        "両者は全く同じサービスでエッジロケーションの数のみ異なる",
+        "Global AcceleratorはS3のみに対応しCloudFrontは全てのオリジンに対応"
+      ],
+      "answers": [0],
+      "explanation": "Global Accelerator vs CloudFront：Global Accelerator：①2つの静的AnyCastグローバルIPアドレスを提供（IPアドレスのホワイトリスト登録が容易）②TCPとUDP（HTTP以外も対応）③エッジでキャッシュしない（全リクエストをオリジンに転送）④AWSバックボーンネットワーク経由で低レイテンシ⑤EC2・ALB・NLB・Elastic IPをエンドポイントに設定可能⑥ゲーミング・IoT・VoIP・非HTTPプロトコル。CloudFront：①エッジロケーションでコンテンツキャッシュ（CDN）②HTTP/HTTPSのみ③TTLベースのキャッシュで繰り返しリクエストのレイテンシ削減④Lambda@Edgeで動的処理。",
+      "tags": ["ネットワーク", "Global Accelerator", "CloudFront", "低レイテンシ"]
+    },
+    {
+      "id": "SAA-094",
+      "category": "移行",
+      "difficulty": 2,
+      "question": "AWS Application Migration Service（MGN）の主な機能として正しいものはどれですか？",
+      "choices": [
+        "オンプレミスサーバーのブロックレベルレプリケーションを行い、AWSへの移行中のダウンタイムを最小限に抑えるリホスト（Rehost/Lift-and-shift）の自動化サービス",
+        "MGNはApplicationの設定ファイルのみをAWSに移行するアプリケーション設定移行サービス",
+        "MGNはデータベースの移行のみを自動化しサーバーの移行はサポートしない",
+        "MGNはマルチクラウド移行専用で他のAWSサービスには対応していない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Application Migration Service（MGN/CloudEndure Migration後継）：①ブロックレベルのリアルタイムレプリケーション：エージェントがソースサーバーのディスクを継続的にAWSにレプリケート②テストカットオーバー：本番切り替え前にテスト環境でアプリ検証③低ダウンタイム：本番カットオーバー時のダウンタイムを最小化（数分）④物理・仮想・クラウドからAWSへの移行に対応（VMware・Hyper-V・AWS・Azure・GCPから）⑤6Rのうち「Rehost（Lift-and-shift）」の自動化に特化。AWS Migration HubとAWS Mainframe Modernization Serviceと組み合わせて大規模移行プロジェクトを管理します。",
+      "tags": ["移行", "MGN", "Lift-and-shift", "サーバー移行"]
+    },
+    {
+      "id": "SAA-095",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "高トラフィックWebアプリケーションのアーキテクチャで「フロントエンドのスケーラビリティと可用性」を最大化する構成として正しいものはどれですか？",
+      "choices": [
+        "Route 53（フェイルオーバー/レイテンシールーティング）→CloudFront（静的コンテンツキャッシュ・DDoS保護）→ALB（マルチAZ）→Auto Scaling EC2/ECS（マルチAZ）→ElastiCache（セッション管理）→RDS Multi-AZ",
+        "単一のEC2インスタンス（大型サイズ）のみで全トラフィックを処理する",
+        "Route 53のみを使用してDNS負荷分散で全てを解決する",
+        "NAT Gatewayを複数設置してトラフィックを分散させる"
+      ],
+      "answers": [0],
+      "explanation": "スケーラブルで可用性の高いWebアーキテクチャの各層の役割：①Route 53：ヘルスチェック付きフェイルオーバー・マルチリージョンレイテンシールーティング②CloudFront：静的コンテンツ（CSS/JS/画像）のエッジキャッシュ・AWS Shield Standardによる自動DDoS保護・オリジンへのリクエスト削減③ALB：マルチAZ負荷分散・ヘルスチェック・TLSターミネーション④Auto Scaling ECSグループ：需要に応じた自動スケール（マルチAZで単一障害点排除）⑤ElastiCache Redis：セッション共有・データベースクエリキャッシュ⑥RDS Aurora Multi-AZ：高可用性DBWithReaderEndpoint。",
+      "tags": ["アーキテクチャ", "高可用性", "スケーラビリティ", "Well-Architected"]
+    },
+    {
+      "id": "SAA-096",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "AWS Trusted Advisor の「Cost Optimization（コスト最適化）」チェックで検出できる問題の例として正しいものはどれですか？",
+      "choices": [
+        "使用されていないEC2インスタンス・アイドル状態のRDB・未使用Elastic IP・使用率の低いEBSボリューム・期限切れのReserved Instance等のコスト削減機会を自動検出",
+        "Trusted AdvisorはEC2のCPU使用率のみを分析してコスト超過を検出する",
+        "Trusted Advisorは月次レポートでのみ確認でき、リアルタイム監視はできない",
+        "Trusted AdvisorのコストチェックはEnterprise Supportのみで利用可能"
+      ],
+      "answers": [0],
+      "explanation": "AWS Trusted Advisorは5つのカテゴリ（コスト最適化・セキュリティ・耐障害性・パフォーマンス・サービス制限）で200以上のチェックを実行します。コスト最適化チェック例：①使用率の低いEC2インスタンス（CPU<10%）②アイドルRDSインスタンス③未使用Elastic IPアドレス（月$3.6のコスト）④使用率の低いEBSボリューム⑤未利用Reserved Instances（有効期限切れ間近）⑥S3バケット不要なバージョニング。アクセス：基本チェックは全ユーザー無料、詳細チェックはBusiness/Enterprise Supportプランが必要。",
+      "tags": ["コスト最適化", "Trusted Advisor", "コスト管理", "Well-Architected"]
+    },
+    {
+      "id": "SAA-097",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "IAM Access Analyzer の主な機能として正しいものはどれですか？",
+      "choices": [
+        "S3バケット・IAMロール・KMSキー・SQSキュー・Lambda等のリソースポリシーを分析して、外部エンティティ（他アカウント・インターネット）からのアクセスを許可しているリソースを検出する",
+        "IAM Access Analyzerは全IAMポリシーのシンタックスエラーを自動修正する",
+        "Access AnalyzerはIAMユーザーの多要素認証（MFA）有効化状況を監視する",
+        "Access AnalyzerはAWSアカウントのルートユーザーの不正使用を検出する"
+      ],
+      "answers": [0],
+      "explanation": "IAM Access Analyzerの機能：①外部アクセス分析（External Access Findings）：AWSアカウントやOrganizationの外部からアクセス可能なリソースを検出（S3パブリックバケット・クロスアカウントロール等）②未使用アクセス分析（Unused Access）：長期間使用されていないIAM権限・アクセスキーを検出（最小権限原則の実装支援）③ポリシー生成：CloudTrailログを基に最小権限のIAMポリシーを自動生成④ポリシーバリデーション：IAMポリシーをIAM Access Analyzerのルールで検証してベストプラクティス違反を指摘。Security Hubとの統合で組織全体のアクセス可視化。",
+      "tags": ["セキュリティ", "IAM Access Analyzer", "最小権限", "クロスアカウント"]
+    },
+    {
+      "id": "SAA-098",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2の「ハイバネーション（Hibernation）」の説明として正しいものはどれですか？",
+      "choices": [
+        "インスタンスのメモリ（RAM）の内容をEBSルートボリュームに保存して停止し、再起動時にRAMを復元することで起動時間を短縮する機能（プロセスが実行中の状態から継続）",
+        "ハイバネーションはEC2インスタンスを完全にシャットダウンしAMIを自動作成する機能",
+        "ハイバネーション後のインスタンスはEIPアドレスが自動解放される",
+        "ハイバネーションはSpotインスタンスでのみ利用可能な省エネ機能"
+      ],
+      "answers": [0],
+      "explanation": "EC2ハイバネーションの仕組み：①Hibernateシグナル受信時にRAM（メモリ）の内容を暗号化してEBSルートボリュームに書き込み②インスタンスを停止（停止中は課金なし）③再起動時：EBSからRAMを復元してプロセスを継続（OSが再起動せず実行中のプロセスが継続）。利点：①長い初期化が必要なアプリの高速起動②処理の途中から再開可能（Ctrl+Z的な動作）。要件：①EBSルートボリュームが暗号化されていること②インスタンスのRAM<150GB③ハイバネーション対応のAMI④最大停止60日。Stopとの違い：Stopは次回起動時にOSが再起動。",
+      "tags": ["EC2", "ハイバネーション", "起動高速化", "メモリ保存"]
+    },
+    {
+      "id": "SAA-099",
+      "category": "高可用性",
+      "difficulty": 3,
+      "question": "Active-Active マルチリージョンアーキテクチャの実現に必要なAWSサービスの組み合わせとして正しいものはどれですか？",
+      "choices": [
+        "Route 53レイテンシールーティング・DynamoDBグローバルテーブル・S3クロスリージョンレプリケーション・ElastiCacheレプリケーショングループ・ALBマルチAZ",
+        "Route 53フェイルオーバールーティングのみでアクティブ-アクティブを実現できる",
+        "RDS Multi-AZのみでマルチリージョンのアクティブ-アクティブを実現できる",
+        "CloudFrontのみをグローバルに配置することでアクティブ-アクティブアーキテクチャが完成する"
+      ],
+      "answers": [0],
+      "explanation": "Active-Active マルチリージョンアーキテクチャの構成要素：①Route 53 レイテンシールーティング：ユーザーに最も近いリージョンにトラフィックを分散（ヘルスチェック付きフェイルオーバー）②DynamoDB グローバルテーブル：マルチリージョン・マルチマスター書き込み（レイテンシ<1秒でのレプリケーション）③S3 CRR（クロスリージョンレプリケーション）：静的コンテンツの各リージョン配置④アプリケーション層：各リージョンにALB+Auto Scaling ECS/EC2を配置⑤CloudFront：グローバルエッジキャッシュ。このパターンはRTOを秒単位に短縮しますが、最も設計・運用コストが高いDRパターンです。",
+      "tags": ["高可用性", "マルチリージョン", "Active-Active", "DR"]
+    },
+    {
+      "id": "SAA-100",
+      "category": "アーキテクチャ",
+      "difficulty": 2,
+      "question": "AWS Well-Architected Frameworkの「オペレーショナルエクセレンスの柱（Operational Excellence Pillar）」の核心原則として正しいものはどれですか？",
+      "choices": [
+        "運用をコードとして実装（Infrastructure as Code）・頻繁で小さな変更（ビッグバンリリース回避）・運用手順の継続的改善・失敗を予測してテスト・運用上の失敗から学ぶ",
+        "オペレーショナルエクセレンスはコスト削減のみを対象とする",
+        "最大サイズのインスタンスを使用してパフォーマンスを最優先にする考え方",
+        "手動での慎重な運用と詳細なドキュメント化のみが重要で自動化は推奨されない"
+      ],
+      "answers": [0],
+      "explanation": "Well-Architected Framework オペレーショナルエクセレンス（Operational Excellence）の6原則：①運用をコードとして実装（IaC、自動化）②頻繁で小さな変更（Blue/Green・カナリアデプロイ）③運用手順書の定期的な改善④失敗を予測・ゲームデイ・カオスエンジニアリングで耐障害性テスト⑤運用障害から学ぶ（ポストモーテム・改善サイクル）⑥マネージドサービス活用で差別化に注力。AWS実装：CloudFormation（IaC）・CodePipeline（CI/CD）・CloudWatch（監視）・Systems Manager（自動運用）・Config（構成管理）・OpsCenter（インシデント管理）。",
+      "tags": ["アーキテクチャ", "Well-Architected", "オペレーショナルエクセレンス", "自動化"]
+    },
+    {
+      "id": "SAA-101",
+      "category": "ストレージ",
+      "difficulty": 2,
+      "question": "Amazon FSx の種類と適切なユースケースの組み合わせとして正しいものはどれですか？",
+      "choices": [
+        "FSx for Windows File Server：SMBプロトコル・AD統合・Windowsアプリ、FSx for Lustre：高性能HPC・ML・並列ファイルシステム・S3統合、FSx for NetApp ONTAP：マルチプロトコル（NFS/SMB/iSCSI）、FSx for OpenZFS：Linux/macOS ZFS互換",
+        "FSx for Lustreは主にWindowsアプリケーションの共有フォルダとして使用される",
+        "全てのFSxタイプは同一の機能を提供しOSの種類で選択する",
+        "FSx for Windows File ServerはLinuxのみに対応しWindowsは非対応"
+      ],
+      "answers": [0],
+      "explanation": "Amazon FSxの4種類：①FSx for Windows File Server：フルマネージドWindowsファイルサーバー・SMBプロトコル・AD（Active Directory）統合・ユーザーホームディレクトリ・Windows共有ドライブの代替②FSx for Lustre：高性能並列ファイルシステム・HPC（科学計算・流体シミュレーション）・機械学習トレーニング・S3と統合（S3→Lustre→S3の高速データパイプライン）・最大数百GB/sのスループット③FSx for NetApp ONTAP：NFS/SMB/iSCSI対応・オンプレNetApp環境のクラウド移行④FSx for OpenZFS：ZFSベース・Linux/macOS対応・オンプレNFSサーバーの代替。",
+      "tags": ["ストレージ", "FSx", "HPC", "Windows"]
+    },
+    {
+      "id": "SAA-102",
+      "category": "コンテナ",
+      "difficulty": 2,
+      "question": "ECS タスク定義（Task Definition）の主な設定項目として正しいものはどれですか？",
+      "choices": [
+        "コンテナイメージ（ECR・Docker Hub等）・CPUとメモリの割り当て・IAMタスクロール・ネットワークモード・ログ設定（CloudWatch Logs）・環境変数・ポートマッピング",
+        "タスク定義はEC2インスタンスタイプのみを指定するシンプルな設定",
+        "タスク定義はAuto ScalingグループのスケーリングポリシーのみをECS向けに設定したもの",
+        "タスク定義はEKS（Kubernetes）のDeployment定義と全く同じ形式"
+      ],
+      "answers": [0],
+      "explanation": "ECSタスク定義（Task Definition）はDockerコンテナの実行仕様を定義するJSONファイルです。主な設定項目：①コンテナ定義：イメージURI（ECR・Docker Hub）・CPUとメモリ（タスク全体と個別コンテナ）・ポートマッピング・環境変数②IAMタスクロール：コンテナがAWSサービスにアクセスするための権限③IAM実行ロール：ECRイメージプル・CloudWatch Logsへの書き込み権限④ネットワークモード：awsvpc（Fargateでは必須、ENI割り当て）・bridge・host⑤ログ設定：CloudWatch Logs・Fluentd・Splunk⑥ボリューム：EFS・EBSマウント。",
+      "tags": ["ECS", "タスク定義", "コンテナ", "Fargate"]
+    },
+    {
+      "id": "SAA-103",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Firewall Manager の主な機能として正しいものはどれですか？",
+      "choices": [
+        "Organizations管理下の複数アカウントにWAF・Shield Advanced・セキュリティグループ・ネットワークファイアウォール・DNS Firewallのポリシーを一元管理・自動適用するサービス",
+        "Firewall ManagerはEC2インスタンスの仮想ファイアウォールルールをGUIで管理するツール",
+        "Firewall Managerはインターネットゲートウェイの出口トラフィックを検査するサービス",
+        "Firewall Managerは個別アカウント内でのWAFルール管理のみを行う"
+      ],
+      "answers": [0],
+      "explanation": "AWS Firewall Managerは組織全体のセキュリティポリシー一元管理サービスです。前提条件：AWS Organizations・AWS Configが有効。管理できるポリシー：①AWS WAFルール：ALB・API Gateway・CloudFrontへのWAF設定を全アカウントに自動適用②Shield Advanced：DDoS保護を組織全体に一括有効化③セキュリティグループ：ベースラインのSGルールを強制適用④AWS Network Firewall：VPCのトラフィックフィルタリング⑤Route 53 Resolver DNS Firewall：DNSクエリのフィルタリング。新規アカウント作成時も自動的にポリシーが適用されるため組織ガバナンスの重要ツールです。",
+      "tags": ["セキュリティ", "Firewall Manager", "Organizations", "WAF"]
+    },
+    {
+      "id": "SAA-104",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "Amazon OpenSearch Service（旧Elasticsearch Service）の主なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "ログ分析・全文検索エンジン・クリックストリーム分析・アプリケーション検索（Kibana/OpenSearch Dashboardsで可視化）",
+        "OpenSearch ServiceはOLTPデータベースとして使用するサービス",
+        "OpenSearch ServiceはS3に保存されたデータのみを分析できる",
+        "OpenSearch ServiceはRedshiftの代替としてデータウェアハウスに使用する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon OpenSearch Service（旧Amazon Elasticsearch Service）の特徴と用途：①フルテキスト検索：Eコマース商品検索・ドキュメント全文検索②ログ分析：CloudWatch Logs・VPC FlowLogsをKinesis Data Firehose経由でOpenSearchに投入してKibana/OpenSearch Dashboardsで可視化③リアルタイム分析：クリックストリーム・アプリケーション監視④マネージドサービス：クラスタ管理・インデックス管理・スナップショット自動取得。典型的なアーキテクチャ：アプリログ→CloudWatch Logs→サブスクリプションフィルター→Kinesis Firehose→OpenSearch→Dashboards。",
+      "tags": ["分析", "OpenSearch", "全文検索", "ログ分析"]
+    },
+    {
+      "id": "SAA-105",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "VPC Flow Logs で収集できる情報と主な用途として正しいものはどれですか？",
+      "choices": [
+        "VPCのネットワークインターフェイス（ENI）を通過するIPトラフィックの送受信情報（送信元/先IP・ポート・プロトコル・許可/拒否・バイト数等）を記録してセキュリティ分析・トラブルシューティングに活用",
+        "Flow LogsはアプリケーションレベルのHTTPリクエスト内容（URLパス・ヘッダー等）を記録する",
+        "Flow LogsはEC2インスタンス内のプロセス実行ログを収集するサービス",
+        "Flow Logsの有効化にはCloudWatchエージェントのインストールが必要"
+      ],
+      "answers": [0],
+      "explanation": "VPC Flow Logsの収集情報：ネットワークインターフェイスレベルのパケットフロー情報（送信元/先IPアドレス・ポート・プロトコル・バイト数・パケット数・開始/終了時刻・ACCEPT/REJECT）。有効化レベル：VPC全体・サブネット・個別ENI（柔軟な粒度）。保存先：CloudWatch Logs（リアルタイム分析）・S3（コスト効率・Athenaでクエリ）。用途：①不審なトラフィック特定②セキュリティグループルールの検証③ネットワーク接続性トラブルシューティング④バンド幅使用状況の分析⑤GuardDutyの分析データ源。AWS PrivateLink経由のトラフィックも記録されます。",
+      "tags": ["VPC", "Flow Logs", "ネットワーク", "セキュリティ監視"]
+    },
+    {
+      "id": "SAA-106",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon RDS Proxy の主な用途として正しいものはどれですか？",
+      "choices": [
+        "LambdaやECSのようなサーバーレス・短命なコンピュートからRDSへの接続プールを管理し、RDSへの過剰接続によるメモリ枯渇を防ぎフェイルオーバー時間を短縮するフルマネージドプロキシ",
+        "RDS ProxyはRDSの前段でSQLクエリをキャッシュしてデータベース負荷を削減するサービス",
+        "RDS ProxyはAWS外からRDSにセキュアにアクセスするためのSSHトンネル管理サービス",
+        "RDS ProxyはRDSのバックアップとレストアを自動管理するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon RDS Proxyは接続プーリングのフルマネージドサービスです。課題：Lambdaは同時実行時に大量の短命な接続をRDSに対して開始→RDSのmax_connectionsを超えると接続エラー。RDS Proxy解決：①接続プーリング：複数のLambda実行環境が同じDB接続を再利用②フェイルオーバー短縮：MultiAZ切り替え時のフェイルオーバー時間を最大66%削減（DNSキャッシュの影響排除）③IAM認証：DB認証情報をSecrets Managerで管理しIAM認証を使用④TLS強制。対応DB：MySQL・PostgreSQL互換のRDS・Aurora。Lambda+RDSのパターンで必ずセットで使用することを検討します。",
+      "tags": ["データベース", "RDS Proxy", "Lambda", "接続プーリング"]
+    },
+    {
+      "id": "SAA-107",
+      "category": "モニタリング",
+      "difficulty": 2,
+      "question": "AWS X-Ray の主な用途として正しいものはどれですか？",
+      "choices": [
+        "分散システム（マイクロサービス・Lambda・ECS等）のリクエストトレースを行い、各サービス間のレイテンシ・エラー・スロットリングを可視化して性能問題の根本原因を特定するAPMサービス",
+        "X-RayはEC2インスタンスの物理メモリを可視化するハードウェア診断ツール",
+        "X-RayはAWS WAFのXSS・SQLインジェクション攻撃ログを可視化するセキュリティダッシュボード",
+        "X-RayはAWSのコスト分析とリソース使用率を可視化するコストモニタリングサービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS X-Rayは分散トレーシングサービス（APM：Application Performance Management）です。機能：①トレース：エンドユーザーのリクエストがマイクロサービス間をどのように流れるかを追跡②サービスマップ：各サービスと依存関係をグラフで可視化（レイテンシ・エラー率・スループット）③セグメントとサブセグメント：各サービスでの処理時間を詳細分解④アノテーション・メタデータ：カスタム情報をトレースに付加⑤サンプリングレート設定：全リクエストではなく一部のトレース。対応サービス：Lambda・EC2・ECS・Elastic Beanstalk・API Gateway・SQS・SNS。X-Rayデーモンまたは自動計装を設定します。",
+      "tags": ["モニタリング", "X-Ray", "分散トレーシング", "APM"]
+    },
+    {
+      "id": "SAA-108",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormation の「変更セット（Change Sets）」と「ドリフト検出（Drift Detection）」の説明として正しいものはどれですか？",
+      "choices": [
+        "変更セット：スタック更新前に変更内容をプレビューして意図しないリソース変更・削除を事前確認。ドリフト検出：CloudFormationスタック定義と実際のリソース設定のずれを検出（コンソールで手動変更された設定を発見）",
+        "変更セットはスタック削除後のリソース復元に使用、ドリフト検出はコスト異常の原因調査に使用",
+        "ドリフト検出はCloudFormationスタック間のテンプレートの差分を比較する機能",
+        "変更セットは自動的に適用されドリフト検出は手動で修正する機能"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormationの変更管理機能：変更セット（Change Sets）：①スタック更新を実行する前に変更内容のプレビューを生成②Action列に「Add/Modify/Remove」が表示③変更セットを確認後に実行（Execute）する運用で意図しないリソース削除を防ぐ④複数の変更セットを作成して比較可能。ドリフト検出（Drift Detection）：①CloudFormationで管理するリソースが手動操作（コンソール・CLI）で変更されたかを検出②「ドリフトあり」のリソースはスタックの期待値との差分を表示③修正：CloudFormationテンプレートを実態に合わせるか、実態をテンプレートに戻す④デプロイ後の設定変更の追跡に重要。",
+      "tags": ["CloudFormation", "変更セット", "ドリフト検出", "IaC"]
+    },
+    {
+      "id": "SAA-109",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "AWS Budgets と AWS Cost Explorer の違いとして正しいものはどれですか？",
+      "choices": [
+        "Budgets：コスト・使用量・Savings Plans利用率の予算設定とアラート通知（閾値超過時のSNS/Eメール通知・自動アクション実行）。Cost Explorer：過去のコストデータの可視化・分析・予測・Rightsizing推奨",
+        "Cost Explorerは予算を設定してコスト超過を防ぐサービス、BudgetsはコストのBIダッシュボード",
+        "BudgetsはEnterprise Supportのみで利用可能でCost Explorerは全プランで無料",
+        "両者は同じ機能で用途の違いはない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Budgets vs Cost Explorer：AWS Budgets：①コスト予算（月次・四半期・年次）・使用量予算・Savings Plans利用率予算・RI利用率予算の設定②閾値（実績・予測）超過時のSNS/Eメールアラート③自動アクション：予算超過時にIAMポリシー適用・SCPでサービス使用停止（自動的なコスト爆発防止）。AWS Cost Explorer：①過去12ヶ月のコストデータをグラフで可視化②サービス別・タグ別・アカウント別のコスト内訳分析③12ヶ月先のコスト予測④Rightsizing推奨（EC2最適化）⑤Savings Plans購入推奨。BudgetsはAlerts+Actions、Cost Explorerはリトロスペクティブ分析。",
+      "tags": ["コスト最適化", "Budgets", "Cost Explorer", "コスト管理"]
+    },
+    {
+      "id": "SAA-110",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "大規模なイベント（例：年末セール）に備えてWebアプリケーションの「事前スケーリング（Pre-warming）」を行う方法として正しいものはどれですか？",
+      "choices": [
+        "Auto Scalingのスケジュールスケーリングで事前に希望容量を増加・CloudFrontのキャパシティ増加申請・ALBのウォームアップリクエスト送信・RDSの事前読み取りレプリカ追加",
+        "大規模イベントの際は何も事前準備せずAuto Scalingが自動対応するため対策不要",
+        "大規模イベント前に全インスタンスを最大サイズにアップグレードするだけで十分",
+        "CloudWatchアラームの閾値を極端に低くすれば自動的に事前スケーリングが行われる"
+      ],
+      "answers": [0],
+      "explanation": "大規模イベントへの事前準備（Pre-warming）：①Auto Scaling スケジュールスケーリング：イベント時刻の30〜60分前から希望容量を増加設定（例：通常5台→イベント前に50台）②Elastic Load Balancer：Lambdaを通じて事前にリクエストを送り内部でウォームアップ（AWSに事前通知で対応）③CloudFront：急激なトラフィック増加時はAWSへの事前通知推奨④RDS：読み取りレプリカを事前追加、ElastiCacheスケールアウト⑤Lambda：プロビジョニングされた同時実行を事前設定でコールドスタート防止⑥Kinesis：シャード数を事前増加⑦IEM（Infrastructure Event Management）：AWSサポートのビジネス/エンタープライズプランで大規模イベントのサポートを受ける。",
+      "tags": ["アーキテクチャ", "スケーリング", "パフォーマンス", "イベント対応"]
     }
   ]
 }
