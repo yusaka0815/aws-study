@@ -188,9 +188,7 @@ test.describe('MLA試験', () => {
     await page.locator('#btn-change-exam').click();
     await expect(page.locator('#screen-select')).toBeVisible();
     await page.locator('.exam-card').filter({ hasText: 'SAA' }).click();
-    await page.waitForFunction(
-      () => document.getElementById('question-text')?.textContent !== '問題を読み込んでいます...'
-    );
+    // showScreen('screen-study') が呼ばれるまで待機（fetchの完了を確認）
     await expect(page.locator('#screen-study')).toBeVisible();
   });
 });

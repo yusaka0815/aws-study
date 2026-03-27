@@ -68,7 +68,15 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npx playwright test --reporter=list
+        run: |
+          set -o pipefail
+          npx playwright test 2>&1 | tee /tmp/pw-output.txt || {
+            echo "::error::=== PLAYWRIGHT FAILURE (last 30 lines) ==="
+            tail -30 /tmp/pw-output.txt | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+            exit 1
+          }
         env:
           CI: true
 
