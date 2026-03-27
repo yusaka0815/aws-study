@@ -153,8 +153,8 @@ test.describe('回答処理', () => {
   test('回答後は選択肢をクリックしても再判定されない', async ({ page }) => {
     await page.locator('.choice-btn').first().click();
     const iconBefore = await page.locator('#answer-icon').textContent();
-    // 別の選択肢をクリック
-    await page.locator('.choice-btn').nth(1).click();
+    // 回答後はボタンがdisabledになる。force:true でイベントを強制送信しても結果は変わらない
+    await page.locator('.choice-btn').nth(1).click({ force: true });
     const iconAfter = await page.locator('#answer-icon').textContent();
     expect(iconAfter).toBe(iconBefore); // 変化しない
   });
