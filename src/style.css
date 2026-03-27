@@ -65,6 +65,7 @@ body {
 
 .screen.active {
   display: flex;
+  animation: fadeSlideIn 0.2s ease;
 }
 
 /* ============================================================

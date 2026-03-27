@@ -270,6 +270,42 @@ test.describe('設定画面', () => {
 });
 
 // ============================================================
+// 画面遷移アニメーション
+// ============================================================
+test.describe('画面遷移アニメーション', () => {
+  test('試験選択→問題画面の遷移にアニメーションが適用される', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await page.locator('.exam-card').filter({ hasText: 'SAA' }).click();
+    await page.waitForSelector('#screen-study.active');
+    const animName = await page.evaluate(() =>
+      getComputedStyle(document.getElementById('screen-study')).animationName
+    );
+    expect(animName).not.toBe('none');
+  });
+
+  test('問題画面→統計画面の遷移にアニメーションが適用される', async ({ page }) => {
+    await selectExam(page, 'SAA');
+    await page.locator('#btn-stats').click();
+    await page.waitForSelector('#screen-stats.active');
+    const animName = await page.evaluate(() =>
+      getComputedStyle(document.getElementById('screen-stats')).animationName
+    );
+    expect(animName).not.toBe('none');
+  });
+
+  test('問題画面→設定画面の遷移にアニメーションが適用される', async ({ page }) => {
+    await selectExam(page, 'SAA');
+    await page.locator('#btn-settings').click();
+    await page.waitForSelector('#screen-settings.active');
+    const animName = await page.evaluate(() =>
+      getComputedStyle(document.getElementById('screen-settings')).animationName
+    );
+    expect(animName).not.toBe('none');
+  });
+});
+
+// ============================================================
 // データ永続性
 // ============================================================
 test.describe('データ永続性（localStorage）', () => {
