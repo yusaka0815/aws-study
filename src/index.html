@@ -28,7 +28,7 @@
        ======================================================== -->
   <div id="screen-select" class="screen active">
     <header class="app-header">
-      <h1>
+      <h1 class="app-logo">
         <span class="logo-icon">☁️</span>
         <span>
           AWS Study
@@ -42,7 +42,7 @@
 
     <div class="select-header">
       <h2>試験を選択</h2>
-      <p>学習したい試験を選んでください</p>
+      <p id="select-stats">さあ、学習を始めよう！</p>
     </div>
 
     <div id="exam-list">
@@ -59,7 +59,7 @@
        ======================================================== -->
   <div id="screen-study" class="screen">
     <header class="app-header">
-      <h1>
+      <h1 class="app-logo">
         <span class="logo-icon">☁️</span>
         <span>
           AWS Study
@@ -91,6 +91,12 @@
       <!-- 選択肢 -->
       <div id="choices-list" role="list" aria-label="選択肢">
         <!-- JavaScript で描画 -->
+      </div>
+
+      <!-- 複数選択提出エリア（単一選択問題では非表示） -->
+      <div id="multi-submit-area" class="hidden">
+        <p class="multi-hint"><span id="multi-count">0 / 0</span> 選択中（<span id="multi-required">0</span> 個選んで回答）</p>
+        <button id="multi-submit-btn" disabled>回答する</button>
       </div>
 
       <!-- 回答エリア（初期非表示） -->
@@ -225,7 +231,7 @@
           <span class="settings-item-icon">ℹ️</span>
           <span class="settings-item-text">
             <span class="settings-item-label">AWS Certification Study</span>
-            <span class="settings-item-desc">v1.3.0　CLF・AIF・SAA・MLA・DVA・SOA・DEA・SAP・DOP 収録</span>
+            <span class="settings-item-desc">v1.4.0　CLF・AIF・SAA・MLA・DVA・SOA・DEA・SAP・DOP 収録</span>
           </span>
         </div>
 

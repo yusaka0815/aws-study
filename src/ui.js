@@ -17,21 +17,31 @@ export function showScreen(screenId) {
 // 試験選択画面
 // ============================================================
 
-export function renderExamSelect(exams, onSelect) {
+export function renderExamSelect(exams, onSelect, progressMap = {}) {
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
   exams.forEach(exam => {
+    const answered = progressMap[exam.examCode] ?? 0;
     const btn = document.createElement('button');
     btn.className = 'exam-card';
     btn.innerHTML = `
       <span class="exam-code">${exam.examCode}</span>
       <span class="exam-name">${exam.examName}</span>
-      <span class="exam-arrow">→</span>
+      ${answered > 0
+        ? `<span class="exam-progress">${answered}問</span>`
+        : '<span class="exam-arrow">→</span>'}
     `;
     btn.addEventListener('click', () => onSelect(exam.examCode));
     container.appendChild(btn);
   });
+
+  // 全体進捗サマリー更新
+  const total = Object.values(progressMap).reduce((s, n) => s + n, 0);
+  const statsEl = document.getElementById('select-stats');
+  if (statsEl) {
+    statsEl.textContent = total > 0 ? `🎯 累計 ${total} 問回答済み` : 'さあ、学習を始めよう！';
+  }
 }
 
 // ============================================================
@@ -66,11 +76,20 @@ export function renderQuestion(question, questionIndex, totalQuestions) {
     choicesEl.appendChild(btn);
   });
 
-  // 解説エリアを隠す・次へボタンをdisabledに
+  // 解説エリア・複数選択提出エリアを隠す・次へボタンをdisabledに
   document.getElementById('answer-area').classList.add('hidden');
   document.getElementById('next-btn').disabled = true;
   document.getElementById('explanation-toggle').classList.add('hidden');
   document.getElementById('explanation-text').classList.add('hidden');
+  document.getElementById('multi-submit-area').classList.add('hidden');
+
+  // 複数選択問題の場合: ヒントと提出エリアを表示
+  if (question.answers.length > 1) {
+    document.getElementById('multi-count').textContent = `0 / ${question.answers.length}`;
+    document.getElementById('multi-required').textContent = question.answers.length;
+    document.getElementById('multi-submit-btn').disabled = true;
+    document.getElementById('multi-submit-area').classList.remove('hidden');
+  }
 
   // 問題カード・選択肢のアニメーションを再発動
   const card = document.querySelector('.question-card');
@@ -83,19 +102,26 @@ export function renderQuestion(question, questionIndex, totalQuestions) {
 
 /**
  * 回答後の結果を表示
+ * @param {object} question
+ * @param {number[]} selectedIndices - 選択したインデックスの配列（単一選択も配列で渡す）
+ * @param {boolean} isCorrect
  */
-export function renderResult(question, selectedIndex, isCorrect) {
+export function renderResult(question, selectedIndices, isCorrect) {
   const choicesEl = document.getElementById('choices-list');
   const buttons = choicesEl.querySelectorAll('.choice-btn');
 
+  // 複数選択提出エリアを隠す
+  document.getElementById('multi-submit-area').classList.add('hidden');
+
   buttons.forEach((btn, idx) => {
     btn.disabled = true;
-    if (idx === selectedIndex) {
+    if (selectedIndices.includes(idx)) {
       btn.classList.add('selected');
     }
     if (question.answers.includes(idx)) {
       btn.classList.add('correct');
-    } else if (idx === selectedIndex && !isCorrect) {
+    } else if (selectedIndices.includes(idx)) {
+      // 選択したが正解ではない選択肢を赤表示
       btn.classList.add('wrong');
     }
   });
@@ -127,6 +153,16 @@ export function renderResult(question, selectedIndex, isCorrect) {
     expEl.classList.add('hidden');
     toggleBtn.textContent = '▼ 解説を見る';
   }
+}
+
+/**
+ * 複数選択: 選択数と提出ボタンの状態を更新
+ * @param {number} selectedCount - 現在の選択数
+ * @param {number} requiredCount - 必要選択数
+ */
+export function updateMultiSelectUI(selectedCount, requiredCount) {
+  document.getElementById('multi-count').textContent = `${selectedCount} / ${requiredCount}`;
+  document.getElementById('multi-submit-btn').disabled = selectedCount !== requiredCount;
 }
 
 /**

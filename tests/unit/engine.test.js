@@ -13,6 +13,7 @@ import {
   getNextQuestion,
   updateQuestionState,
   getStats,
+  isAnswerCorrect,
 } from '../../src/engine.js';
 
 // ============================================================
@@ -328,5 +329,60 @@ describe('getStats', () => {
     const s3 = stats.categoryList.find(c => c.name === 'S3');
     expect(s3.accuracy).not.toBeNaN();
     expect(s3.accuracy).toBe(0);
+  });
+
+  it('qState.correct が実際の NaN でも accuracy が NaN にならない', () => {
+    const userState = {
+      questions: {
+        'Q-001': { attempts: 3, correct: NaN, wrong: 1, recentResults: [0], lastAnsweredAt: 0, nextReviewAt: 0 },
+      },
+    };
+    const stats = getStats(questions, userState);
+    expect(stats.accuracy).not.toBeNaN();
+    expect(stats.accuracy).toBe(0);
+  });
+
+  it('qState.attempts が実際の NaN でも answered カウントが壊れない', () => {
+    const userState = {
+      questions: {
+        'Q-001': { attempts: NaN, correct: 0, wrong: 1, recentResults: [0], lastAnsweredAt: 0, nextReviewAt: 0 },
+      },
+    };
+    const stats = getStats(questions, userState);
+    expect(stats.answered).toBe(0); // NaN attempts はゼロ扱いで未回答
+    expect(stats.accuracy).not.toBeNaN();
+  });
+});
+
+// ============================================================
+// isAnswerCorrect: 回答正誤判定
+// ============================================================
+describe('isAnswerCorrect', () => {
+  it('単一選択: 正解インデックスが一致する場合 true', () => {
+    expect(isAnswerCorrect([0], [0])).toBe(true);
+  });
+
+  it('単一選択: 不一致の場合 false', () => {
+    expect(isAnswerCorrect([1], [0])).toBe(false);
+  });
+
+  it('複数選択: 全インデックスが一致する場合 true（順序不問）', () => {
+    expect(isAnswerCorrect([2, 0], [0, 2])).toBe(true);
+  });
+
+  it('複数選択: 一部のみ正解は false', () => {
+    expect(isAnswerCorrect([0, 1], [0, 2])).toBe(false);
+  });
+
+  it('選択数が足りない場合は false', () => {
+    expect(isAnswerCorrect([0], [0, 1])).toBe(false);
+  });
+
+  it('選択数が多い場合は false', () => {
+    expect(isAnswerCorrect([0, 1, 2], [0, 1])).toBe(false);
+  });
+
+  it('空配列同士は true', () => {
+    expect(isAnswerCorrect([], [])).toBe(true);
   });
 });

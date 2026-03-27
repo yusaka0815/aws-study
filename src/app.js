@@ -8,11 +8,11 @@
  * - appState は実行時のみ存在するミュータブルな状態オブジェクト
  */
 
-import { getNextQuestion, updateQuestionState, getStats } from './engine.js';
+import { getNextQuestion, updateQuestionState, getStats, isAnswerCorrect } from './engine.js';
 import { loadState, saveState, exportBackup, importBackup, resetState } from './storage.js';
 import {
   showScreen, renderExamSelect, renderQuestion, renderResult,
-  toggleExplanation, renderStats, showToast,
+  updateMultiSelectUI, toggleExplanation, renderStats, showToast,
 } from './ui.js';
 import { playCorrectSound, playWrongSound } from './audio.js';
 import { requestWakeLock, releaseWakeLock } from './wake-lock.js';
@@ -78,7 +78,7 @@ const appState = {
   currentQuestion: null,    // 現在表示中の問題
   lastQuestionId: null,     // 直前に出題した問題ID（連続出題防止用）
   answered: false,          // 現在の問題に回答済みか
-  previousScreen: 'screen-select', // 設定/統計から戻る際の遷移先
+  pendingSelections: new Set(), // 複数選択問題の選択中インデックス
 };
 
 // ============================================================
@@ -139,6 +139,15 @@ async function registerServiceWorker() {
 }
 
 // ============================================================
+// 画面遷移（History API でブラウザバック対応）
+// ============================================================
+
+function navigateTo(screenId) {
+  history.pushState({ screenId }, '');
+  showScreen(screenId);
+}
+
+// ============================================================
 // データ読み込み（テスト可能な独立した関数として分離）
 // ============================================================
 export async function loadExamData(examMeta) {
@@ -167,7 +176,7 @@ async function selectExam(examCode) {
 
     document.getElementById('header-exam-name').textContent = examMeta.examName;
     showNextQuestion();
-    showScreen('screen-study');
+    navigateTo('screen-study');
   } catch (e) {
     showToast('問題データの読み込みに失敗しました', 'error');
     console.error(e);
@@ -180,6 +189,8 @@ async function selectExam(examCode) {
 function showNextQuestion() {
   const { currentExam, userState, lastQuestionId } = appState;
   if (!currentExam) return;
+
+  appState.pendingSelections = new Set();
 
   const q = getNextQuestion(currentExam.questions, userState, lastQuestionId);
   if (!q) {
@@ -199,13 +210,13 @@ function showNextQuestion() {
 // ============================================================
 // 回答処理
 // ============================================================
-function handleAnswer(selectedIndex) {
+function handleAnswer(selectedIndices) {
   if (appState.answered || !appState.currentQuestion) return;
 
   appState.answered = true;
   appState.lastQuestionId = appState.currentQuestion.id;
 
-  const isCorrect = appState.currentQuestion.answers.includes(selectedIndex);
+  const isCorrect = isAnswerCorrect(selectedIndices, appState.currentQuestion.answers);
   const now = Date.now();
   const prev = appState.userState.questions[appState.currentQuestion.id] ?? { attempts: 0 };
 
@@ -218,7 +229,7 @@ function handleAnswer(selectedIndex) {
     else playWrongSound();
   }
 
-  renderResult(appState.currentQuestion, selectedIndex, isCorrect);
+  renderResult(appState.currentQuestion, selectedIndices, isCorrect);
 }
 
 // ============================================================
@@ -231,7 +242,7 @@ function showStatsScreen() {
   }
   const stats = getStats(appState.currentExam.questions, appState.userState);
   renderStats(appState.currentExam.examCode, appState.currentExam.examName, stats);
-  showScreen('screen-stats');
+  navigateTo('screen-stats');
 }
 
 // ============================================================
@@ -242,7 +253,29 @@ function showStatsScreen() {
 function setupStudyListeners() {
   document.getElementById('choices-list').addEventListener('click', e => {
     const btn = e.target.closest('.choice-btn');
-    if (btn && !appState.answered) handleAnswer(Number(btn.dataset.index));
+    if (!btn || appState.answered) return;
+    const idx = Number(btn.dataset.index);
+    const isMulti = appState.currentQuestion?.answers.length > 1;
+
+    if (isMulti) {
+      if (appState.pendingSelections.has(idx)) {
+        appState.pendingSelections.delete(idx);
+        btn.classList.remove('pending-selected');
+      } else {
+        appState.pendingSelections.add(idx);
+        btn.classList.add('pending-selected');
+      }
+      updateMultiSelectUI(appState.pendingSelections.size, appState.currentQuestion.answers.length);
+    } else {
+      handleAnswer([idx]);
+    }
+  });
+
+  document.getElementById('multi-submit-btn').addEventListener('click', () => {
+    if (appState.currentQuestion &&
+        appState.pendingSelections.size === appState.currentQuestion.answers.length) {
+      handleAnswer([...appState.pendingSelections]);
+    }
   });
 
   document.getElementById('explanation-toggle').addEventListener('click', () => {
@@ -259,31 +292,36 @@ function setupStudyListeners() {
 /** 画面間ナビゲーション（試験変更・統計・設定・戻る） */
 function setupNavigationListeners() {
   document.getElementById('btn-change-exam').addEventListener('click', () => {
-    renderExamSelect(EXAM_LIST, selectExam);
-    showScreen('screen-select');
+    renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
+    navigateTo('screen-select');
   });
 
-  document.getElementById('btn-stats').addEventListener('click', () => {
-    appState.previousScreen = 'screen-study';
-    showStatsScreen();
-  });
+  document.getElementById('btn-stats').addEventListener('click', showStatsScreen);
 
   document.getElementById('btn-settings').addEventListener('click', () => {
-    appState.previousScreen = 'screen-study';
-    showScreen('screen-settings');
+    navigateTo('screen-settings');
   });
 
-  document.getElementById('stats-back-btn').addEventListener('click', () => {
-    showScreen(appState.previousScreen ?? 'screen-study');
-  });
+  document.getElementById('stats-back-btn').addEventListener('click', () => history.back());
 
-  document.getElementById('settings-back-btn').addEventListener('click', () => {
-    showScreen(appState.previousScreen ?? 'screen-select');
-  });
+  document.getElementById('settings-back-btn').addEventListener('click', () => history.back());
 
   document.getElementById('btn-settings-from-select').addEventListener('click', () => {
-    appState.previousScreen = 'screen-select';
-    showScreen('screen-settings');
+    navigateTo('screen-settings');
+  });
+
+  // ロゴタップ → ホーム画面
+  document.querySelectorAll('.app-logo').forEach(el => {
+    el.addEventListener('click', () => {
+      renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
+      navigateTo('screen-select');
+    });
+  });
+
+  // ブラウザバック（スワイプ・ハードウェアバック）対応
+  window.addEventListener('popstate', e => {
+    const screenId = e.state?.screenId ?? 'screen-select';
+    showScreen(screenId);
   });
 }
 
@@ -361,15 +399,30 @@ function setupSettingsListeners() {
 }
 
 // ============================================================
+// 試験別進捗マップ（ホーム画面表示用）
+// ============================================================
+function buildProgressMap() {
+  const counts = {};
+  for (const [id, state] of Object.entries(appState.userState?.questions ?? {})) {
+    if (state.attempts > 0) {
+      const prefix = id.split('-')[0];
+      counts[prefix] = (counts[prefix] || 0) + 1;
+    }
+  }
+  return counts;
+}
+
+// ============================================================
 // 初期化
 // ============================================================
 async function init() {
+  history.replaceState({ screenId: 'screen-select' }, '');
   await registerServiceWorker();
   appState.userState = loadState();
   setupStudyListeners();
   setupNavigationListeners();
   setupSettingsListeners();
-  renderExamSelect(EXAM_LIST, selectExam);
+  renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
   showScreen('screen-select');
 
   // スリープ防止: 設定が有効なら起動時に取得、ページ再表示時に再取得

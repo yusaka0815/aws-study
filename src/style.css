@@ -211,6 +211,17 @@ body {
   flex-shrink: 0;
 }
 
+.exam-progress {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-dim);
+  padding: 3px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .select-footer {
   padding: 0 16px 32px;
   text-align: center;
@@ -436,6 +447,11 @@ body {
   max-height: 220px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+#explanation-text::-webkit-scrollbar {
+  display: none; /* Chrome / Safari */
 }
 
 #explanation-text.hidden { display: none; }
@@ -798,6 +814,70 @@ body {
 
 .toast-success { border-color: var(--success); color: var(--success); }
 .toast-error { border-color: var(--danger); color: var(--danger); }
+
+/* ============================================================
+   ロゴ（クリック可能）
+   ============================================================ */
+.app-logo {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ============================================================
+   複数選択提出エリア
+   ============================================================ */
+#multi-submit-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.multi-hint {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+#multi-count {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+#multi-submit-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.2s;
+}
+
+#multi-submit-btn:not(:disabled):active {
+  background: var(--primary-dark);
+}
+
+#multi-submit-btn:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 複数選択問題：選択中のボタン */
+.choice-btn.pending-selected {
+  border-color: var(--primary);
+  background: var(--primary-dim);
+}
+
+.choice-btn.pending-selected .choice-label {
+  background: var(--primary);
+  color: white;
+}
 
 /* ============================================================
    ユーティリティ

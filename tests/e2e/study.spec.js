@@ -23,6 +23,26 @@ async function selectExam(page, examCode = 'SAA') {
   );
 }
 
+/**
+ * 現在表示中の問題に回答する（単一選択・複数選択両対応）
+ * 回答後は #answer-area が visible になることを保証する
+ */
+async function answerQuestion(page) {
+  const multiArea = page.locator('#multi-submit-area');
+  const isMulti = await multiArea.isVisible();
+  if (isMulti) {
+    const requiredText = await page.locator('#multi-required').textContent();
+    const required = parseInt(requiredText, 10);
+    for (let i = 0; i < required; i++) {
+      await page.locator('.choice-btn').nth(i).click();
+    }
+    await page.locator('#multi-submit-btn').click();
+  } else {
+    await page.locator('.choice-btn').first().click();
+  }
+  await page.waitForSelector('#answer-area:not(.hidden)');
+}
+
 // ============================================================
 // 起動・画面表示
 // ============================================================
@@ -132,8 +152,7 @@ test.describe('回答処理', () => {
   });
 
   test('回答エリアの表示にアニメーションが適用される', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
-    await page.waitForSelector('#answer-area:not(.hidden)');
+    await answerQuestion(page);
     const animName = await page.evaluate(() =>
       getComputedStyle(document.getElementById('answer-area')).animationName
     );
@@ -141,7 +160,7 @@ test.describe('回答処理', () => {
   });
 
   test('選択肢をクリックすると正誤が表示される', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     await expect(page.locator('#answer-area')).toBeVisible();
     await expect(page.locator('#answer-icon')).toBeVisible();
     const icon = await page.locator('#answer-icon').textContent();
@@ -149,32 +168,30 @@ test.describe('回答処理', () => {
   });
 
   test('選択肢クリック後に selected クラスが付与される', async ({ page }) => {
-    const btn = page.locator('.choice-btn').first();
-    await btn.click();
-    // 回答後は selected クラスが残り、自分が選んだ選択肢を示す
-    const hasSelected = await btn.evaluate(el => el.classList.contains('selected'));
-    expect(hasSelected).toBe(true);
+    await answerQuestion(page);
+    // 回答後は選択した選択肢に selected クラスが付与される
+    const selectedCount = await page.locator('.choice-btn.selected').count();
+    expect(selectedCount).toBeGreaterThanOrEqual(1);
   });
 
   test('正解選択肢は緑、不正解選択肢は赤になる', async ({ page }) => {
-    // どれかクリック後に正解ボタンが green クラスを持つことを確認
-    await page.locator('.choice-btn').first().click();
-    const correctBtn = page.locator('.choice-btn.correct');
-    await expect(correctBtn).toHaveCount(1); // 正解は1つ
+    await answerQuestion(page);
+    const correctBtns = page.locator('.choice-btn.correct');
+    await expect(correctBtns).not.toHaveCount(0); // 正解ボタンが1つ以上ある
   });
 
   test('回答後は次へボタンが有効化される', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     await expect(page.locator('#next-btn')).toBeEnabled();
   });
 
   test('回答後は解説ボタンが表示される', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     await expect(page.locator('#explanation-toggle')).toBeVisible();
   });
 
   test('解説ボタンをクリックすると解説が展開または閉じられる', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     const expEl = page.locator('#explanation-text');
     const toggleBtn = page.locator('#explanation-toggle');
     const isAutoExpanded = await expEl.isVisible();
@@ -189,7 +206,7 @@ test.describe('回答処理', () => {
   });
 
   test('解説トグルで開閉が切り替わる', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     const expEl = page.locator('#explanation-text');
     const toggleBtn = page.locator('#explanation-toggle');
     const wasVisible = await expEl.isVisible();
@@ -202,7 +219,7 @@ test.describe('回答処理', () => {
   });
 
   test('解説ボタンに開閉を示すアイコンが表示される', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     const expEl = page.locator('#explanation-text');
     const toggleBtn = page.locator('#explanation-toggle');
     // 現在の展開状態に応じてアイコンを確認
@@ -219,7 +236,7 @@ test.describe('回答処理', () => {
   });
 
   test('回答後は選択肢をクリックしても再判定されない', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     const iconBefore = await page.locator('#answer-icon').textContent();
     // 回答後はボタンがdisabledになる。force:true でイベントを強制送信しても結果は変わらない
     await page.locator('.choice-btn').nth(1).click({ force: true });
@@ -229,7 +246,7 @@ test.describe('回答処理', () => {
 
   test('次へボタンで新しい問題が表示される', async ({ page }) => {
     const firstQuestion = await page.locator('#question-text').textContent();
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     await page.locator('#next-btn').click();
     await page.waitForFunction(
       () => document.getElementById('answer-area')?.classList.contains('hidden')
@@ -240,7 +257,7 @@ test.describe('回答処理', () => {
   });
 
   test('次へボタン押下時に問題カードのアニメーションが再発動する', async ({ page }) => {
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     await page.locator('#next-btn').click();
     await page.waitForFunction(
       () => document.getElementById('answer-area')?.classList.contains('hidden')
@@ -409,7 +426,7 @@ test.describe('統計画面', () => {
 
   test('1問回答後の統計に数値が反映される', async ({ page }) => {
     // 1問回答
-    await page.locator('.choice-btn').first().click();
+    await answerQuestion(page);
     // 統計を開く
     await page.locator('#btn-stats').click();
     const overview = page.locator('#stats-overview');
@@ -525,7 +542,7 @@ test.describe('データ永続性（localStorage）', () => {
     await selectExam(page, 'SAA');
     // 3問回答
     for (let i = 0; i < 3; i++) {
-      await page.locator('.choice-btn').first().click();
+      await answerQuestion(page);
       await page.locator('#next-btn').click();
       await page.waitForFunction(
         () => document.getElementById('answer-area')?.classList.contains('hidden')
