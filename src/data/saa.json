@@ -452,6 +452,606 @@
       "answers": [0],
       "explanation": "RedisはElastiCacheの高機能版で、データ永続性（AOF/RDB）、レプリケーション、マルチAZ、フェイルオーバー、Pub/Sub、ソート済みセットなどをサポートします。Memcachedはシンプルなインメモリキャッシュで、水平スケーリング（シャーディング）が得意です。",
       "tags": ["ElastiCache", "Redis", "Memcached", "キャッシュ"]
+    },
+    {
+      "id": "SAA-031",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2の購入オプションで「スポットインスタンス（Spot Instances）」の特徴として正しいものはどれですか？",
+      "choices": [
+        "最大75%のコスト削減が可能だが、AWSが容量を必要とする場合に2分前通知で中断される",
+        "定価で購入し24時間365日中断されることなく利用できる最優先インスタンス",
+        "1年または3年の期間コミットメントで最大72%の割引が受けられる",
+        "専有ハードウェアで実行され他のAWSユーザーと物理サーバーを共有しない"
+      ],
+      "answers": [0],
+      "explanation": "スポットインスタンスはAWSの余剰容量を最大90%の割引で利用できます。ただしAWSが容量を必要とする際は2分前通知後に中断されます。中断耐性のあるワークロード（バッチ処理・ビッグデータ分析・CI/CD・ステートレスWebサーバー）に適しています。スポット中断に対応するためSQSキューやチェックポイント機構と組み合わせます。",
+      "tags": ["EC2", "Spot", "コスト最適化", "購入オプション"]
+    },
+    {
+      "id": "SAA-032",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2の「配置グループ（Placement Groups）」の種類と用途として正しいものはどれですか？",
+      "choices": [
+        "クラスター：低レイテンシ高スループット（HPC）、スプレッド：各インスタンスを別ラックに分散（高可用性・7インスタンス/AZ上限）、パーティション：大規模分散システム向け（Hadoop等）",
+        "クラスター：高可用性、スプレッド：低レイテンシ、パーティション：コスト最適化",
+        "クラスター：複数リージョンに分散、スプレッド：同一ラックに集約、パーティション：コンテナ専用",
+        "配置グループはEC2とRDSのみで使用可能で3種類すべて同一AZ内にのみ作成可能"
+      ],
+      "answers": [0],
+      "explanation": "EC2配置グループの3種類：①クラスター（Cluster）：同一AZ内の近接ラック配置、10Gbps帯域、低レイテンシ（HPC・機械学習トレーニング）②スプレッド（Spread）：各インスタンスを別ラック・別ハードウェアに分散、同時障害リスク最小化、AZあたり最大7インスタンス（重要なアプリケーション）③パーティション（Partition）：複数パーティションにグループ分け、Hadoop/Kafka/Cassandraなど大規模分散システム向け（パーティションあたり数百インスタンス）。",
+      "tags": ["EC2", "配置グループ", "高可用性", "HPC"]
+    },
+    {
+      "id": "SAA-033",
+      "category": "EBS",
+      "difficulty": 2,
+      "question": "EC2で使用するEBSボリュームタイプの選択として正しいものはどれですか？",
+      "choices": [
+        "gp3：最もコスト効率よく最大16,000IOPSで独立してIOPS/スループット設定可能（デフォルト汎用SSD）",
+        "io2 Block Expressはデータベース以外のワークロードに最適な汎用SSD",
+        "st1（スループット最適化HDD）は低コストで高IOPSが必要なOLTPデータベースに最適",
+        "gp2とgp3は同等の性能で価格のみ異なる"
+      ],
+      "answers": [0],
+      "explanation": "EBSボリュームタイプ：①gp3（汎用SSD）：3,000 IOPS・125MB/s基本、最大16,000 IOPS・1,000MB/sまで独立追加可能（gp2より20%安い）②io2 Block Express（プロビジョンドIOPS SSD）：最大256,000 IOPS・4,000MB/s、99.999%の高耐久、ミッションクリティカルDB用③st1（スループット最適化HDD）：500MB/s、順次アクセス大容量（ビッグデータ・DWH）④sc1（コールドHDD）：最安、低頻度アクセス⑤gp2：古い世代、IOPS=ボリュームサイズに依存（gp3が推奨）。",
+      "tags": ["EBS", "ストレージ", "IOPS", "SSD"]
+    },
+    {
+      "id": "SAA-034",
+      "category": "ELB",
+      "difficulty": 2,
+      "question": "AWS Elastic Load Balancingの4種類のロードバランサーの使い分けとして正しいものはどれですか？",
+      "choices": [
+        "ALB：HTTP/HTTPSのレイヤー7、NLB：TCP/UDPのレイヤー4・超低レイテンシ、GWLB：サードパーティ仮想アプライアンス、CLB：レガシー（非推奨）",
+        "NLBはHTTPのみ対応でALBはTCPのみ対応",
+        "GLWBはグローバルロードバランサーで複数リージョンにトラフィックを分散する",
+        "ALBは静的IPアドレスを持ちNLBはDNS名のみでIPアドレスは持たない"
+      ],
+      "answers": [0],
+      "explanation": "ELBの4種類：①ALB（Application Load Balancer）：レイヤー7（HTTP/HTTPS/WebSocket）、パスルーティング・ホストルーティング・Lambdaターゲット対応、Cognitoとの統合②NLB（Network Load Balancer）：レイヤー4（TCP/UDP/TLS）、静的IPアドレス、毎秒数百万リクエスト対応、超低レイテンシ③GWLB（Gateway Load Balancer）：レイヤー3、ファイアウォール・IDS/IPS等の仮想アプライアンスを透過的に挿入④CLB（Classic）：旧世代非推奨。",
+      "tags": ["ELB", "ALB", "NLB", "ロードバランサー"]
+    },
+    {
+      "id": "SAA-035",
+      "category": "Auto Scaling",
+      "difficulty": 2,
+      "question": "EC2 Auto ScalingのスケーリングポリシーでALBのリクエスト数に基づいてスケールする最適な設定はどれですか？",
+      "choices": [
+        "シンプルスケーリング：単一のCloudWatchアラームでスケールアウト/インを実行",
+        "ターゲット追跡スケーリング：「1インスタンスあたりのリクエスト数をX件に維持」というターゲット値を設定するだけで自動的にスケール",
+        "ステップスケーリング：複数のアラーム閾値ごとに異なるスケーリング量を設定",
+        "スケジュールスケーリング：毎日決まった時刻に固定台数に増減"
+      ],
+      "answers": [1],
+      "explanation": "ターゲット追跡スケーリング（Target Tracking）は最も推奨されるスケーリング方式です。「ALBの1インスタンスあたりリクエスト数を1,000に維持」等のターゲット値を設定すると、Auto ScalingがCloudWatchアラームを自動作成しスケールアウト/インを自動管理します。スケールイン時はデフォルト300秒のクールダウンで急激な削減を防ぎます。スケジュールスケーリングは予測可能なトラフィックパターン（夜間縮小・日中拡大）と組み合わせると効果的です。",
+      "tags": ["Auto Scaling", "ターゲット追跡", "スケーリングポリシー", "ALB"]
+    },
+    {
+      "id": "SAA-036",
+      "category": "Route 53",
+      "difficulty": 2,
+      "question": "Route 53のルーティングポリシー「加重ルーティング（Weighted）」と「レイテンシールーティング（Latency）」の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "加重ルーティング：カナリアデプロイ（新バージョンに10%など特定割合で振り分け）、レイテンシールーティング：ユーザーに最も低レイテンシのAWSリージョンに自動ルーティング",
+        "加重ルーティング：地理的場所に基づくルーティング、レイテンシールーティング：重みに基づく優先度設定",
+        "加重ルーティングはリージョン間でのみ使用可能、レイテンシールーティングはAZ間でのみ使用可能",
+        "両方とも同じ機能でルーティングの重みの設定単位のみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "Route 53ルーティングポリシー：①シンプル：単一リソース②加重（Weighted）：複数リソースに割合指定（合計100不要）、カナリアデプロイ・A/Bテスト・新リージョン移行に使用③レイテンシー（Latency）：AWSが測定したリージョン間レイテンシーで最速リージョンに自動ルーティング④フェイルオーバー：プライマリ/セカンダリ切り替え⑤位置情報（Geolocation）：クライアントのIPによる地理的ルーティング⑥近接性（Geoproximity）：バイアス値で地理的範囲を調整⑦複数値回答（Multi-Value）：複数のIPを返してDNSレベル負荷分散。",
+      "tags": ["Route 53", "加重ルーティング", "レイテンシールーティング", "DNS"]
+    },
+    {
+      "id": "SAA-037",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "RDS Multi-AZとRDS Read Replicaの違いとして正しいものはどれですか？",
+      "choices": [
+        "Multi-AZ：プライマリの同期レプリカを別AZに作成し自動フェイルオーバーで可用性を高める（読み取りには使用不可）、Read Replica：非同期レプリカで読み取りスケールアウトに使用",
+        "Multi-AZは読み取りにも書き込みにも使用でき、Read Replicaは読み取り専用かつ自動フェイルオーバーも提供する",
+        "Multi-AZは無料でRead Replicaは追加料金がかかる",
+        "Read ReplicaはMulti-AZの上位機能で両方の機能を提供する"
+      ],
+      "answers": [0],
+      "explanation": "RDS Multi-AZ：①スタンバイインスタンスは同期レプリケーション②フェイルオーバー時にDNSが自動的にスタンバイへ切り替え（通常1〜2分）③スタンバイは読み取りに使用不可（可用性のみ）④PostgreSQL・MySQL・Oracle・SQL ServerでMulti-AZオプション利用可能。Read Replica：①非同期レプリケーション（ラグが生じる可能性）②読み取りトラフィックをオフロード③最大5つまで（Aurora: 15）④別リージョンへのクロスリージョンレプリカも可能⑤Auroraのリードレプリカはフェイルオーバーにも使用可能。",
+      "tags": ["RDS", "Multi-AZ", "Read Replica", "高可用性"]
+    },
+    {
+      "id": "SAA-038",
+      "category": "RDS",
+      "difficulty": 2,
+      "question": "Amazon Aurora の特徴として正しいものはどれですか？",
+      "choices": [
+        "Auroraは通常のRDSより5倍（MySQL互換）・3倍（PostgreSQL互換）高速で、ストレージが3AZ×2コピー（6コピー）で自動複製・自動修復される",
+        "Auroraはシングルリージョンのみで動作しマルチリージョン展開はサポートしない",
+        "Auroraのストレージは最大64GBで手動拡張が必要",
+        "AuroraはMySQLのみ互換でPostgreSQLには対応していない"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Aurora主な特徴：①MySQL互換で5倍・PostgreSQL互換で3倍の性能向上②ストレージ：3AZに各2コピーの計6コピー自動レプリケーション（高耐久性）③自動増分ストレージ：10GBから最大128TBまで自動拡張④Aurora Replicas：最大15台のリードレプリカ（自動フェイルオーバー利用可能）⑤Global Database：1ライタリージョン＋最大5リーダーリージョン、クロスリージョン読み取り<1秒⑥Serverless：オンデマンドで容量自動調整⑦高速フェイルオーバー：通常30秒以内。",
+      "tags": ["RDS", "Aurora", "高可用性", "マネージドDB"]
+    },
+    {
+      "id": "SAA-039",
+      "category": "DynamoDB",
+      "difficulty": 2,
+      "question": "DynamoDB のGSI（グローバルセカンダリインデックス）とLSI（ローカルセカンダリインデックス）の違いとして正しいものはどれですか？",
+      "choices": [
+        "GSI：任意のパーティションキー+ソートキーで別のインデックス作成（テーブル作成後も追加可能）、LSI：同一パーティションキーで別のソートキーを持つインデックス（テーブル作成時のみ）",
+        "LSIはすべてのリージョンに自動レプリケートされグローバルに利用可能、GSIはローカルリージョンのみ",
+        "GSIは結果整合性のみ、LSIは強力な整合性読み取りも使用可能だが作成後は変更不可",
+        "DynamoDBはGSIを最大5つ、LSIは無制限に作成できる"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDBインデックス：LSI（ローカルセカンダリインデックス）：①テーブル作成時のみ定義可能（後から追加不可）②同じパーティションキー、異なるソートキー③強力な整合性・結果整合性どちらも選択可能④テーブルのWCU/RCUを共有。GSI（グローバルセカンダリインデックス）：①テーブル作成後も追加・削除可能②任意の属性をパーティションキー+ソートキーに設定③結果整合性のみ④独自のWCU/RCU設定⑤最大20個（デフォルト）。",
+      "tags": ["DynamoDB", "GSI", "LSI", "インデックス"]
+    },
+    {
+      "id": "SAA-040",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPCエンドポイント（VPC Endpoints）の種類と違いとして正しいものはどれですか？",
+      "choices": [
+        "インターフェイスエンドポイント：ENIをサブネットに作成してPrivateLinkでAWSサービスへ安全接続、ゲートウェイエンドポイント：ルートテーブルに追加してS3・DynamoDBへ無料接続",
+        "インターフェイスエンドポイントはS3専用、ゲートウェイエンドポイントはEC2専用",
+        "ゲートウェイエンドポイントは有料でインターフェイスエンドポイントは無料",
+        "両方とも全てのAWSサービスに対して利用可能で機能に違いはない"
+      ],
+      "answers": [0],
+      "explanation": "VPCエンドポイントの2種類：①ゲートウェイエンドポイント（Gateway Endpoint）：S3・DynamoDBのみ対応、ルートテーブルにプレフィックスリストへのルートを追加、インターネット/NAT不要、追加料金なし②インターフェイスエンドポイント（Interface Endpoint / AWS PrivateLink）：EC2・ECS・ELB・CloudWatch等多数のAWSサービス対応、ENIにプライベートIPアドレスを割り当て、時間課金+データ転送課金あり。どちらもインターネットGW経由せずAWSサービスへの安全な接続を提供します。",
+      "tags": ["VPC", "エンドポイント", "PrivateLink", "セキュリティ"]
+    },
+    {
+      "id": "SAA-041",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "VPC Peeringを設定した場合、2つのVPC間のルーティングについて正しいものはどれですか？",
+      "choices": [
+        "VPC Peeringは推移的（Transitive）で、A→B→CのPeeringがある場合AからCに直接通信できる",
+        "VPC Peeringは非推移的（Non-Transitive）で、A-B・B-CのPeeringでもAからCには通信できない。通信するにはA-Cのpeering別途必要",
+        "VPC Peeringは同一AWSアカウント内のVPC間でしか設定できない",
+        "VPC PeeringはIPアドレスレンジが重複していても設定できる"
+      ],
+      "answers": [1],
+      "explanation": "VPC Peeringの重要な特性：①非推移的（Non-Transitive）：A-B間とB-C間にPeeringがあってもA-Cは直接通信不可（A-C間に別のPeeringが必要）②IPアドレスレンジのオーバーラップ不可③クロスアカウント・クロスリージョン接続可能④帯域幅制限なし⑤暗号化は不要（AWSバックボーンネットワーク内の転送）。多数のVPCを相互接続する場合はVPC PeeringよりAWS Transit Gatewayが適しています（Transit Gatewayは推移的ルーティングをサポート）。",
+      "tags": ["VPC", "VPC Peering", "Transit Gateway", "ネットワーク"]
+    },
+    {
+      "id": "SAA-042",
+      "category": "VPC",
+      "difficulty": 2,
+      "question": "AWS Transit Gatewayの主な用途と特徴として正しいものはどれですか？",
+      "choices": [
+        "複数のVPCとオンプレミスネットワークをハブ・アンド・スポーク（スター型）で接続し推移的ルーティングを提供するリージョナルネットワークトランジットハブ",
+        "インターネットGWの代替として使用するVPCのインターネット接続サービス",
+        "AWSリージョン間でデータを転送するためのマネージドWANサービス",
+        "VPC FlowLogsとCloudTrailのログを集中管理するネットワークモニタリングサービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS Transit Gatewayは多数のVPCとオンプレミスを単一の接続ポイントで接続するサービスです。特徴：①スター型トポロジー：各VPC/VPNをTransit Gatewayに接続するだけで相互通信可能（VPC Peeringのメッシュ型と異なり管理が容易）②推移的ルーティング：A→TGW→Bのルート設定で間接接続可能③マルチキャスト対応④リージョン間ピアリング（Inter-Region Peering）⑤複数AWSアカウントと共有（AWS Resource Access Manager経由）⑥帯域幅：最大50Gbps/VPN接続⑦Direct Connect Gatewayとの統合でオンプレ接続。",
+      "tags": ["VPC", "Transit Gateway", "ネットワーク", "ハブアンドスポーク"]
+    },
+    {
+      "id": "SAA-043",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "IAMロールを使ったクロスアカウントアクセスの仕組みとして正しいものはどれですか？",
+      "choices": [
+        "アカウントAのEC2インスタンスからアカウントBのリソースにアクセスするには、アカウントBのIAMロールを作成して信頼ポリシーにアカウントAを許可し、アカウントAからSTS:AssumeRoleで一時的な認証情報を取得",
+        "クロスアカウントアクセスはIAMユーザーのアクセスキーを両アカウントに登録することで実現する",
+        "クロスアカウントアクセスはVPC Peeringが設定されたVPC間でのみ利用可能",
+        "アカウントBのルートユーザーの認証情報をアカウントAのユーザーに配布してアクセスする"
+      ],
+      "answers": [0],
+      "explanation": "IAMクロスアカウントアクセスの手順：①アカウントB（リソース保有側）でIAMロールを作成②ロールの信頼ポリシー（Trust Policy）にアカウントAを信頼するPrincipalを設定③ロールの権限ポリシー（Permission Policy）に必要な権限を付与④アカウントAのエンティティ（IAMユーザー/ロール）がSTS:AssumeRoleを呼び出し一時的な認証情報（アクセスキー+セッショントークン）を取得⑤取得した一時認証情報でアカウントBのリソースにアクセス。長期的なアクセスキーを共有せず最小権限の原則を守れる安全な方法です。",
+      "tags": ["IAM", "クロスアカウント", "AssumeRole", "STS"]
+    },
+    {
+      "id": "SAA-044",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Organizations のSCP（サービスコントロールポリシー）の動作として正しいものはどれですか？",
+      "choices": [
+        "SCPはメンバーアカウントの最大権限を制限するが、SCPで許可されていてもIAMポリシーで許可されていない場合は実行できない（AND条件）",
+        "SCPを設定すると管理アカウントにも適用されルートユーザーの権限も制限される",
+        "SCPで特定のサービスをAllowリストに追加すれば、メンバーアカウントのIAMユーザーはIAMポリシーなしでも利用できる",
+        "SCPはOU（組織単位）ではなく個々のIAMユーザーに直接適用する"
+      ],
+      "answers": [0],
+      "explanation": "SCP（Service Control Policies）の重要な動作：①SCPは最大権限（ガードレール）であり許可ではない：SCPで許可+IAMポリシーで許可の両方が必要②管理アカウントにはSCPが適用されない（ルートアカウントは影響を受けない）③拒否ポリシー（Deny list）：デフォルトAllow→特定アクションをDeny④許可ポリシー（Allow list）：デフォルトDeny→特定アクションのみAllow。例：SCP「EC2以外のすべてのサービスをDeny」→開発アカウントでEC2以外のサービスを完全ブロック。",
+      "tags": ["IAM", "Organizations", "SCP", "ガバナンス"]
+    },
+    {
+      "id": "SAA-045",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3 レプリケーション（CRR/SRR）の設定要件と特徴として正しいものはどれですか？",
+      "choices": [
+        "CRR（クロスリージョンレプリケーション）：異なるリージョン間でオブジェクトを非同期複製・送信元・送信先でバージョニングを有効化が必要",
+        "レプリケーションは有効化以前に存在したオブジェクトも自動的に複製される",
+        "CRRの転送は同期的で送信元に書き込まれると同時に送信先にも書き込まれる",
+        "レプリケーション設定後はDeleteマーカーが自動的に複製されるためデータ保護に万全"
+      ],
+      "answers": [0],
+      "explanation": "S3レプリケーション：①種類：CRR（Cross-Region Replication）・SRR（Same-Region Replication）②バージョニング必須：送信元・送信先バケット両方でバージョニングを有効化③非同期レプリケーション：ソースへの書き込み後に非同期で複製（即時ではない）④既存オブジェクトはS3 Batch Operations（Batch Replication）で別途複製必要⑤Deleteマーカー：デフォルトでは複製されない（誤削除からの保護、設定で変更可能）⑥暗号化：SSE-S3・SSE-KMSどちらも対応。用途：CRR（コンプライアンス・DRサイト・低レイテンシアクセス）、SRR（同一リージョンのログ集約・開発/本番環境間コピー）。",
+      "tags": ["S3", "レプリケーション", "CRR", "SRR"]
+    },
+    {
+      "id": "SAA-046",
+      "category": "S3",
+      "difficulty": 2,
+      "question": "S3イベント通知（Event Notifications）の送信先として設定できるサービスの正しい組み合わせはどれですか？",
+      "choices": [
+        "SQSキュー・SNSトピック・Lambda関数・Amazon EventBridge",
+        "SQSキューとSNSトピックのみ",
+        "Lambda関数とEC2インスタンスのみ",
+        "CloudWatchとCloudTrailのみ（イベントはログのみで配信できない）"
+      ],
+      "answers": [0],
+      "explanation": "S3イベント通知の送信先：①SQS（Standard）：オブジェクト作成・削除等のイベントをキューに送信②SNS：ファンアウトパターン（複数のSQS/Lambda等に同時配信）③Lambda：サーバーレスでイベント処理（画像リサイズ等）④Amazon EventBridge：最新の方式で全S3イベントをEventBridgeに送信可能（複数ターゲット・フィルタリング・アーカイブ機能）。イベント種類：s3:ObjectCreated:*・s3:ObjectRemoved:*・s3:Replication:*・s3:LifecycleExpiration:*等。EventBridgeが最も柔軟で複数の送信先に同時配信できます。",
+      "tags": ["S3", "イベント通知", "SQS", "Lambda", "EventBridge"]
+    },
+    {
+      "id": "SAA-047",
+      "category": "CloudFront",
+      "difficulty": 2,
+      "question": "CloudFrontで特定のオリジンに安全にアクセスするための設定として正しいものはどれですか？",
+      "choices": [
+        "S3オリジンにはOAC（Origin Access Control）を使用してCloudFrontのみがS3にアクセスできるようにし、バケットポリシーで他の直接アクセスをブロック",
+        "S3バケットをパブリックアクセス可能に設定してCloudFrontから直接アクセスする",
+        "CloudFrontのオリジンにS3を設定すると自動的にセキュアになり追加設定は不要",
+        "OAI（Origin Access Identity）は2024年以降も新規作成でき推奨される方法"
+      ],
+      "answers": [0],
+      "explanation": "CloudFrontのS3オリジンセキュリティ：OAC（Origin Access Control）が現在の推奨方式。OAIは非推奨：①OAC（Origin Access Control）：CloudFrontサービスプリンシパルによるSigV4署名、SSE-KMSで暗号化されたS3オブジェクトにも対応、より安全②OAI（Origin Access Identity）：レガシーで新規作成非推奨。設定手順：①CloudFrontディストリビューションにOACを関連付け②S3バケットポリシーでCloudFrontサービスプリンシパル（cloudfront.amazonaws.com）のみGetObjectを許可③パブリックアクセスブロックを有効化。",
+      "tags": ["CloudFront", "S3", "OAC", "セキュリティ"]
+    },
+    {
+      "id": "SAA-048",
+      "category": "CloudFront",
+      "difficulty": 2,
+      "question": "CloudFrontの「Lambda@Edge」と「CloudFront Functions」の違いとして正しいものはどれですか？",
+      "choices": [
+        "Lambda@Edge：Node.js/Python対応・最大5秒実行・オリジンリクエスト/レスポンスでも実行可能、CloudFront Functions：JavaScript専用・最大1ms・ビューワーリクエスト/レスポンスのみ・高速軽量",
+        "Lambda@EdgeはALBと統合、CloudFront Functionsはオリジンサーバーで実行される",
+        "CloudFront Functionsは本格的な機械学習処理が可能でLambda@Edgeは簡単な文字列処理のみ",
+        "両者は同じ機能で実行環境の場所のみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "CloudFrontエッジ処理の2つのオプション：CloudFront Functions：①JavaScript専用②実行時間1ms以内③ビューワーリクエスト/ビューワーレスポンスのみ④最大10KB⑤高速軽量で毎秒数百万実行⑥URLリダイレクト・ヘッダー操作・認証JWT検証等。Lambda@Edge：①Node.js/Python②最大30秒（オリジンリクエスト/レスポンス）③ビューワー+オリジンの4フェーズ全てで実行④最大10MB⑤外部APIコール可能⑥動的なオリジン選択・A/Bテスト・画像変換等。",
+      "tags": ["CloudFront", "Lambda@Edge", "CloudFront Functions", "エッジ処理"]
+    },
+    {
+      "id": "SAA-049",
+      "category": "SQS",
+      "difficulty": 2,
+      "question": "SQSの「可視性タイムアウト（Visibility Timeout）」の目的と適切な設定として正しいものはどれですか？",
+      "choices": [
+        "コンシューマーがメッセージを受信して処理中に他のコンシューマーが同じメッセージを処理しないようにする時間（デフォルト30秒）、処理時間より長く設定する必要がある",
+        "キューに送信されたメッセージが他のコンシューマーに見える（可視状態になる）までの遅延時間",
+        "メッセージが自動削除されるまでのキュー内の最大保持時間（最長14日）",
+        "SQSキューが作成されてから削除されるまでのライフサイクル管理時間"
+      ],
+      "answers": [0],
+      "explanation": "可視性タイムアウト（Visibility Timeout）：コンシューマーがメッセージを受信すると、そのメッセージは可視性タイムアウトの間、他のコンシューマーから見えなくなります（重複処理防止）。設定ポイント：①処理時間より長く設定（デフォルト30秒、最大12時間）②処理が完了したらコンシューマーが明示的にDeleteMessage（キューから削除）③タイムアウト内に削除されない場合メッセージが再表示されリトライされる④ChangeMessageVisibility APIで処理中に延長可能。デッドレターキュー（DLQ）と組み合わせて最大受信回数を超えたメッセージを別キューに移動。",
+      "tags": ["SQS", "可視性タイムアウト", "メッセージキュー", "デカップリング"]
+    },
+    {
+      "id": "SAA-050",
+      "category": "サーバーレス",
+      "difficulty": 2,
+      "question": "Lambda関数の「同時実行数（Concurrency）」と「プロビジョニングされた同時実行（Provisioned Concurrency）」の違いとして正しいものはどれですか？",
+      "choices": [
+        "通常の同時実行：コールドスタートが発生する可能性がある・デフォルトアカウント上限1,000、プロビジョニングされた同時実行：事前にウォームアップしコールドスタートなしで応答・追加料金",
+        "同時実行はLambdaの1分あたりの呼び出し上限でプロビジョニングはメモリの事前確保",
+        "プロビジョニングされた同時実行は無料でコールドスタートも通常の同時実行と同じ",
+        "同時実行数は自動無制限スケールするがプロビジョニングは手動固定"
+      ],
+      "answers": [0],
+      "explanation": "Lambda同時実行の仕組み：通常同時実行：①コールドスタート：新しい実行環境のプロビジョニングに数秒かかる（Node.js・Pythonは数十ms〜秒、Java/C#は数秒）②デフォルトリージョン制限1,000（引き上げ申請可能）③予約済み同時実行（Reserved Concurrency）：特定関数の最大同時実行数を予約しスロットリング。プロビジョニングされた同時実行：①事前にウォームアップした実行環境を指定数維持②コールドスタートゼロ・安定したレイテンシ③追加料金発生（ウォーム環境の維持コスト）。レイテンシが重要な本番API等に使用。",
+      "tags": ["Lambda", "同時実行", "コールドスタート", "サーバーレス"]
+    },
+    {
+      "id": "SAA-051",
+      "category": "サーバーレス",
+      "difficulty": 2,
+      "question": "AWS API GatewayとALB（Application Load Balancer）をLambdaのフロントエンドとして使い分ける基準として正しいものはどれですか？",
+      "choices": [
+        "API Gateway：REST/HTTP/WebSocket API管理・認証・スロットリング・キャッシュ・API Keyの豊富な機能、ALB：単純なHTTPルーティング・コスト重視・ECSやEC2との統合が多い場合",
+        "API Gatewayは無料でALBは常に高コストのため通常はAPI Gatewayを選ぶ",
+        "ALBはLambdaターゲットに対応していないのでAPI Gatewayが必須",
+        "API GatewayはWebSocketのみに対応しRESTはALBを使う必要がある"
+      ],
+      "answers": [0],
+      "explanation": "API GatewayとALBの使い分け：API Gateway：①API管理機能：バージョニング・ステージ・ドキュメント生成②認証：IAM・Cognito・Lambda Authorizer③スロットリング（レート制限）とWAF統合④キャッシュ（ステージ別・TTL設定）⑤使用量プランとAPI Key管理⑥REST・HTTP・WebSocket APIに対応。ALB：①HTTP/HTTPSのみ②シンプルなリクエストルーティング③ECS/EC2/Lambda混在ターゲットグループ④コスト（データ転送量が多い場合はALBが安い）⑤複雑なAPI管理機能不要の場合。",
+      "tags": ["サーバーレス", "API Gateway", "ALB", "Lambda"]
+    },
+    {
+      "id": "SAA-052",
+      "category": "ストレージ",
+      "difficulty": 2,
+      "question": "Amazon EFS（Elastic File System）の特徴と適切なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "複数のEC2インスタンス（マルチAZ・マルチリージョン対応）で同時にマウントできるNFSベースのフルマネージドファイルシステム",
+        "EFSは単一のEC2インスタンスにのみマウント可能でEBSの代替として使用する",
+        "EFSはWindowsのみのサポートで、LinuxのEC2インスタンスにはマウントできない",
+        "EFSはAmazon S3に保存されたデータへのファイルシステムインターフェイスを提供する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EFSの特徴：①NFSv4プロトコル：複数のEC2インスタンスからの同時マウント（共有ファイルシステム）②マルチAZ自動レプリケーション（高可用性・耐久性）③完全マネージド（スケーリング・パッチ等不要）④Linuxベースのインスタンスのみ（WindowsはAmazon FSx for Windows File Server）⑤ストレージクラス：Standard・One Zone・Infrequent Access⑥スループットモード：バースト・プロビジョニング・弾力性⑦EBS（単一インスタンス）との違い：EFSは複数インスタンス共有可能。",
+      "tags": ["EFS", "ストレージ", "共有ファイルシステム", "NFS"]
+    },
+    {
+      "id": "SAA-053",
+      "category": "ストレージ",
+      "difficulty": 2,
+      "question": "AWS Storage Gatewayの「ファイルゲートウェイ」「ボリュームゲートウェイ」「テープゲートウェイ」の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "ファイルゲートウェイ：NFS/SMBでオンプレミスからS3へのファイルアクセス、ボリュームゲートウェイ：iSCSIでブロックストレージをS3/EBSスナップショットと連携、テープゲートウェイ：VTL（仮想テープライブラリ）でS3 Glacier連携",
+        "テープゲートウェイ：最も安価で全データをテープに物理保存、ファイルゲートウェイ：データベース専用、ボリュームゲートウェイ：動画ストリーミング専用",
+        "3種類すべて同じ機能でインターフェイスの種類のみが異なる",
+        "Storage Gatewayはクラウドからオンプレミスへのデータ取り出しにのみ使用する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Storage Gatewayの3種類：①ファイルゲートウェイ（File Gateway）：NFSv3/4・SMBインターフェイス、ローカルキャッシュを持ちS3にバックエンド保存、ユースケース：バックアップ・コンテンツ配信・機械学習トレーニングデータ②ボリュームゲートウェイ（Volume Gateway）：iSCSIブロックストレージ、キャッシュ型（Cached）＝プライマリはS3・ローカルキャッシュ、保存型（Stored）＝プライマリはオンプレ・EBSスナップショット③テープゲートウェイ（Tape Gateway）：iSCSI VTL、既存バックアップアプリのテープ設定変更なしでS3・S3 Glacierに移行。",
+      "tags": ["Storage Gateway", "ストレージ", "ハイブリッドクラウド", "バックアップ"]
+    },
+    {
+      "id": "SAA-054",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "AWS Direct Connect と AWS VPN（Site-to-Site VPN）の違いとして正しいものはどれですか？",
+      "choices": [
+        "Direct Connect：専用物理回線・安定した帯域幅・低レイテンシ・高コスト・プロビジョニングに数週間、VPN：インターネット経由・低コスト・すぐに接続可能・レイテンシ変動あり",
+        "VPNはAWSのルーターと物理的に接続し、Direct Connectはインターネット経由のVPN接続",
+        "Direct ConnectはS3のみに接続でき、VPNはVPC全体に接続できる",
+        "Site-to-Site VPNは常に暗号化されないがDirect Connectは常にIPsec暗号化される"
+      ],
+      "answers": [0],
+      "explanation": "AWS Direct Connect vs Site-to-Site VPN：Direct Connect：①AWS Direct Connectロケーションでの専用物理回線②安定した帯域幅（1Gbps・10Gbps・100Gbps）③低・一定レイテンシ（ジッターなし）④インターネット回線より高コスト⑤プロビジョニングに数週間〜数ヶ月。VPN：①既存のインターネット回線上にIPsecトンネル②即時プロビジョニング（数分）③低コスト④インターネット品質に依存するレイテンシ。ハイブリッドDRパターン：Direct Connect（通常運用）+VPN（バックアップ）の組み合わせが一般的。",
+      "tags": ["Direct Connect", "VPN", "ネットワーク", "ハイブリッドクラウド"]
+    },
+    {
+      "id": "SAA-055",
+      "category": "CloudFormation",
+      "difficulty": 2,
+      "question": "CloudFormationの「ネストされたスタック（Nested Stacks）」と「スタックセット（StackSets）」の違いとして正しいものはどれですか？",
+      "choices": [
+        "ネストされたスタック：大きなテンプレートを親子スタックに分割して再利用・管理、スタックセット：複数AWSアカウント・リージョンに同じスタックをデプロイ",
+        "スタックセットは単一アカウント内でのスタックの分割、ネストされたスタックは複数アカウントへのデプロイ",
+        "両者は同じ機能でスタック階層の設定方法のみが異なる",
+        "ネストされたスタックは削除できないが、スタックセットは個別に削除可能"
+      ],
+      "answers": [0],
+      "explanation": "CloudFormationの高度な機能：ネストされたスタック（Nested Stacks）：①大きなテンプレートをモジュール化（VPCスタック・ECSスタック・DBスタックを親スタックから参照）②テンプレート再利用・チーム間共有③AWS::CloudFormation::Stackリソースを使用④親スタック削除で子スタックも削除。スタックセット（StackSets）：①1つのCloudFormationテンプレートを複数アカウント・複数リージョンに一括デプロイ②AWS Organizations統合：OUレベルで自動適用③新規アカウント作成時に自動デプロイも可能（セキュリティベースライン自動適用）。",
+      "tags": ["CloudFormation", "ネストされたスタック", "StackSets", "マルチアカウント"]
+    },
+    {
+      "id": "SAA-056",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "DynamoDB のDAX（DynamoDB Accelerator）の説明として正しいものはどれですか？",
+      "choices": [
+        "インメモリキャッシュクラスターでミリ秒レイテンシをマイクロ秒まで削減し、読み取りが多いワークロードのDB負荷を軽減する（アプリのコード変更最小限）",
+        "DynamoDBの書き込み速度を加速するSSDキャッシュ層",
+        "SQLクエリをDynamoDBのAPIに変換するトランスレーション層",
+        "DynamoDBのデータをS3に自動エクスポートして分析クエリを高速化するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon DynamoDB Accelerator（DAX）：フルマネージドのインメモリキャッシュサービスです。特徴：①レイテンシ：1ms→マイクロ秒（最大10倍高速化）②互換API：DAXクライアントSDKはDynamoDB SDKと互換（最小限のコード変更）③書き込みスルー（Write-through）：DAXへの書き込みが自動的にDynamoDBに反映④クラスター：マルチAZで高可用性⑤TTL：キャッシュの有効期限を設定。ユースケース：大量読み取り（読み書き比率が高い）・キャッシュ対応・強力な整合性が不要な場合。強力な整合性読み取り（Strongly Consistent）が必要な場合はDAXをバイパスします。",
+      "tags": ["DynamoDB", "DAX", "キャッシュ", "高性能"]
+    },
+    {
+      "id": "SAA-057",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon Redshift の主なユースケースと特徴として正しいものはどれですか？",
+      "choices": [
+        "列指向ストレージ・MPP（大規模並列処理）でOLAP（分析クエリ）に最適化されたデータウェアハウスサービス",
+        "リアルタイムのOLTP（トランザクション処理）に最適化されたリレーショナルデータベース",
+        "Redshiftはキーバリューストアで大量の小さいオブジェクトを高速に読み書きするサービス",
+        "RedshiftはNoSQLデータベースで構造化・非構造化データの両方を同等に処理する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Redshiftはペタバイト規模のデータウェアハウスサービスです。特徴：①列指向ストレージ：分析クエリで特定列のみ読み取り（行指向DBより高速）②MPP（Massively Parallel Processing）：複数ノードで並列クエリ実行③PostgreSQL互換SQLサポート④Redshift Spectrum：S3のデータを直接クエリ（データロード不要）⑤Redshift Serverless：サーバー管理不要でクエリ実行⑥AWS Glue・Athena・QuickSight・SageMakerとの統合。DWH vs OLTP：日次/週次のバッチ分析ならRedshift、リアルタイムトランザクションならRDS/Aurora。",
+      "tags": ["Redshift", "データウェアハウス", "OLAP", "分析"]
+    },
+    {
+      "id": "SAA-058",
+      "category": "データ転送",
+      "difficulty": 2,
+      "question": "大量データをAWSに移行する際、「AWS Snowball Edge」と「AWS DataSync」の選択基準として正しいものはどれですか？",
+      "choices": [
+        "Snowball Edge：ネットワーク経由での転送が現実的でない大量データ（PB規模）を物理アプライアンスで輸送、DataSync：既存ネットワーク経由での継続的・定期的なデータ同期（最大10Gbps）",
+        "DataSyncは物理デバイスを使いSnowball Edgeはネットワーク転送を行う",
+        "Snowball EdgeはS3にのみ対応しDataSyncはEFSにのみ対応する",
+        "小規模データはSnowball Edge、大規模データはDataSyncが適切"
+      ],
+      "answers": [0],
+      "explanation": "データ転送オプション選択基準：Snowball Edge：①物理アプライアンス（80TB）②ネットワーク帯域が限られたオフサイト・工場・船上等③ペタバイト規模のデータを物理輸送④エッジコンピューティング機能あり（Lambda関数実行）⑤AWS Snow Familyでペタバイト規模はSnowmobile（45フィートトレーラー）。DataSync：①ネットワーク経由でオンプレのNFS/SMB/HDFS・S3・Azure等からAWSへ転送②帯域幅制限・スケジュール設定・転送の整合性検証③継続的な同期（増分転送）④NFS/SMB→S3→EFS転送。「利用可能なネットワーク帯域で転送に何日かかるか？」で選択判断。",
+      "tags": ["Snowball", "DataSync", "データ移行", "ハイブリッドクラウド"]
+    },
+    {
+      "id": "SAA-059",
+      "category": "モニタリング",
+      "difficulty": 2,
+      "question": "AWS CloudWatchで「カスタムメトリクス」を使用する必要があるのはどのような場合ですか？",
+      "choices": [
+        "EC2インスタンスのメモリ使用率・ディスク使用率・アプリケーションログのエラー率など、CloudWatchエージェントが収集しないとデフォルトで取得できないOS/アプリケーション内部メトリクス",
+        "すべてのEC2メトリクスはカスタムメトリクスとして手動設定が必要",
+        "RDS・ELB・Lambda等のAWSマネージドサービスのメトリクスもすべてカスタム設定が必要",
+        "カスタムメトリクスはCloudWatchのデフォルトメトリクスを上書きするために使用する"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatchカスタムメトリクスが必要な場合：デフォルトEC2メトリクスにはCPU使用率・ネットワーク・ディスクI/O（Hypervisor側）は含まれますが、OS内部の情報は取得できません。カスタムメトリクスが必要なもの：①メモリ使用率・スワップ使用率（CloudWatchエージェントをインストール）②ディスク使用率（df -hの情報）③アプリケーション特有のメトリクス（リクエスト処理時間・エラー率・キューの深さ）④カスタムログメトリクスフィルター。CloudWatchエージェント：EC2/オンプレサーバーにインストールしてOSメトリクスとログを収集。",
+      "tags": ["CloudWatch", "カスタムメトリクス", "モニタリング", "EC2"]
+    },
+    {
+      "id": "SAA-060",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "EC2のコスト最適化策として「Savings Plans」の3種類の使い分けで正しいものはどれですか？",
+      "choices": [
+        "Compute Savings Plans：EC2・Lambda・Fargate全体の使用量にコミット・最も柔軟（インスタンスファミリー/リージョン/OS変更可）、EC2 Instance Savings Plans：特定リージョン・インスタンスファミリーにコミット・最大割引（72%）、SageMaker Savings Plans：SageMaker専用",
+        "すべてのSavings Plansは同じ割引率でコミット期間のみ異なる（1年vs3年）",
+        "Compute Savings Plansは購入後に使用サービスを変更できないがEC2 Savings Plansは変更可能",
+        "Savings PlansはEC2 Reserved Instancesより常に高コスト"
+      ],
+      "answers": [0],
+      "explanation": "Savings Plansの3種類：①Compute Savings Plans：EC2・Lambda・Fargateの時間あたりの支出にコミット・最大66%割引・最も柔軟（インスタンスファミリー・サイズ・OS・リージョン・テナンシーを自由に変更）②EC2 Instance Savings Plans：特定リージョンの特定インスタンスファミリー（m5等）の使用量にコミット・最大72%割引・インスタンスサイズとOSは変更可③SageMaker Savings Plans：SageMakerのMLインスタンス使用量コミット・最大64%割引。1年または3年のコミットメント。AWS Cost Explorerで推奨事項を確認できます。",
+      "tags": ["コスト最適化", "Savings Plans", "EC2", "Lambda"]
+    },
+    {
+      "id": "SAA-061",
+      "category": "DR",
+      "difficulty": 2,
+      "question": "AWSの災害復旧（DR）戦略の4つのパターンをRTO/RPOの低い順（高可用性順）に正しく並べたものはどれですか？",
+      "choices": [
+        "バックアップ・リストア（最大RTO・最低コスト）< パイロットライト < ウォームスタンバイ < マルチサイト（最小RTO・最高コスト）",
+        "マルチサイト（最大RTO）< ウォームスタンバイ < パイロットライト < バックアップ・リストア（最小RTO）",
+        "4つは同等で選択はコストのみで決定する",
+        "パイロットライト（最大RTO）< バックアップ・リストア < ウォームスタンバイ < マルチサイト（最小RTO）"
+      ],
+      "answers": [0],
+      "explanation": "DR戦略の4パターン（RTO低い=高可用性・高コスト順）：①バックアップ・リストア：データをS3にバックアップ・障害時にリストア・RTO数時間〜1日・最低コスト②パイロットライト：コアシステムのみ最小構成で常時稼働（DBはレプリケーション）・障害時にスケールアップ・RTO数十分〜数時間③ウォームスタンバイ：フルシステムを縮小版で常時稼働・障害時にフルスケール・RTO数分〜数十分④マルチサイト（Active-Active）：DR側でも本番トラフィックを処理・RTO最小（秒〜分）・最高コスト。AWS Application Recovery Controllerでフェイルオーバー管理。",
+      "tags": ["DR", "RTO", "RPO", "高可用性", "マルチリージョン"]
+    },
+    {
+      "id": "SAA-062",
+      "category": "コンテナ",
+      "difficulty": 2,
+      "question": "Amazon ECSとEKSの使い分けと「EC2起動タイプ」「Fargate起動タイプ」の違いとして正しいものはどれですか？",
+      "choices": [
+        "ECS：AWSネイティブのコンテナオーケストレーション（シンプル・AWS統合）、EKS：Kubernetes互換（ポータビリティ・大規模）。EC2起動タイプ：基盤となるEC2インスタンスを自分で管理、Fargate：サーバーレス（インフラ管理不要・コンテナに集中）",
+        "ECSはWindowsコンテナのみ対応、EKSはLinuxコンテナのみ対応している",
+        "Fargateは無料でEC2起動タイプは追加料金が発生する",
+        "EKSはAWSのみで動作しオンプレ・他クラウドへの移行が困難"
+      ],
+      "answers": [0],
+      "explanation": "ECS vs EKS：ECS（Elastic Container Service）：①AWS独自のコンテナオーケストレーション②設定シンプル・AWS各サービスとの深い統合（IAMロール・ALB・CloudWatchが容易）③学習コスト低い。EKS（Elastic Kubernetes Service）：①マネージドKubernetes②Kubernetes標準に準拠（オンプレ・他クラウドとの移植性高）③大規模・複雑なマイクロサービス向け④Kubernetes知識が必要。EC2起動タイプ vs Fargate：EC2：基盤EC2インスタンスの管理（AMI更新・パッチ・スケール設定）が必要・コスト最適化の余地あり。Fargate：コンテナのCPU/メモリのみ指定・インフラ完全マネージド・課金はコンテナリソースのみ。",
+      "tags": ["ECS", "EKS", "Fargate", "コンテナ"]
+    },
+    {
+      "id": "SAA-063",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "Amazon Kinesis Data Streams と Amazon SQS の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Kinesis Data Streams：時系列に順序保証・複数コンシューマーが同じデータを独立して読み込み可能・最大365日保持・ストリーミングデータ処理向け。SQS：メッセージはコンシューマーが読んだら削除・1コンシューマー処理後は消える・デカップリング向け",
+        "KinesisはリアルタイムではなくSQSがリアルタイムメッセージングに特化している",
+        "SQSはデータ分析に特化しておりKinesisはアプリケーションデカップリング専用",
+        "両者は同じ機能でメッセージサイズの制限のみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "Kinesis vs SQS選択基準：Kinesis Data Streams：①メッセージ保持：1〜365日②複数コンシューマー：同一データを複数アプリが独立して処理可能（異なるオフセット）③順序保証：シャード内で順序が保証④ストリーミングビッグデータ（ログ・IoTセンサー・クリックストリーム）⑤シャード単位でスループット管理。SQS：①メッセージ取得後に削除（1コンシューマー原則）②メッセージ保持：最大14日③標準キュー：高スループット・順序不保証、FIFOキュー：順序保証・重複なし④マイクロサービス間のデカップリング・非同期処理。",
+      "tags": ["Kinesis", "SQS", "ストリーミング", "分析"]
+    },
+    {
+      "id": "SAA-064",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "Amazon Athena の主な特徴と用途として正しいものはどれですか？",
+      "choices": [
+        "S3に保存されたデータに対してサーバーレスでSQL（標準ANSI SQL）クエリを実行できるアドホック分析サービス（インフラ管理不要・スキャンデータ量に応じた課金）",
+        "Athenaはデータを独自フォーマットでAthena専用ストレージに取り込んでから分析する",
+        "AthenaはリアルタイムトランザクションOLTPデータベースとして使用できる",
+        "AthenaはS3のデータをRedshiftに自動ロードしてクエリを実行するETLサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Athenaの特徴：①サーバーレス：インフラプロビジョニング不要②S3ネイティブ：S3に保存された様々な形式（CSV・JSON・Parquet・ORC・Avro・TSV等）を直接クエリ③標準SQL（Presto/Trino）④課金：スキャンデータ1TBあたり5USD（Parquetで列指向変換するとスキャン量削減でコスト大幅削減）⑤スキーマオンリード：データ取り込み時のスキーマ変換不要。ユースケース：ビジネスアナリストのアドホック分析・CloudTrailログ分析・ELBアクセスログ分析・Lambda関数実行ログ分析。AWS Glue Data Catalogと連携してメタデータ管理。",
+      "tags": ["Athena", "S3", "サーバーレス", "アドホック分析"]
+    },
+    {
+      "id": "SAA-065",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Secrets Manager と AWS Systems Manager Parameter Store の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "Secrets Manager：シークレットの自動ローテーション・RDS/Redshift/Documentdb等との統合・高度な機能・有料。Parameter Store：設定値・シークレット両方を管理・標準パラメータは無料・高度なパラメータは有料。シークレットの自動ローテーションが必要な場合はSecrets Manager",
+        "Parameter Storeはセキュリティを提供せず、シークレットはSecretes Managerのみで管理すべき",
+        "Secrets ManagerはEC2専用でParameter StoreはLambda専用",
+        "両者は完全に同じ機能でネーミングのみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "Secrets Manager vs Parameter Store：Secrets Manager：①シークレット（DB認証情報・APIキー等）専用②自動ローテーション（Lambda関数経由でRDS等のパスワードを定期自動変更）③クロスアカウント共有④高度なポリシー⑤1シークレットあたり月額課金。Parameter Store：①設定値+シークレット両方管理②標準パラメータ（最大4KB・無料）③高度なパラメータ（最大8KB・有料・TTL・バージョン管理）④SecureStringパラメータはKMSで暗号化⑤階層的なパラメータ名（/app/prod/db-password）。シークレットの自動ローテーションが必要→Secrets Manager、設定管理中心→Parameter Store。",
+      "tags": ["セキュリティ", "Secrets Manager", "Parameter Store", "シークレット管理"]
+    },
+    {
+      "id": "SAA-066",
+      "category": "IAM",
+      "difficulty": 2,
+      "question": "IAM ポリシーの評価ロジックで「明示的なDeny」「暗黙的なDeny」「Allow」の優先順位として正しいものはどれですか？",
+      "choices": [
+        "明示的なDeny > Allow > 暗黙的なDeny（デフォルト）。明示的なDenyは全てのAllowよりも優先される",
+        "Allow > 明示的なDeny > 暗黙的なDeny（後から付与したAllowが優先される）",
+        "最後に評価されたポリシーが優先されるため順序が重要",
+        "明示的なDenyとAllowが両方あった場合、どちらが優先されるかはポリシーの種類（マネージド/インライン）で決まる"
+      ],
+      "answers": [0],
+      "explanation": "IAMポリシー評価の優先順位：①明示的なDeny（最優先）：任意のポリシーに明示的なDenyがあると他のAllowに関わらず拒否②Allowが必要：明示的なDenyがなければ、許可するAllowが少なくとも1つのポリシーに存在する必要がある③暗黙的なDeny（デフォルトDeny）：明示的にAllowもDenyもない場合は暗黙的に拒否。評価順序：①SCPs（Service Control Policies）→②リソースベースポリシー→③IAMロールの信頼ポリシー→④権限の境界（Permissions Boundary）→⑤セッションポリシー→⑥アイデンティティベースポリシー。明示的なDenyは「緊急ブレーキ」として機能します。",
+      "tags": ["IAM", "ポリシー評価", "Deny", "Allow"]
+    },
+    {
+      "id": "SAA-067",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS GuardDuty が検出できる脅威の種類として正しいものはどれですか？",
+      "choices": [
+        "CloudTrailログ・VPC FlowLogs・DNSログ・EKSログ等を機械学習で分析して異常を検出（クレデンシャル流出・クリプトマイニング・マルウェア・不審なAPI呼び出し等）",
+        "GuardDutyはWebアプリケーションのSQLインジェクション・XSSのみを検出するWAFサービス",
+        "GuardDutyはEC2インスタンスにエージェントをインストールしてのみ機能する",
+        "GuardDutyは検出のみで自動対応はできず、常に人間が手動でインシデント対応する必要がある"
+      ],
+      "answers": [0],
+      "explanation": "Amazon GuardDutyは機械学習を使った脅威検出サービスです。データソース：①CloudTrail（IAM・サービスのAPI呼び出し）②VPC Flow Logs（ネットワークトラフィック）③DNSログ④オプション：EKSアクセスログ・RDS・Lambda・EBSボリューム。検出する脅威例：①クレデンシャル流出（通常と異なるリージョン/時間帯からのAPI呼び出し）②クリプトマイニング（EC2が既知のマイニングプールへ接続）③侵害されたEC2（マルウェアC&Cサーバーとの通信）④偵察活動（ポートスキャン・未使用ポートへの接続）。エージェント不要でCloudTrailを有効化するだけで開始できます。",
+      "tags": ["セキュリティ", "GuardDuty", "脅威検出", "機械学習"]
+    },
+    {
+      "id": "SAA-068",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "Amazon Inspector の主な機能として正しいものはどれですか？",
+      "choices": [
+        "EC2インスタンス・ECRコンテナイメージ・Lambda関数のソフトウェア脆弱性（CVE）とネットワーク到達可能性の問題を自動スキャンするサービス",
+        "AWS Configと統合してAWSリソースの設定準拠状況を継続的にチェックするコンプライアンス監査サービス",
+        "Webアプリケーションの動的スキャン（DAST）でXSS・SQL Injection等を検出するツール",
+        "IAMポリシーの最小権限原則への準拠を分析して過剰な権限を検出するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Inspector（v2）はインフラの脆弱性管理サービスです。対象リソース：①EC2インスタンス（OSとソフトウェアパッケージの既知CVE、ネットワーク到達可能性分析）②ECRコンテナイメージ（プッシュ時・定期的に脆弱性スキャン）③Lambda関数（関数コードと依存パッケージの脆弱性）。特徴：①自動継続スキャン（新CVE公開時・設定変更時に自動スキャン）②リスクスコアによる優先順位付け③Security HubとEventBridgeへの統合④エージェント：EC2はSSMエージェントが必要、ECR・Lambdaはエージェント不要。",
+      "tags": ["セキュリティ", "Inspector", "脆弱性管理", "CVE"]
+    },
+    {
+      "id": "SAA-069",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "AWS Cost Explorerで「Rightsizing Recommendations（適正サイジング推奨）」を利用する目的として正しいものはどれですか？",
+      "choices": [
+        "CloudWatchのCPU・メモリ・ネットワーク使用率を分析して、過剰にプロビジョニングされたEC2インスタンスのサイズダウンや停止候補を特定しコスト削減機会を提示する",
+        "S3バケットのデータをより安価なストレージクラスに移行する推奨を提示する",
+        "Savings PlansとReserved Instancesの最適な購入量を推奨する",
+        "使用していないEBSボリュームとElastic IPアドレスの削除を推奨する"
+      ],
+      "answers": [0],
+      "explanation": "AWS Cost ExplorerのRightsizing Recommendations：EC2インスタンスの実際の使用率（CPUは14日間の平均・最大）を分析して最適なインスタンスサイズを推奨します。推奨アクション：①サイズダウン（例：m5.2xlarge→m5.xlarge）：CPUが常に低い場合②停止候補：7日間使用率が低い開発/テスト環境インスタンス③インスタンスタイプ変更（コンピュート最適化→汎用）。関連ツール：AWS Compute Optimizer：EC2・ECS on Fargate・Lambda・EBSの機械学習ベースの最適化推奨（Cost Explorerより高度なML分析）。両ツールを組み合わせてコスト削減機会を特定します。",
+      "tags": ["コスト最適化", "Cost Explorer", "EC2", "Rightsizing"]
+    },
+    {
+      "id": "SAA-070",
+      "category": "移行",
+      "difficulty": 2,
+      "question": "AWS Database Migration Service（DMS）とSchema Conversion Tool（SCT）の使い分けとして正しいものはどれですか？",
+      "choices": [
+        "SCT：異種DBエンジン間（Oracle→Aurora PostgreSQL等）のスキーマ変換。DMS：同種・異種DBのデータをオンライン移行（継続的なレプリケーション・ダウンタイム最小化）",
+        "DMSはスキーマ変換、SCTはデータ移行に特化している",
+        "SCTとDMSは同じ機能でどちらか一方のみ使えば十分",
+        "DMSはOracle同士など同種DB間でしか使用できない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Database Migration Service（DMS）と SCT：SCT（Schema Conversion Tool）：①異種DBエンジン間のスキーマ・ビュー・ストアドプロシージャの自動変換②例：Oracle→PostgreSQL、SQL Server→Aurora MySQL③自動変換できない部分は手動変更の指摘。DMS（Database Migration Service）：①ソースDBのデータをターゲットDBへ移行②同種DB（MySQL→Amazon Aurora MySQL）でも異種DB（Oracle→Aurora PostgreSQL）でも使用可能③フルロード（Full Load）：既存データ移行④CDC（Change Data Capture）：継続的なレプリケーション（本番カットオーバーまでデータ同期）⑤ダウンタイム最小化。異種DB移行はSCTでスキーマ変換→DMSでデータ移行の組み合わせ。",
+      "tags": ["移行", "DMS", "SCT", "データベース移行"]
     }
   ]
 }
