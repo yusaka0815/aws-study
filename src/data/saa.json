@@ -1652,6 +1652,606 @@
       "answers": [0],
       "explanation": "大規模イベントへの事前準備（Pre-warming）：①Auto Scaling スケジュールスケーリング：イベント時刻の30〜60分前から希望容量を増加設定（例：通常5台→イベント前に50台）②Elastic Load Balancer：Lambdaを通じて事前にリクエストを送り内部でウォームアップ（AWSに事前通知で対応）③CloudFront：急激なトラフィック増加時はAWSへの事前通知推奨④RDS：読み取りレプリカを事前追加、ElastiCacheスケールアウト⑤Lambda：プロビジョニングされた同時実行を事前設定でコールドスタート防止⑥Kinesis：シャード数を事前増加⑦IEM（Infrastructure Event Management）：AWSサポートのビジネス/エンタープライズプランで大規模イベントのサポートを受ける。",
       "tags": ["アーキテクチャ", "スケーリング", "パフォーマンス", "イベント対応"]
+    },
+    {
+      "id": "SAA-111",
+      "category": "サーバーレス",
+      "difficulty": 2,
+      "question": "Amazon EventBridgeの「イベントバス（Event Bus）」の種類として正しいものはどれですか？",
+      "choices": [
+        "デフォルトイベントバス（AWS サービスのイベント）・カスタムイベントバス（独自アプリのイベント）・パートナーイベントバス（SaaS パートナーからのイベント）",
+        "EventBridgeには1種類のイベントバスしかなく全てのイベントを同一のバスで処理する",
+        "EventBridgeはSQSの上位互換でキューベースのみのイベント処理",
+        "カスタムイベントバスは追加料金なしで使用でき、デフォルトと同じ制限内で利用可能"
+      ],
+      "answers": [0],
+      "explanation": "Amazon EventBridgeの3種類のイベントバス：①デフォルトイベントバス（Default Event Bus）：AWSサービスが自動的にイベントを送信（EC2インスタンス状態変化・RDSバックアップ完了・CodePipelineステージ変化等）②カスタムイベントバス（Custom Event Bus）：独自アプリケーションからのイベントを受信・ルーティング③パートナーイベントバス（Partner Event Bus）：Stripe・Zendesk・Segment等のSaaSパートナーからの直接イベント受信。ルール：イベントパターンマッチングでターゲット（Lambda・SQS・SNS・Step Functions・EC2等）にルーティング。スケジュール（cron/rate）機能も提供。",
+      "tags": ["サーバーレス", "EventBridge", "イベント駆動", "SaaS統合"]
+    },
+    {
+      "id": "SAA-112",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Network Firewall の主な機能として正しいものはどれですか？",
+      "choices": [
+        "VPC内の受信・送信・VPC間トラフィックをステートフル/ステートレスに検査するマネージドネットワークファイアウォール（IPアドレスフィルタリング・ドメインフィルタリング・IDS/IPS機能）",
+        "Network FirewallはEC2インスタンスのホストベースファイアウォールを管理するサービス",
+        "Network Firewall はセキュリティグループの設定をOrganizations全体に適用する拡張機能",
+        "Network FirewallはDDoS攻撃のみを対象とした専用防御サービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS Network Firewallはマネージドのステートフルネットワークファイアウォールです。特徴：①VPC内の全トラフィック（イングレス・エグレス・VPC間）を検査②ステートレスルール：5-tuple（送信元/先IP・ポート・プロトコル）でのパケットフィルタリング③ステートフルルール：接続の状態を追跡・ドメイン名フィルタリング・Suricataベースの高度なIDS/IPSルール④侵入防止（IPS）：既知の攻撃パターンをブロック⑤ドメインフィルタリング：特定ドメインへのアクセスを許可/拒否。アーキテクチャ：Transit Gateway・IGW・NAT Gatewayとインライン配置。Firewall Managerで組織全体に一元管理。",
+      "tags": ["セキュリティ", "Network Firewall", "IPS/IDS", "VPC"]
+    },
+    {
+      "id": "SAA-113",
+      "category": "ストレージ",
+      "difficulty": 2,
+      "question": "S3 マルチパートアップロード（Multipart Upload）の説明として正しいものはどれですか？",
+      "choices": [
+        "大きなオブジェクト（推奨100MB以上・必須5GB以上）を複数のパートに分割して並列アップロードすることで速度向上・ネットワーク障害耐性・再開可能アップロードを実現",
+        "マルチパートアップロードはS3バケットへの複数ユーザーの同時書き込みを管理する機能",
+        "マルチパートアップロードはS3から複数のリージョンに同時にデータを複製する機能",
+        "マルチパートアップロードはオブジェクトサイズに関わらず全てのアップロードに自動適用される"
+      ],
+      "answers": [0],
+      "explanation": "S3マルチパートアップロードの動作：①最小パートサイズ：5MB（最後のパートを除く）②最大パート数：10,000パート③オブジェクトサイズ：5TB超えは必須、100MB超えから推奨。手順：①InitiateMultipartUpload（Upload IDを取得）②UploadPart（各パートを並列送信）③CompleteMultipartUpload（全パートを結合）。メリット：①並列アップロードで速度向上②ネットワーク障害時は失敗したパートのみ再送③転送中断後の再開（Resume可能）。S3 Transfer Acceleration：CloudFrontのエッジロケーションを経由してAWSネットワークを最大化（地理的に離れた場所からの高速アップロードに有効）。",
+      "tags": ["S3", "マルチパートアップロード", "大容量ファイル", "パフォーマンス"]
+    },
+    {
+      "id": "SAA-114",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2の「Elastic Fabric Adapter（EFA）」の主な用途として正しいものはどれですか？",
+      "choices": [
+        "HPC（高性能コンピューティング）や機械学習の分散トレーニングで必要な低レイテンシ・高帯域幅のノード間通信を実現するネットワークインターフェイス（OS Bypass機能でカーネルをバイパス）",
+        "EFAはEC2インスタンスの弾力性（自動スケーリング）を高速化するアダプター",
+        "EFAはElastic File System（EFS）への接続を最適化するストレージアダプター",
+        "EFAは通常のENI（Elastic Network Interface）の単なるリネームで同じ機能"
+      ],
+      "answers": [0],
+      "explanation": "Elastic Fabric Adapter（EFA）はHPCと機械学習向けの高性能ネットワークインターフェイスです。特徴：①OS-Bypass（バイパス）機能：アプリケーションがOSカーネルをバイパスしてNICに直接アクセス（レイテンシ大幅削減）②RDMA（Remote Direct Memory Access）：サーバー間でメモリを直接共有（メッセージパッシング不要）③MPI（Message Passing Interface）・NCCL（NVIDIA Collective Communications Library）との統合④通常のTCP/IPより低レイテンシ・高帯域幅。ユースケース：HPC（流体シミュレーション・気象モデル）・GPUクラスターでの分散ディープラーニングトレーニング（AllReduce操作の高速化）。",
+      "tags": ["EC2", "EFA", "HPC", "機械学習", "分散トレーニング"]
+    },
+    {
+      "id": "SAA-115",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon Aurora Serverless v2 の主な特徴として正しいものはどれですか？",
+      "choices": [
+        "需要に応じてACU（Aurora Capacity Units）が自動スケールし、トラフィックのないマルチAZやRead Replicaにも対応・最小0.5ACUから最大数百ACUまで細かく自動調整",
+        "Aurora Serverlessはシングルリージョンのみで利用可能",
+        "Aurora Serverless v2はクエリ実行時のみ課金されアイドル時は完全無料（0 ACU）に自動縮小",
+        "Aurora Serverless v2はMySQLのみに対応しPostgreSQLは非対応"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Aurora Serverless v2の特徴：①ACU（Aurora Capacity Units）スケーリング：最小0.5 ACUから最大数百 ACUまで細粒度（0.5 ACU単位）で自動スケール②スケーリング速度：数百ミリ秒単位の高速スケール（v1は分単位）③マルチAZ対応：Serverless v2インスタンスをマルチAZ配置可能④Read Replica：v2インスタンスをRead Replicaとして使用可能⑤Aurora Global Database・Backtrack等の機能にも対応⑥最小ACUを0.5に設定可能（ただし0には完全縮小しない）。ユースケース：開発/テスト環境・予測困難なトラフィックパターン・間欠的なワークロード。",
+      "tags": ["データベース", "Aurora", "Serverless", "自動スケーリング"]
+    },
+    {
+      "id": "SAA-116",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2インスタンスの「ステータスチェック（Status Checks）」の2種類の違いとして正しいものはどれですか？",
+      "choices": [
+        "システムステータスチェック：AWS基盤（物理ホスト・ネットワーク）の問題を検出。インスタンスステータスチェック：EC2インスタンス自体（OS・カーネル・メモリ）の問題を検出",
+        "インスタンスステータスチェック：AWS基盤の物理サーバーを確認、システムステータスチェック：インスタンスOS内部を確認",
+        "両方のステータスチェックはAWS自動修復のみを行い、ユーザーが対応する必要はない",
+        "ステータスチェックは1時間ごとに実行され問題検出からアラートまで最大30分かかる"
+      ],
+      "answers": [0],
+      "explanation": "EC2 Status Checks（毎分実行）：①System Status Check：AWS基盤の問題（物理ホスト電源・ネットワーク接続・ハードウェア障害）を検出→対処：Stop→Start（別のハードウェアに移動）・自動回復（CloudWatch AlarmのRecoverアクション）②Instance Status Check：インスタンス自体の問題（OS起動失敗・カーネルパニック・ネットワーク設定ミス・メモリ不足・ファイルシステム破損）を検出→対処：ユーザーがトラブルシューティングまたは再起動。Auto Recovery設定：`aws:reboot`または`aws:recover`アクションでCloudWatchアラームからの自動修復が可能。",
+      "tags": ["EC2", "ステータスチェック", "高可用性", "自動回復"]
+    },
+    {
+      "id": "SAA-117",
+      "category": "ネットワーク",
+      "difficulty": 3,
+      "question": "プライベートサブネット内のEC2インスタンスからインターネットへの送信接続が必要な場合（例：ソフトウェアアップデート）の正しいアーキテクチャはどれですか？",
+      "choices": [
+        "プライベートサブネットのEC2→ルートテーブルでパブリックサブネット内のNAT Gatewayへ→インターネットゲートウェイ（IGW）→インターネット",
+        "プライベートサブネットのEC2にパブリックIPアドレスを付与してIGWに直接接続",
+        "プライベートサブネットからVPC Endpointを経由してインターネットに接続",
+        "プライベートサブネットのEC2はインターネット接続が原理的に不可能"
+      ],
+      "answers": [0],
+      "explanation": "プライベートサブネットからのインターネット接続（アウトバウンドのみ）アーキテクチャ：①パブリックサブネットにNAT Gatewayを配置（Elastic IPを割り当て）②プライベートサブネットのルートテーブルに「0.0.0.0/0 → NAT Gateway ID」を追加③NAT GatewayのルートテーブルはデフォルトルートをIGWに設定。特徴：プライベートEC2はインターネットへのアウトバウンドが可能（ソフトウェアダウンロード・外部API呼び出し）だがインターネットからのインバウンドは不可能（NATなのでパブリックIPは自身にない）。マルチAZ：各AZにNAT Gatewayが必要（クロスAZのNAT Gatewayはデータ転送コスト発生）。",
+      "tags": ["VPC", "NAT Gateway", "プライベートサブネット", "ネットワーク設計"]
+    },
+    {
+      "id": "SAA-118",
+      "category": "アーキテクチャ",
+      "difficulty": 2,
+      "question": "「イベント駆動型アーキテクチャ（Event-Driven Architecture）」の実装パターンで「ファンアウト（Fan-Out）」の説明として正しいものはどれですか？",
+      "choices": [
+        "1つのSNSトピックへのメッセージ発行で、複数のSQSキューに同じメッセージを配信し、異なるサービスが並列で独立して処理するパターン",
+        "ファンアウトは複数のプロデューサーから1つのコンシューマーにメッセージを集約するパターン",
+        "ファンアウトはKinesisシャードの数を増やして処理速度を向上させること",
+        "SQSキューから複数のLambdaが同時に同じメッセージを読み取るパターン"
+      ],
+      "answers": [0],
+      "explanation": "ファンアウト（Fan-Out）パターン：1:N配信アーキテクチャで、1つのイベントを複数の独立したコンシューマーに同時配信します。実装：①SNSトピックを作成②複数のSQSキューをSNSトピックにサブスクライブ③プロデューサーがSNSにメッセージをパブリッシュ④SNSが全SQSキューに同時配信⑤各SQSキューのコンシューマー（Lambda等）が独立して処理。例：ECサイトの注文イベント→SNSトピック→①在庫更新SQS→在庫サービス②決済処理SQS→決済サービス③通知SQS→メール通知サービス④分析SQS→データウェアハウス。各サービスが独立してスケール・障害が他に波及しない疎結合設計。",
+      "tags": ["アーキテクチャ", "SNS", "SQS", "ファンアウト", "マイクロサービス"]
+    },
+    {
+      "id": "SAA-119",
+      "category": "高可用性",
+      "difficulty": 2,
+      "question": "Route 53のヘルスチェックと「フェイルオーバールーティング」を組み合わせたDR構成として正しいものはどれですか？",
+      "choices": [
+        "プライマリエンドポイント（例：本番ALB）にヘルスチェックを設定し、ヘルスチェック失敗時にRoute 53が自動的にセカンダリエンドポイント（例：DR S3静的ウェブサイト・別リージョンALB）に切り替える",
+        "フェイルオーバールーティングはDNS TTLが0秒の場合のみ機能する",
+        "ヘルスチェックはエンドポイントの正常性確認のみで自動切り替えは人手で行う必要がある",
+        "Route 53のフェイルオーバーは同一リージョン内のAZ間でのみ動作する"
+      ],
+      "answers": [0],
+      "explanation": "Route 53フェイルオーバールーティングのDR構成：①プライマリレコード：本番リージョンのALBを指定+ヘルスチェック関連付け②セカンダリレコード：DRリージョンのALBまたはS3静的ウェブサイトを指定（ヘルスチェック不要も可）。動作：ヘルスチェック失敗（プライマリ障害）→Route 53が自動的にセカンダリのIPを応答。TTL考慮：DNS TTLが短いほど切り替えが速い（通常60〜300秒）。Application Recovery Controller：Route 53のフェイルオーバーを細かくコントロールするアーキテクチャ（リージョン全体障害や部分障害への対応）。注意：ヘルスチェックはヘルスチェック状態がHealthyの間は変更なし。",
+      "tags": ["Route 53", "フェイルオーバー", "ヘルスチェック", "DR"]
+    },
+    {
+      "id": "SAA-120",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Config の主な機能として正しいものはどれですか？",
+      "choices": [
+        "AWSリソースの設定変更を継続的に記録・評価し、コンプライアンスルールへの準拠状況を監視して非準拠リソースを検出・自動修復トリガーができるサービス",
+        "AWS Configはアプリケーションの設定ファイル（.env・appsettings等）をS3で一元管理するサービス",
+        "AWS ConfigはIAMユーザーの設定変更（パスワード変更等）のみを追跡するサービス",
+        "AWS Configはネットワーク設定の可視化のみを行いリソース設定の変更追跡はしない"
+      ],
+      "answers": [0],
+      "explanation": "AWS Configの機能：①継続的な設定記録：全AWSリソース（EC2・RDS・S3・SG等）の設定をスナップショットとして保存②変更履歴：「いつ・誰が・何を・どのように変更したか」を追跡③コンプライアンスルール（Config Rules）：組み込みルール（例：S3バケットのパブリックアクセス禁止・MFA有効化必須・暗号化必須）またはカスタムルール（Lambda）で継続評価④非準拠の自動修復：Systems Manager Automation・Lambda等でコンプライアンス逸脱を自動修復⑤集約（Aggregator）：Organizations全体のConfig結果を一元表示。CloudTrailとの違い：CloudTrailはAPIアクティビティ記録、Configはリソース状態の継続監視。",
+      "tags": ["セキュリティ", "Config", "コンプライアンス", "設定管理"]
+    },
+    {
+      "id": "SAA-121",
+      "category": "コンテナ",
+      "difficulty": 2,
+      "question": "Amazon EKS（Elastic Kubernetes Service）でのノードグループの「マネージドノードグループ」と「セルフマネージドノード」の違いとして正しいものはどれですか？",
+      "choices": [
+        "マネージドノードグループ：EC2インスタンスのプロビジョニング・設定・ライフサイクル管理をAWSが自動化（ローリングアップデート・ドレイン自動化）、セルフマネージド：ユーザーが全て管理",
+        "マネージドノードグループはFargate専用でセルフマネージドはEC2専用",
+        "セルフマネージドノードの方がマネージドよりコストが低い",
+        "マネージドノードグループは1つのクラスターに1つのグループのみ設定可能"
+      ],
+      "answers": [0],
+      "explanation": "EKSのノード管理方式3種類：①マネージドノードグループ（Managed Node Groups）：EKSがEC2インスタンスのプロビジョニング・Auto ScalingグループのDrainingとローリングアップデート・AMI更新を自動化。Bottlerocket・Amazon Linux・Windowsなど複数AMI対応。②セルフマネージドノード（Self-managed Nodes）：EC2インスタンスをユーザーが作成・AWSが提供するAMI（eks-optimized-ami）やカスタムAMIを使用・独自のコンプライアンス要件に対応。③Fargate（ポッド毎のサーバーレス）：ノード管理不要・ポッドのCPU/メモリ設定のみ指定。典型：汎用ワークロードはマネージド、特殊要件はセルフマネージド、短命ポッドはFargate。",
+      "tags": ["EKS", "Kubernetes", "マネージドノードグループ", "Fargate"]
+    },
+    {
+      "id": "SAA-122",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "Amazon Cognito の「ユーザープール（User Pool）」と「IDプール（Identity Pool）」の違いとして正しいものはどれですか？",
+      "choices": [
+        "ユーザープール：ユーザー認証（サインアップ・サインイン・MFA・ソーシャルログイン）を管理するIDプロバイダー（JWTトークン発行）。IDプール：認証済みユーザーにAWSリソースへのIAM一時認証情報を付与する",
+        "IDプールはユーザー名とパスワードを管理しユーザープールはAWSサービスへのアクセスを制御",
+        "ユーザープールはモバイルアプリのみに対応し、IDプールはWebアプリのみに対応する",
+        "両者は同じ機能でユーザー数の規模によって選択する"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Cognitoの2つの主要機能：ユーザープール（User Pools）：①ユーザーディレクトリ・認証管理②サインアップ・サインイン・パスワードリセット③MFA・電話/メール検証④ソーシャルID連携（Google・Facebook・Apple等）⑤SAML/OIDC連携（企業Active Directoryとの連携）⑥JWT（IDトークン・アクセストークン・リフレッシュトークン）発行。IDプール（Identity Pools / Federated Identities）：①認証済みユーザー（ユーザープールから取得したJWT等）にAWS IAM一時認証情報を付与②未認証ゲストアクセスも設定可能③S3・DynamoDB等のAWSサービスに直接アクセスするモバイル/Webアプリ向け。",
+      "tags": ["セキュリティ", "Cognito", "認証", "IDプール", "JWT"]
+    },
+    {
+      "id": "SAA-123",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "「CQRS（Command Query Responsibility Segregation）」パターンをAWSで実装する場合の説明として正しいものはどれですか？",
+      "choices": [
+        "書き込み側（Command）をDynamoDB・読み取り側（Query）をElasticSearchやRedshiftで分離し、DynamoDB Streamsで変更を非同期にクエリ側に伝播させることで読み取り性能と書き込み性能を独立してスケール",
+        "CQRSはSQL Commandとクエリのみに関するデータベース最適化パターン",
+        "CQRSパターンはAWS Lambdaのみで実装可能でEC2やコンテナでは使えない",
+        "CQRSは読み取りと書き込みを同じデータベースに統合して整合性を保つパターン"
+      ],
+      "answers": [0],
+      "explanation": "CQRSパターンはコマンド（書き込み）とクエリ（読み取り）を分離するアーキテクチャパターンです。AWSでの実装例：①書き込み側：DynamoDB（高速書き込み・スケーラブル）②DynamoDB Streams（変更イベントをCDC形式で発行）③Lambda（変更イベントを読み取り専用DBに投影）④読み取り側：OpenSearch（全文検索用）・Redshift（分析用）・ElastiCache（高速読み取り）。メリット：書き込みと読み取りを独立してスケール・読み取りに最適化したスキーマを持てる・イベントソーシングと組み合わせた監査ログ。考慮事項：最終整合性（結果整合性）が発生するため用途を選ぶ。",
+      "tags": ["アーキテクチャ", "CQRS", "DynamoDB Streams", "マイクロサービス"]
+    },
+    {
+      "id": "SAA-124",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "AWS Lambda のコスト最適化で「メモリサイズの最適化」が重要な理由として正しいものはどれですか？",
+      "choices": [
+        "Lambdaの課金はメモリ量×実行時間で計算されるため、メモリを増やすと処理が速くなり実行時間が短縮され総コストが下がる場合がある（CPU割り当てはメモリに比例）",
+        "Lambdaのコストはメモリ量のみに依存し実行時間は課金に関係しない",
+        "Lambda Powertuningはメモリを増やすと常にコストが増加するため推奨設定は128MB",
+        "メモリ設定はパフォーマンスにのみ影響しコストとは無関係"
+      ],
+      "answers": [0],
+      "explanation": "Lambda課金モデル：呼び出し回数 + GB-秒（メモリ量×実行時間）。メモリとCPUは連動：Lambda関数のCPUパワーはメモリ量に比例して自動割り当て（1,769MBで1 vCPU相当）。最適化の例：①メモリ128MB（低CPU）→1000ms実行→0.128 GB-秒②メモリ1024MB（高CPU）→100ms実行→0.1024 GB-秒→こちらが安い場合がある。AWS Lambda Power Tuning（オープンソース）：AWS Step Functionsを使って様々なメモリ設定でパフォーマンスとコストを測定するツール。最適化ポイント：CPU依存処理はメモリを増やして実行時間短縮・I/O待機が主な処理は低メモリで十分。",
+      "tags": ["Lambda", "コスト最適化", "メモリ", "パフォーマンス"]
+    },
+    {
+      "id": "SAA-125",
+      "category": "移行",
+      "difficulty": 2,
+      "question": "AWS Migration Hub の主な機能として正しいものはどれですか？",
+      "choices": [
+        "大規模なAWS移行プロジェクトで複数のAWSおよびサードパーティの移行ツール（MGN・DMS・CloudEndure等）の移行進捗を単一のダッシュボードで追跡・管理するサービス",
+        "Migration HubはS3バケット間のデータ移行を最適化する転送加速サービス",
+        "Migration HubはAWSからオンプレミスへのワークロード逆移行のみに対応する",
+        "Migration Hubはオンプレミスのサーバー台数を棚卸しするディスカバリーエージェント"
+      ],
+      "answers": [0],
+      "explanation": "AWS Migration Hub（移行の統合管理）：大規模クラウド移行プロジェクトを管理するダッシュボードです。機能：①進捗追跡：MGN・DMS・CloudEndure等の移行ツールの進捗を一元表示②アプリケーション単位での追跡：サーバーをアプリケーション（グループ）に分類して移行状況を管理③AWS Discovery Service統合：Migration Hub Strategy Recommendations（移行戦略の推奨）。関連サービス：①AWS Application Discovery Service：オンプレサーバーのインベントリ・依存関係・パフォーマンスデータ収集②Migration Hub Refactor Spaces：マイクロサービス移行（リファクタリング）のためのALBとサービスメッシュ管理。",
+      "tags": ["移行", "Migration Hub", "AWS移行", "プロジェクト管理"]
+    },
+    {
+      "id": "SAA-126",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon Timestream の主なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "IoTセンサーデータ・アプリケーションメトリクス・運用ログなど時刻を主要な属性とする時系列データを効率的に格納・クエリするサーバーレスの時系列データベース",
+        "TimestreamはRedshiftの軽量版でOLAPクエリを高速実行するデータウェアハウス",
+        "TimestreamはDynamoDBと同じキーバリューデータモデルで時刻順にソートする機能を追加した派生版",
+        "TimestreamはKinesis Data Streamsのデータを一時的にバッファリングするキャッシュDB"
+      ],
+      "answers": [0],
+      "explanation": "Amazon Timestreamは時系列データ専用のサーバーレスデータベースです。特徴：①時系列データに最適化：時刻ベースのクエリをRDSの1/10のコスト・1,000倍の速度で処理②自動階層化：メモリ（最新データ・高速）→磁気ストレージ（古いデータ・安価）への自動移動③組み込みの時系列分析関数：平滑化・補間・外れ値検出④サーバーレス：容量プランニング不要⑤IoTとの統合：AWS IoT Core→Timestream⑥Grafana・QuickSightとの統合で可視化。ユースケース：IoTセンサーデータ（温度・湿度・振動）・DevOpsメトリクス（CPU・メモリ・レイテンシ）・財務データ（株価・為替）。",
+      "tags": ["データベース", "Timestream", "IoT", "時系列データ"]
+    },
+    {
+      "id": "SAA-127",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "AWS Site-to-Site VPNの「仮想プライベートゲートウェイ（VGW）」と「カスタマーゲートウェイ（CGW）」の役割として正しいものはどれですか？",
+      "choices": [
+        "VGW：AWSのVPC側のVPNエンドポイント（AWSリソース）。CGW：オンプレミス側のVPNデバイスの設定情報をAWSに登録したリソース（実際の物理デバイスはオンプレ側）",
+        "VGWがオンプレのゲートウェイ、CGWがAWS側のゲートウェイ",
+        "両者はIPsecトンネルの両端で同じ機能を持つ",
+        "CGWはAWS Transit GatewayとVGWを接続するための中間コンポーネント"
+      ],
+      "answers": [0],
+      "explanation": "Site-to-Site VPNの構成要素：Virtual Private Gateway（VGW）：①AWSのVPC側に作成するVPNエンドポイント②BGP動的ルーティングまたはスタティックルーティング対応③VPCのルートテーブルで「オンプレCIDR→VGW」を設定④1つのVGWに複数のVPN接続を関連付け可能⑤Transit Gatewayに置き換えてスケール可能。Customer Gateway（CGW）：①AWSにオンプレの物理VPNデバイスの情報（IPアドレス・BGP ASN等）を登録したリソース②実際の物理デバイス（ルーター・FW：Cisco・Juniper・Palo Alto等）はオンプレ側に存在。VPN接続：VGWとCGWをIPsecトンネルで接続（2本のトンネルで冗長化）。",
+      "tags": ["VPN", "ネットワーク", "VGW", "CGW"]
+    },
+    {
+      "id": "SAA-128",
+      "category": "Lambda",
+      "difficulty": 2,
+      "question": "Lambda関数から VPC内のプライベートリソース（RDS等）にアクセスする場合の設定として正しいものはどれですか？",
+      "choices": [
+        "Lambda関数をVPCに関連付け（サブネット・セキュリティグループを指定）することでVPC内のENIを通じてプライベートリソースに接続できる（ただしインターネット接続にはNAT Gatewayが必要）",
+        "LambdaはVPC外に常に存在するためVPC内リソースへの直接アクセスは不可能",
+        "Lambda関数にVPCを設定するとパブリックインターネットへのアクセスは自動的に無効化される",
+        "LambdaからRDSへの接続はVPC設定なしでRDSのパブリックアクセス設定で実現する"
+      ],
+      "answers": [0],
+      "explanation": "Lambda VPC統合の仕組み：①LambdaにVPC・サブネット・SGを設定②Lambda実行時にVPC内のプライベートサブネットにENIを作成してデタッチ③ENI経由でRDS・ElastiCache・EC2等のプライベートリソースに接続。重要な考慮事項：①VPC内LambdaのインターネットアクセスにはNAT Gatewayが必要（VPC内Lambdaはデフォルトでインターネットアクセスなしになる）②ENI枯渇：大量の同時実行時にVPCのENI数の上限に注意③コールドスタート：VPC統合によるENI作成でコールドスタートが長くなることがある（Lambda ENI自動スケーリングで改善）④RDS Proxyを組み合わせると接続プーリングが効率化。",
+      "tags": ["Lambda", "VPC", "RDS", "ネットワーク"]
+    },
+    {
+      "id": "SAA-129",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "S3のストレージコストを最小化するための「ライフサイクルポリシー（Lifecycle Policy）」の適切な設計として正しいものはどれですか？",
+      "choices": [
+        "アクセスパターンに合わせて：作成直後→S3 Standard・30日後→Standard-IA（低頻度アクセス）・90日後→Glacier Instant Retrieval・1年後→Glacier Deep Archive（または削除）という自動移行ルールを設定",
+        "ライフサイクルポリシーはストレージクラスの移行のみ可能でオブジェクト削除はできない",
+        "S3 Glacierに移行したオブジェクトはライフサイクルポリシーでStandardに戻すことができる",
+        "ライフサイクルポリシーはバケット全体にのみ適用でき特定のプレフィックスや条件の設定はできない"
+      ],
+      "answers": [0],
+      "explanation": "S3ライフサイクルポリシーの機能：①適用範囲：プレフィックス（フォルダパス）・オブジェクトタグ・サイズ・最終更新日等でフィルタリング可能②移行アクション：現在バージョンまたは過去バージョンを指定日数後に別ストレージクラスへ移行③有効期限アクション：指定日数後にオブジェクトを自動削除。ストレージクラスの移行方向は上位→下位のみ（Standard→IAは可能・IA→Standardはライフサイクル不可・手動コピーが必要）。バージョニングと組み合わせ：最新バージョンはStandard・古いバージョンはGlacierに自動移行・完全削除マーカーの自動クリーンアップ。",
+      "tags": ["S3", "ライフサイクルポリシー", "コスト最適化", "ストレージクラス移行"]
+    },
+    {
+      "id": "SAA-130",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "Amazon QuickSight の主な特徴として正しいものはどれですか？",
+      "choices": [
+        "SPICE（インメモリ計算エンジン）を使用してS3・Redshift・Athena・RDS等の多様なデータソースを接続するサーバーレスのBIサービス（ダッシュボード・グラフ・ML異常検出を提供）",
+        "QuickSightはEC2インスタンスにインストールして使用するデスクトップBIツール",
+        "QuickSightはデータウェアハウスとしてペタバイト規模のデータを保存・管理するサービス",
+        "QuickSightはAmazon RDSのみを直接データソースとして使用できる"
+      ],
+      "answers": [0],
+      "explanation": "Amazon QuickSightはAWSのサーバーレスBIサービスです。特徴：①SPICE（Super-fast, Parallel, In-memory Calculation Engine）：データをインメモリにキャッシュして高速クエリ②多様なデータソース接続：S3・Athena・Redshift・RDS・Aurora・OpenSearch・Salesforce・JIRA・GitHub・ServiceNow等③ダッシュボード・グラフ・地図・ピボットテーブル等のビジュアライゼーション④ML異常検出・予測分析（AutoML）⑤埋め込みダッシュボード（Embeddingダッシュボードを自社アプリに組み込み）⑥ユーザー単位の行レベルセキュリティ。Amazon Q in QuickSightで自然言語での分析も可能。",
+      "tags": ["分析", "QuickSight", "BI", "SPICE"]
+    },
+    {
+      "id": "SAA-131",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2の「デディケーテッドホスト（Dedicated Host）」と「デディケーテッドインスタンス（Dedicated Instance）」の違いとして正しいものはどれですか？",
+      "choices": [
+        "Dedicated Host：物理サーバー全体を専有しソケット数・コア数・インスタンスIDが可視・BYOLライセンス（Oracle・Windows Server等）に対応。Dedicated Instance：自分のAWSアカウント専用の物理ハードウェアで実行（物理サーバーを同アカウントの他インスタンスと共有する場合あり）",
+        "Dedicated HostとDedicated Instanceは同じ機能でコストのみが異なる",
+        "Dedicated InstanceはReserved Instancesとは組み合わせられない",
+        "Dedicated Hostは複数AWSアカウントで物理サーバーを共有するサービス"
+      ],
+      "answers": [0],
+      "explanation": "Dedicated Host vs Dedicated Instance：Dedicated Host：①物理サーバー全体を専有②サーバーのソケット数・物理コア数・インスタンス収容数が見える③同じ物理サーバーにインスタンスを継続配置可能（アフィニティ設定）④BYOL（Bring Your Own License）：Oracle・SQL Server・Windows Serverのソケット/コアライセンスをAWSで使用⑤1台の物理ホスト料金で課金。Dedicated Instance：①物理ハードウェアが他のAWSアカウントと共有されない（自アカウント専用）②ただし同一アカウント内の非Dedicatedインスタンスとは別ハードウェア（保証）③インスタンス単位課金＋Dedicatedリージョン課金。",
+      "tags": ["EC2", "Dedicated Host", "BYOL", "コンプライアンス"]
+    },
+    {
+      "id": "SAA-132",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "AWS Direct Connect の「専用接続（Dedicated Connection）」と「ホスト接続（Hosted Connection）」の違いとして正しいものはどれですか？",
+      "choices": [
+        "専用接続：お客様がDX拠点で専用の物理ポート（1/10/100 Gbps）を確保。ホスト接続：Direct ConnectパートナーがAWS拠点のポートをサブ分割して提供（50Mbps〜10Gbps・より低コスト）",
+        "専用接続はIPsec暗号化を使用しホスト接続は暗号化しない",
+        "ホスト接続はAWSとの直接接続でパートナーを介さない",
+        "専用接続は1リージョンのみ、ホスト接続は複数リージョンに同時接続可能"
+      ],
+      "answers": [0],
+      "explanation": "Direct Connect接続タイプ：専用接続（Dedicated Connection）：①顧客がAWSのDirect Connectロケーション（IX等）でAWSの物理ポートに直接接続②帯域幅：1Gbps・10Gbps・100Gbps③接続確立に数週間〜数ヶ月④LOA-CFA（回線承認書）をAWSから取得してキャリアに提出。ホスト接続（Hosted Connection）：①AWSパートナー（ソフトバンク・NTT等）経由②パートナーが10GbpsポートをVLANで分割して50Mbps〜10Gbpsで提供③小〜中規模の帯域ニーズに対応④比較的短い接続確立時間⑤パートナーが提供する追加サービス（SD-WANとの統合等）。MAC Security（MACsec）でDX上の暗号化が可能（専用接続）。",
+      "tags": ["Direct Connect", "ネットワーク", "専用接続", "ホスト接続"]
+    },
+    {
+      "id": "SAA-133",
+      "category": "アーキテクチャ",
+      "difficulty": 3,
+      "question": "「ストラングラーフィグパターン（Strangler Fig Pattern）」によるモノリス→マイクロサービス移行のAWSアーキテクチャとして正しいものはどれですか？",
+      "choices": [
+        "ALBのパスベースルーティングで新機能を段階的にマイクロサービスへルーティングしながら、モノリスを徐々に縮小していく移行戦略（既存システムを停止せずに並行稼働）",
+        "ストラングラーフィグパターンはデータベースのみをマイクロサービスに分割する手法",
+        "移行完了後に一度に全機能をマイクロサービスに切り替えるビッグバン方式",
+        "ストラングラーフィグパターンはAWS固有の手法でオンプレ環境では適用不可"
+      ],
+      "answers": [0],
+      "explanation": "ストラングラーフィグパターン（Martin Fowler提唱）はモノリスからマイクロサービスへの段階的移行戦略です。AWSでの実装：①ALBのパスベースルーティング：/api/orders/new→新しいOrdersマイクロサービス(ECS)、/api/orders/legacy→既存モノリスEC2②Route 53の加重ルーティングで段階的にトラフィックを移行（10%→50%→100%）③API Gatewayでエンドポイントを集約・バックエンドの変更をクライアントから隠蔽。メリット：①リスク分散（一度に全移行しない）②いつでもロールバック可能③ビジネス継続しながら移行④学習しながら段階的に改善。",
+      "tags": ["アーキテクチャ", "マイクロサービス", "移行戦略", "ALB"]
+    },
+    {
+      "id": "SAA-134",
+      "category": "高可用性",
+      "difficulty": 2,
+      "question": "SQSを使った「キューベースの負荷平準化（Queue-based Load Leveling）」の説明として正しいものはどれですか？",
+      "choices": [
+        "突発的なトラフィックピーク時にSQSキューがメッセージをバッファリングし、バックエンドワーカー（EC2/Lambda）が処理能力に応じた安定した速度でメッセージを処理して過負荷を防ぐパターン",
+        "SQSはアプリケーション間の同期通信を最適化してレイテンシを削減するサービス",
+        "キューベースの負荷平準化は送信者がキューのメッセージを直接削除する方式",
+        "SQSキューの深さとEC2 Auto Scalingは連動しないため手動でスケールアウトが必要"
+      ],
+      "answers": [0],
+      "explanation": "Queue-based Load Levelingパターン：①プロデューサー（Webサーバー等）がリクエストをSQSキューに送信（即時レスポンス）②コンシューマー（EC2/Lambda等のワーカー）がキューからメッセージをポーリングして処理③トラフィックスパイク時：キューが深くなるがバックエンドは処理速度を維持（クラッシュなし）。Auto Scalingとの統合：①CloudWatch MetricのApproximateNumberOfMessagesVisible（キューの深さ）に基づくスケーリング②キューが深い→ワーカーEC2をスケールアウト③キューが空→ワーカーをスケールイン④ターゲット追跡スケーリングポリシーで実装。",
+      "tags": ["高可用性", "SQS", "負荷平準化", "Auto Scaling"]
+    },
+    {
+      "id": "SAA-135",
+      "category": "モニタリング",
+      "difficulty": 2,
+      "question": "CloudWatch Metric Streams と Amazon EventBridge Pipes の違いとして正しいものはどれですか？",
+      "choices": [
+        "Metric Streams：CloudWatchメトリクスをKinesis Firehose経由でほぼリアルタイムに外部SaaS（Datadog・New Relic等）やS3に転送。EventBridge Pipes：1対1のイベントパイプでSQS→Lambda等のポイントツーポイント統合（フィルタリング・変換付き）",
+        "Metric StreamsはEventBridge Pipesの特殊なケースで同じサービスの別名",
+        "EventBridge PipesはCloudWatchメトリクスのストリーミング専用サービス",
+        "両者はメトリクスと重複したデータを持ちCloudWatchダッシュボードにのみ利用可能"
+      ],
+      "answers": [0],
+      "explanation": "CloudWatch Metric Streams：①CloudWatchの全メトリクスまたは選択したメトリクスをほぼリアルタイムで外部に連続ストリーミング②Kinesis Data Firehose経由でS3・New Relic・Datadog・Dynatrace等に配信③独自のMetric Streamers（OpenTelemetry形式）④CloudWatchのPut/GetMetricData APIを使った定期ポーリングより低レイテンシ・低コスト。EventBridge Pipes：①2つのサービス間の1対1の統合（フィルタリング・拡充・変換機能付き）②ソース：SQS・DynamoDB Streams・Kinesis Streams・MQ③ターゲット：Lambda・Step Functions・API Gateway・EventBridgeバス等。",
+      "tags": ["モニタリング", "CloudWatch", "EventBridge", "メトリクス"]
+    },
+    {
+      "id": "SAA-136",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2のネットワークインターフェイスの種類「ENI」「ENA」「EFA」の説明として正しいものはどれですか？",
+      "choices": [
+        "ENI：標準的な仮想ネットワークカード（複数IPアドレス・SG適用可）。ENA（Elastic Network Adapter）：高性能なネットワーク（最大100Gbps・Enhanced Networking）。EFA：HPC向けの低レイテンシ高スループットネットワーク（OS-Bypass）",
+        "ENAはEFA上位互換でEFAを使えばENAは不要",
+        "EFAは全てのEC2インスタンスタイプで使用可能でENIの代替",
+        "ENIはLinuxのみ対応でENA・EFAはWindowsのみ対応"
+      ],
+      "answers": [0],
+      "explanation": "EC2のネットワークインターフェイス3種類：①ENI（Elastic Network Interface）：標準的な仮想NIC・複数のプライベートIPアドレス・1つのパブリックIP・SG・MAC アドレス・フェイルオーバー時にENIをホットアタッチ可能②ENA（Elastic Network Adapter）：拡張ネットワーキング（Enhanced Networking）のドライバ・高帯域（最大100Gbps）・高PPS・低レイテンシ・低CPU使用率・SR-IOV（シングルルートI/O仮想化）ベース・ほとんどの最新インスタンスでデフォルト有効③EFA（Elastic Fabric Adapter）：HPC・ML分散トレーニング向け・OS BypassでMPI/NCCLが直接NICにアクセス・InfiniBand類似の機能。ENIがベースでEnhanced NetworkingがENA、HPCがEFA。",
+      "tags": ["EC2", "ENI", "ENA", "EFA", "ネットワーク"]
+    },
+    {
+      "id": "SAA-137",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS Systems Manager Session Manager を使用する利点として正しいものはどれですか？",
+      "choices": [
+        "SSHポート（22番）・RDPポート（3389番）を開放せずにEC2インスタンス・オンプレサーバーにセキュアに接続できる（Bastion Host不要・全セッションが監査ログとしてCloudWatch/S3に記録）",
+        "Session ManagerはEC2インスタンスにSSHキーペアを自動管理するサービス",
+        "Session ManagerはSSH接続の暗号化を強化するエンハンスドプロキシサービス",
+        "Session ManagerはVPN接続を確立してからのみ使用可能で追加のネットワーク設定が必要"
+      ],
+      "answers": [0],
+      "explanation": "AWS Systems Manager Session Managerの利点：①セキュリティグループにSSH/RDPポートを開放不要（セキュリティリスク削減）②Bastion Host（踏み台サーバー）が不要（管理コスト・コスト削減）③IAMで細粒度のアクセス制御（誰がどのインスタンスにアクセスできるか）④全セッションの完全な監査ログ：CloudWatch Logs・S3に記録（コンプライアンス対応）⑤プライベートサブネット内のインスタンスにもアクセス可能（VPC内にSSMエンドポイントがあれば可）⑥LinuxシェルとWindowsPowerShell両対応。前提：Systems Managerエージェント（SSMエージェント）のインストールとssmmessages等のVPCエンドポイントまたはNAT Gateway。",
+      "tags": ["セキュリティ", "Systems Manager", "Session Manager", "Bastion Host不要"]
+    },
+    {
+      "id": "SAA-138",
+      "category": "データ転送",
+      "difficulty": 2,
+      "question": "AWS Transfer Family の主な機能として正しいものはどれですか？",
+      "choices": [
+        "SFTP・FTP・FTPS・AS2プロトコルを使ってS3・EFSへのファイル転送をフルマネージドで提供するサービス（既存のFTPクライアント・パートナーのシステムとの互換性を保ちながらS3に移行）",
+        "Transfer FamilyはEC2間のデータ転送を高速化する内部ネットワーク最適化サービス",
+        "Transfer FamilyはS3バケット間の自動データ同期（レプリケーション）サービス",
+        "Transfer FamilyはAWSのサービス間のIAMベースの安全なデータ転送プロトコル"
+      ],
+      "answers": [0],
+      "explanation": "AWS Transfer Familyの特徴：①対応プロトコル：SFTP（SSH FTP）・FTPS（FTP over TLS）・FTP・AS2（Applicability Statement 2：EDIのB2B取引）②バックエンド：S3またはEFSをストレージとして使用③ユーザー管理：Service-managed（内蔵ID）またはAD・LDAP・カスタムLambdaで認証④既存クライアントとの互換性：FTPクライアント（FileZilla等）の設定変更なしでS3に直接転送可能。ユースケース：①サードパーティ・取引先とのファイル交換（EDI・請求書・注文書）②大量の重要ファイルのS3移行③コンプライアンスが求めるFTPS/SFTPでのファイル受け渡し。",
+      "tags": ["データ転送", "Transfer Family", "SFTP", "S3"]
+    },
+    {
+      "id": "SAA-139",
+      "category": "アーキテクチャ",
+      "difficulty": 2,
+      "question": "「サーキットブレーカーパターン（Circuit Breaker Pattern）」とAWS実装の説明として正しいものはどれですか？",
+      "choices": [
+        "依存サービス障害時に連続したタイムアウト待ちを避けるため失敗が閾値を超えると一定時間リクエストを遮断してフォールバック応答を返す障害伝播防止パターン。AWS実装：Route 53ヘルスチェック・ALBヘルスチェックでの自動切り離し",
+        "サーキットブレーカーはAWS Shield AdvancedのDDoS自動防御機能の別名",
+        "サーキットブレーカーパターンはKinesis Data Streamsのシャード停止機能",
+        "このパターンはAPIリクエスト数の制限（スロットリング）専用で障害対応には使えない"
+      ],
+      "answers": [0],
+      "explanation": "サーキットブレーカーパターンは過剰な障害タイムアウトによるカスケード障害を防ぐ設計パターンです。3つの状態：①Closed（正常）：リクエストを通す②Open（遮断）：失敗が閾値を超えると一定時間全リクエストをフォールバックで返す（タイムアウト待ちなし）③Half-Open（テスト）：遮断時間経過後、少数のリクエストを通してサービス回復を確認。AWSでの実装例：①Route 53ヘルスチェック＋フェイルオーバールーティング②ALBのターゲットヘルスチェックで不健全ターゲットを切り離し③API Gatewayのカスケードスロットリング④Step Functions→Error Catcherでフォールバック⑤Service Meshアプローチ（AWS App Mesh・ECS Service Connect）。",
+      "tags": ["アーキテクチャ", "サーキットブレーカー", "フォールバック", "マイクロサービス"]
+    },
+    {
+      "id": "SAA-140",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "EC2 スポットインスタンスで「スポット中断」を処理するためのベストプラクティスとして正しいものはどれですか？",
+      "choices": [
+        "インスタンスメタデータサービスでスポット中断通知（2分前通知）をポーリングし、作業状態をS3またはDynamoDBにチェックポイント保存して中断時に進捗を失わないようにする",
+        "スポット中断は通知なしで即座に発生するため対策は不可能",
+        "スポットインスタンスは中断後に自動的にオンデマンドインスタンスに切り替わる",
+        "スポット中断への対策は追加の設定なしにAWSが自動的に行う"
+      ],
+      "answers": [0],
+      "explanation": "スポットインスタンス中断対策：①IMDS（インスタンスメタデータ）のspot/termination-time（または spot/instance-action）を定期的にポーリング（または EventBridge経由で通知受信）②2分前通知受信後の処理：現在の進捗をS3・DynamoDB・EFS等の永続ストレージにチェックポイント保存→クリーンシャットダウン③SQSキューと組み合わせ：処理中のメッセージが削除されていない場合、再起動後に別インスタンスが再処理④スポットフリートのallocation-strategy：diversified（複数インスタンスタイプ・AZを活用して中断確率を分散）⑤混在フリート：スポット80%+オンデマンド20%のMixed Instance Policy。",
+      "tags": ["EC2", "Spot", "中断対策", "チェックポイント"]
+    },
+    {
+      "id": "SAA-141",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS CloudHSM と AWS KMS の違いとして正しいものはどれですか？",
+      "choices": [
+        "CloudHSM：FIPS 140-2 Level 3準拠の専有ハードウェアセキュリティモジュール（キー管理の完全な制御・マルチクラウド対応）。KMS：AWSフルマネージドのキー管理サービス（AWS CloudHSMより簡単・マルチテナント）",
+        "KMSはCloudHSMより高いFIPS認定レベルを持つ",
+        "CloudHSMはソフトウェアベースの暗号化でKMSはハードウェアベース",
+        "両者は全く同じ機能でネーミングのみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "CloudHSM vs KMS：AWS KMS：①マルチテナント（共有インフラ）・フルマネージド②AWSがハードウェアを管理（内部でCloudHSMを使用）③AWS・ユーザーの共有責任でのキー管理④AWSサービスとの深い統合（S3・EBS・RDS等）⑤スケーラブル⑥コスト低い。AWS CloudHSM：①専有のHSM（Hardware Security Module）ハードウェアクラスター②ユーザーがキーを完全に制御（AWSもキーにアクセス不可）③FIPS 140-2 Level 3準拠（KMSよりも高い認定レベル）④PKI・Oracle TDE・SSL Offloading等のユースケース⑤VPC内でのみアクセス可能⑥高コスト。規制要件で専有HSMが必要な場合（金融・官公庁）→CloudHSM。",
+      "tags": ["セキュリティ", "CloudHSM", "KMS", "暗号化", "FIPS"]
+    },
+    {
+      "id": "SAA-142",
+      "category": "ネットワーク",
+      "difficulty": 2,
+      "question": "AWS Outposts の主なユースケースとして正しいものはどれですか？",
+      "choices": [
+        "AWSのインフラ・サービス・API・ツールをオンプレミスデータセンターに配置して、クラウドと同じ操作性でオンプレのワークロードを処理する（低レイテンシ・データレジデンシー要件・既存施設活用）",
+        "OutpostsはAWSのリージョン外に設置する独立したクラウドリージョン",
+        "OutpostsはAWS上のリソースをオンプレミスサーバーからリモート管理するためのエージェント",
+        "OutpostsはオンプレのサーバーをAWSのEC2インスタンスに自動変換するサービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS Outpostsはハイブリッドクラウドのための完全マネージドインフラサービスです。形態：①Outposts Rack（42Uラック）：大容量・高性能コンピュート・ストレージ②Outposts Servers（1Uまたは2U）：スモールフォームファクタ・エッジロケーション向け。対応サービス：EC2・EBS・ECS・EKS・RDS・EMR・S3 on Outposts。ユースケース：①低レイテンシ：工場の生産ラインでのリアルタイム制御②データレジデンシー：データが国外に出ることを禁止するコンプライアンス③既存施設活用：大規模移行が困難なデータセンターのハイブリッド化。AWSが設置・管理・監視・ハードウェア交換を担当。",
+      "tags": ["ネットワーク", "Outposts", "ハイブリッドクラウド", "低レイテンシ"]
+    },
+    {
+      "id": "SAA-143",
+      "category": "コンテナ",
+      "difficulty": 2,
+      "question": "Amazon ECS のサービスディスカバリー（Service Discovery）の実装方法として正しいものはどれですか？",
+      "choices": [
+        "AWS Cloud Map：サービスの論理名でDNSまたはAPI経由で検索・ヘルスチェック付き。ALBターゲットグループ：HTTPベースのサービス間通信。ECS Service Connect：サービスメッシュライクな機能をコードなしで実装",
+        "ECSではサービスディスカバリーが不可能でEC2のIPアドレスを直接使用する必要がある",
+        "ECSのサービスディスカバリーはKubernetes CoreDNSと完全互換",
+        "サービスディスカバリーにはAWS X-Rayのみを使用する"
+      ],
+      "answers": [0],
+      "explanation": "ECSサービス間通信の3つのアプローチ：①AWS Cloud Map（旧：Route 53 Auto Naming）：サービスにDNS名を付与（service-name.namespace.local）、ヘルスチェック失敗したコンテナはDNSから自動除外、ECSからCloud Mapへの自動登録②ALBターゲットグループ：ECSサービスをALBターゲットグループに自動登録、パスベースルーティングでサービス間通信、外部にも公開可能③ECS Service Connect（新機能）：AWS App Meshを簡略化したサービスメッシュ機能、サービス名でHTTP接続・自動再試行・タイムアウト・サーキットブレーカー。最もシンプルな設定はService Connect（サービスメッシュの恩恵をコードなしで実現）。",
+      "tags": ["ECS", "Service Discovery", "Cloud Map", "マイクロサービス"]
+    },
+    {
+      "id": "SAA-144",
+      "category": "データベース",
+      "difficulty": 2,
+      "question": "Amazon DynamoDB Global Tables の説明として正しいものはどれですか？",
+      "choices": [
+        "複数のAWSリージョンにDynamoDBテーブルのマルチマスターレプリカを自動的に作成・管理し、各リージョンでの読み取りと書き込みを可能にするマルチリージョン・マルチマスターのフルマネージドソリューション",
+        "DynamoDB Global TablesはDynamoDB StreamsとLambdaを使って手動でクロスリージョンレプリケーションを設定する機能",
+        "Global Tablesは読み取りのみを複数リージョンに分散し書き込みは単一リージョンのみ",
+        "Global Tablesは同一リージョン内の複数AZへのレプリケーションに使用する"
+      ],
+      "answers": [0],
+      "explanation": "DynamoDB Global Tablesの特徴：①マルチリージョン・マルチマスター：任意のレプリカリージョンで読み書き可能②自動レプリケーション：1秒未満でリージョン間レプリケーション③Active-Active設計：複数リージョンが同時に書き込みを受け付け（RTOほぼゼロ）④競合解決：同じアイテムへの競合書き込みは「最後の書き込みが優先（Last Writer Wins）」⑤ダウンタイムゼロでリージョン追加⑥リードレプリカとして単一リージョンからスタートしてグローバルテーブルに昇格可能。ユースケース：グローバルアプリのローカルレイテンシ・マルチリージョンDR・GDPR等のデータレジデンシー要件の対応（特定リージョンのみにデータ格納も可）。",
+      "tags": ["DynamoDB", "Global Tables", "マルチリージョン", "高可用性"]
+    },
+    {
+      "id": "SAA-145",
+      "category": "EC2",
+      "difficulty": 2,
+      "question": "EC2 Auto Scalingの「ライフサイクルフック（Lifecycle Hooks）」の説明として正しいものはどれですか？",
+      "choices": [
+        "スケールアウト時（起動中）またはスケールイン時（終了前）にカスタム処理（ログ収集・設定完了確認・ドレイン処理等）を行うための一時停止状態を挿入する機能",
+        "ライフサイクルフックはAuto Scalingグループのインスタンス数の上限・下限を設定する機能",
+        "ライフサイクルフックはAuto ScalingとELBのヘルスチェックを同期させる機能",
+        "ライフサイクルフックはEC2インスタンスのOSライフサイクル（起動・停止・再起動）を管理する設定"
+      ],
+      "answers": [0],
+      "explanation": "Auto Scalingライフサイクルフックの使い方：スケールアウト時（Launching）：①インスタンスがPending:Waitに移行②SNS/SQS/EventBridgeで通知③Lambda等でカスタム処理（ソフトウェアインストール・設定完了確認・ログエージェントの初期化等）④完了通知（CompleteLifecycleAction）でInServiceへ移行。スケールイン時（Terminating）：①インスタンスがTerminating:Waitに移行②カスタム処理（アクティブなセッションの終了・ログのS3への保存・設定削除等）③完了通知でTerminated。デフォルトタイムアウト：1時間（最大2時間・heartbeatで延長可能）。",
+      "tags": ["EC2", "Auto Scaling", "ライフサイクルフック", "カスタム処理"]
+    },
+    {
+      "id": "SAA-146",
+      "category": "ストレージ",
+      "difficulty": 2,
+      "question": "EBSボリュームの「スナップショット（Snapshot）」のコスト最適化について正しいものはどれですか？",
+      "choices": [
+        "EBSスナップショットは増分バックアップ（初回フルバックアップ後は変更ブロックのみ保存）でS3に格納され、Amazon Data Lifecycle Manager（DLM）で自動スケジュール・保持ポリシー・クロスリージョンコピーを管理できる",
+        "EBSスナップショットはフルバックアップのため毎回全データをS3に保存するため高コスト",
+        "スナップショットを削除するとそれ以降のスナップショットで参照していたデータが消失する",
+        "EBSスナップショットはEC2インスタンスを停止してからのみ作成可能"
+      ],
+      "answers": [0],
+      "explanation": "EBSスナップショットの仕組み：①増分バックアップ：最初のスナップショットは全ブロックをS3にコピー、以降は変更されたブロックのみ保存（ストレージ節約）②削除時の安全性：スナップショットチェーンの中間を削除しても参照されているブロックは自動的に後続スナップショットに移動③S3格納：99.999999999%の耐久性。自動化：Amazon Data Lifecycle Manager（DLM）：①スケジュール（例：毎日AM2時・毎週日曜等）②保持ポリシー（例：30日分保持・最新14世代保持）③クロスリージョンコピー（DR用）④クロスアカウントコピー④AMI管理。AWS Backup：DLMの統合版で複数サービス（EBS・RDS・EFS・DynamoDB等）のバックアップを一元管理。",
+      "tags": ["EBS", "スナップショット", "コスト最適化", "DLM"]
+    },
+    {
+      "id": "SAA-147",
+      "category": "分析",
+      "difficulty": 2,
+      "question": "AWS Lake Formation の主な機能として正しいものはどれですか？",
+      "choices": [
+        "S3をデータレイクとして構成・管理するサービス（データソース取り込み・カタログ管理・列・行レベルのセキュリティ・Athena・Redshift・EMRへのアクセス制御を一元管理）",
+        "Lake FormationはS3バケット間でリアルタイムにデータを同期するレプリケーションサービス",
+        "Lake FormationはAmazon RDSのデータをS3に自動エクスポートするバックアップサービス",
+        "Lake FormationはAmazon S3のデータをSFTPで外部パートナーと共有するデータ交換サービス"
+      ],
+      "answers": [0],
+      "explanation": "AWS Lake Formation はデータレイク構築・管理を簡略化するサービスです。機能：①データ取り込み：S3・JDBC（RDS・Redshift）・オンプレ等からデータをS3データレイクに取り込み②Data Catalog：Glueカタログを使用したスキーマ管理・テーブル定義③セキュリティ：列レベル（カラムマスキング）・行レベル（行フィルター）の細粒度アクセス制御（従来のS3バケットポリシー+IAMより細かい制御）④LF-RBAC（Lake Formation RBAC）：IAMの代わりにLake Formation独自の権限管理⑤Governed Table：ACID準拠のトランザクション・タイムトラベル（過去バージョン参照）⑥データ共有：AWS Clean Rooms（プライバシー保護でのデータコラボレーション）。",
+      "tags": ["分析", "Lake Formation", "データレイク", "セキュリティ"]
+    },
+    {
+      "id": "SAA-148",
+      "category": "アーキテクチャ",
+      "difficulty": 2,
+      "question": "「Saga パターン」における「Orchestration（オーケストレーション）」と「Choreography（コレオグラフィ）」の違いとして正しいものはどれですか？",
+      "choices": [
+        "オーケストレーション：中央の指揮者（Step Functions等）が各サービスを順次呼び出し・失敗時の補償トランザクションを管理。コレオグラフィ：各サービスがイベント（EventBridge/SNS）を発行し次のサービスが自律的に反応",
+        "オーケストレーションはイベント駆動でコレオグラフィは手続き的",
+        "コレオグラフィは単一のコントローラーが全マイクロサービスを管理する集中型アーキテクチャ",
+        "両者は同じパターンでトランザクションの方向のみが異なる"
+      ],
+      "answers": [0],
+      "explanation": "Sagaパターンはマイクロサービス間の分散トランザクション（2フェーズコミット代替）のパターンです。オーケストレーション（Orchestration）：①AWS Step Functionsが各サービスを順番に呼び出し②失敗時：補償トランザクション（Compensating Transaction）を逆順に実行（例：旅行予約失敗→ホテル予約をキャンセル→フライト予約をキャンセル）③中央集権的：ワークフローが可視化されやすい。コレオグラフィ（Choreography）：①各サービスがイベントを発行②次のサービスが自律的にイベントに反応③補償もイベント経由（失敗イベント発行）④疎結合：サービスが互いを知らない⑤複雑なワークフローの追跡が難しい。",
+      "tags": ["アーキテクチャ", "Saga", "Step Functions", "マイクロサービス"]
+    },
+    {
+      "id": "SAA-149",
+      "category": "コスト最適化",
+      "difficulty": 2,
+      "question": "未使用AWSリソースの棚卸しと削除を進める際のアプローチとして正しいものはどれですか？",
+      "choices": [
+        "AWS Cost ExplorerのResourceエクスプローラー・Trusted Advisor・Compute Optimizer・CloudWatch低利用率アラームを組み合わせて未使用リソース（EC2・EBS・RDS・Elastic IP・未接続ロードバランサー等）を特定し削除する",
+        "未使用リソースの特定には毎月の請求書のみを確認すれば十分",
+        "AWSはコスト超過時に自動的に未使用リソースを削除するため特別な対応は不要",
+        "未使用リソースの特定にはAWS Config Rulesのみを使用する"
+      ],
+      "answers": [0],
+      "explanation": "未使用リソース特定・削除のアプローチ：①Cost Explorer：サービス別・リソース別コストを分析して使用率の低いリソースを特定②Trusted Advisor：アイドルEC2・未接続EIP・使用率低いEBS・未使用ELBを自動検出③Compute Optimizer：EC2/EBS/Lambda/ECSのOver-provisioned（過剰プロビジョニング）を機械学習で検出④CloudWatch：CPU・ネットワーク・DB接続数が長期低位のリソースにアラームを設定⑤タグポリシー：全リソースにプロジェクト・環境・オーナータグを義務付けて責任者を特定⑥Schedulerパターン：Instanceスケジューラー（Lambda+EventBridge）で開発環境を夜間・週末に自動停止（最大65%コスト削減）。",
+      "tags": ["コスト最適化", "未使用リソース", "Trusted Advisor", "Compute Optimizer"]
+    },
+    {
+      "id": "SAA-150",
+      "category": "セキュリティ",
+      "difficulty": 2,
+      "question": "AWS IAMの「Attribute-Based Access Control（ABAC）」の説明として正しいものはどれですか？",
+      "choices": [
+        "IAMリソースのタグ（属性）に基づいてアクセスを制御するアクセス制御モデル（例：env:productionタグのEC2のみ変更可・同一プロジェクトタグのリソースにのみアクセス可）",
+        "ABACはAWS外部のLDAPやActive Directoryに基づくアクセス制御",
+        "ABACは静的なIPアドレスに基づいてネットワーク接続を制御するポリシー",
+        "ABACはIAMロールではなくIAMユーザーのみで使用できる属性管理"
+      ],
+      "answers": [0],
+      "explanation": "ABAC（Attribute-Based Access Control）vs RBAC（Role-Based Access Control）：RBAC：サービス別・環境別に異なるIAMポリシーを作成（管理ポリシーの増加）。ABAC：①リソースとプリンシパルのタグの一致でアクセスを制御②IAMポリシーの条件にaws:ResourceTagとaws:PrincipalTagを使用③少数のポリシーで多様なシナリオに対応。例：Team=AのユーザーがProject=Aのリソースにのみアクセス可能なポリシーを1つ作成→チームやプロジェクトが増えてもポリシー変更なし（タグを付けるだけ）④大規模組織でのポリシー管理簡略化に有効。組み合わせ：RBACとABACを組み合わせた細粒度アクセス制御が実用的。",
+      "tags": ["セキュリティ", "IAM", "ABAC", "タグベース", "アクセス制御"]
     }
   ]
 }
