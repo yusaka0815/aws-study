@@ -359,7 +359,7 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
 
   if (!isCorrect) {
     // 不正解時：解説を自動展開
-    expEl.textContent = question.explanation;
+    setExplanationContent(expEl, question.explanation);
     expEl.classList.remove('hidden');
     toggleBtn.textContent = '▲ 解説を閉じる';
   } else {
@@ -383,6 +383,28 @@ export function updateMultiSelectUI(selectedCount, requiredCount) {
 }
 
 /**
+ * 解説テキストをセットし、クリップボードコピーボタンを追加
+ */
+function setExplanationContent(expEl, explanation) {
+  expEl.textContent = explanation;
+  if (navigator.clipboard) {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'explanation-copy-btn';
+    copyBtn.textContent = '📋';
+    copyBtn.title = 'クリップボードにコピー';
+    copyBtn.addEventListener('click', async e => {
+      e.stopPropagation();
+      try {
+        await navigator.clipboard.writeText(explanation);
+        copyBtn.textContent = '✓';
+        setTimeout(() => { copyBtn.textContent = '📋'; }, 1500);
+      } catch { /* clipboard API 非対応 */ }
+    });
+    expEl.appendChild(copyBtn);
+  }
+}
+
+/**
  * 解説の表示/非表示トグル
  */
 export function toggleExplanation(explanation) {
@@ -394,7 +416,7 @@ export function toggleExplanation(explanation) {
   btn.textContent = isHidden ? '▲ 解説を閉じる' : '▼ 解説を見る';
 
   if (isHidden) {
-    expEl.textContent = explanation;
+    setExplanationContent(expEl, explanation);
     // 解説が表示されたら少しスクロール
     setTimeout(() => expEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
