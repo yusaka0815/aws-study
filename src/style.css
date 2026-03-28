@@ -1408,6 +1408,8 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 .cat-accuracy {
   font-size: 14px;
   font-weight: 700;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .acc-good { color: var(--success); }
@@ -1477,11 +1479,17 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 .worst-category {
   font-size: 11px;
   color: var(--text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .worst-accuracy {
   font-size: 12px;
   font-weight: 700;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .worst-text {
