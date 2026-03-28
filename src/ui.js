@@ -447,7 +447,7 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       <div class="cat-bar-bg">
         <div class="cat-bar ${barClass}" style="width: ${barWidth}%"></div>
       </div>
-      <div class="cat-sub">${cat.answered} / ${cat.total} 問回答　<span class="cat-drill-hint">タップして絞り込み →</span></div>
+      <div class="cat-sub">${cat.answered} / ${cat.total} 問回答${cat.due > 0 ? `　<span class="due-badge">復習 ${cat.due}</span>` : ''}　<span class="cat-drill-hint">タップして絞り込み →</span></div>
     `;
 
     if (onDrillCategory) {

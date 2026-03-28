@@ -922,6 +922,16 @@ body {
   opacity: 0.7;
 }
 
+.due-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 .empty-msg {
   color: var(--text-muted);
   font-size: 14px;

@@ -168,12 +168,14 @@ export function getStats(questions, userState) {
   let totalCorrect = 0;
   const categoryStats = {};
 
+  const now = Date.now();
+
   for (const q of questions) {
     const qState = userState.questions[q.id];
 
     // カテゴリ別集計
     if (!categoryStats[q.category]) {
-      categoryStats[q.category] = { total: 0, answered: 0, correct: 0, attempts: 0 };
+      categoryStats[q.category] = { total: 0, answered: 0, correct: 0, attempts: 0, due: 0 };
     }
     categoryStats[q.category].total++;
 
@@ -184,6 +186,9 @@ export function getStats(questions, userState) {
       categoryStats[q.category].answered++;
       categoryStats[q.category].correct += safeInt(qState.correct);
       categoryStats[q.category].attempts += safeInt(qState.attempts);
+      if (qState.nextReviewAt <= now) {
+        categoryStats[q.category].due++;
+      }
     }
   }
 
@@ -195,6 +200,7 @@ export function getStats(questions, userState) {
       name,
       total: stat.total,
       answered: stat.answered,
+      due: stat.due,
       accuracy: stat.attempts > 0 ? Math.round((stat.correct / stat.attempts) * 100) : null,
     }))
     .sort((a, b) => (a.accuracy ?? 101) - (b.accuracy ?? 101));
@@ -207,7 +213,6 @@ export function getStats(questions, userState) {
   }).length;
 
   // SRS 復習待ち問題数（nextReviewAt が現在以前）
-  const now = Date.now();
   const dueCount = questions.filter(q => {
     const s = userState.questions[q.id];
     return s && safeInt(s.attempts) > 0 && s.nextReviewAt <= now;
