@@ -416,6 +416,48 @@ describe('getStats / weeklyLog', () => {
 });
 
 // ============================================================
+// getStats: masteredCount
+// ============================================================
+describe('getStats / masteredCount', () => {
+  const questions = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2')];
+  const now = Date.now();
+
+  it('未回答問題は masteredCount に含まれない', () => {
+    expect(getStats(questions, { questions: {}, dailyLog: {} }).masteredCount).toBe(0);
+  });
+
+  it('直近5回全正解でマスター済み', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 5, correct: 5, wrong: 0, recentResults: [1, 1, 1, 1, 1], lastAnsweredAt: now, nextReviewAt: now },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).masteredCount).toBe(1);
+  });
+
+  it('直近5回に1つでも不正解があればマスター外', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 5, correct: 4, wrong: 1, recentResults: [1, 1, 1, 1, 0], lastAnsweredAt: now, nextReviewAt: now },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).masteredCount).toBe(0);
+  });
+
+  it('recentResults が 5 件未満はマスター外', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 4, correct: 4, wrong: 0, recentResults: [1, 1, 1, 1], lastAnsweredAt: now, nextReviewAt: now },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).masteredCount).toBe(0);
+  });
+});
+
+// ============================================================
 // formatInterval: 次回復習時間のフォーマット
 // ============================================================
 describe('formatInterval', () => {

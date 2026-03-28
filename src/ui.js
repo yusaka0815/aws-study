@@ -26,7 +26,17 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   const accuracyMap = progressMap.accuracyMap ?? {};
   const dueMap = progressMap.dueMap ?? {};
 
-  exams.forEach(exam => {
+  // 復習待ち数が多い順 → 進捗あり順 → 未開始（元の順序）
+  const sorted = [...exams].sort((a, b) => {
+    const dueA = dueMap[a.examCode] ?? 0;
+    const dueB = dueMap[b.examCode] ?? 0;
+    if (dueB !== dueA) return dueB - dueA;
+    const cntA = counts[a.examCode] ?? 0;
+    const cntB = counts[b.examCode] ?? 0;
+    return cntB - cntA;
+  });
+
+  sorted.forEach(exam => {
     const answered = counts[exam.examCode] ?? 0;
     const total = exam.questionCount ?? 0;
     const pct = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
@@ -67,14 +77,34 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   // 全体進捗サマリー
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const statsEl = document.getElementById('select-stats');
+  const goalEl = document.getElementById('select-today-goal');
+  const DAILY_GOAL = 30;
+
   if (statsEl) {
     if (todayStats && (todayStats.todayCount > 0 || todayStats.streak > 0)) {
       const streakText = todayStats.streak > 1 ? ` 🔥 ${todayStats.streak}日連続` : '';
-      statsEl.innerHTML = `今日 <strong>${todayStats.todayCount}</strong> 問回答${streakText}　累計 ${total} 問`;
+      statsEl.innerHTML = `今日 <strong>${todayStats.todayCount}</strong> 問回答${streakText}`;
     } else if (total > 0) {
       statsEl.textContent = `累計 ${total} 問回答済み`;
     } else {
       statsEl.textContent = 'さあ、学習を始めよう！';
+    }
+  }
+
+  if (goalEl && todayStats) {
+    const cnt = todayStats.todayCount;
+    const pct = Math.min(100, Math.round((cnt / DAILY_GOAL) * 100));
+    if (cnt > 0) {
+      const goalMsg = cnt >= DAILY_GOAL ? '目標達成！' : `目標まで ${DAILY_GOAL - cnt} 問`;
+      goalEl.innerHTML = `
+        <div class="today-goal-bar-bg">
+          <div class="today-goal-bar ${cnt >= DAILY_GOAL ? 'today-goal-done' : ''}" style="width:${pct}%"></div>
+        </div>
+        <span class="today-goal-text">${goalMsg}</span>
+      `;
+      goalEl.classList.remove('hidden');
+    } else {
+      goalEl.classList.add('hidden');
     }
   }
 }
@@ -276,17 +306,21 @@ export function renderStats(examCode, examName, stats) {
       <div class="stat-value">${coverage}<span class="stat-unit">%</span></div>
       <div class="stat-label">カバー率 (${stats.answered}/${stats.total})</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value">${stats.totalAttempts}</div>
-      <div class="stat-label">総回答数</div>
+    <div class="stat-card ${stats.dueCount > 0 ? 'stat-card-due' : ''}">
+      <div class="stat-value">${stats.dueCount}</div>
+      <div class="stat-label">復習待ち</div>
     </div>
     <div class="stat-card ${stats.weakCount > 0 ? 'stat-card-warn' : ''}">
       <div class="stat-value">${stats.weakCount}</div>
       <div class="stat-label">苦手問題数</div>
     </div>
-    <div class="stat-card ${stats.dueCount > 0 ? 'stat-card-due' : ''}">
-      <div class="stat-value">${stats.dueCount}</div>
-      <div class="stat-label">今すぐ復習待ち</div>
+    <div class="stat-card stat-card-master">
+      <div class="stat-value">${stats.masteredCount}</div>
+      <div class="stat-label">マスター済み</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${stats.totalAttempts}</div>
+      <div class="stat-label">総回答数</div>
     </div>
   `;
 

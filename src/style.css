@@ -167,6 +167,41 @@ body {
   color: var(--text-secondary);
 }
 
+.today-goal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.today-goal.hidden { display: none; }
+
+.today-goal-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.today-goal-bar {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.today-goal-done {
+  background: var(--success);
+}
+
+.today-goal-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 #exam-list {
   padding: 8px 16px 24px;
   display: flex;
@@ -645,10 +680,7 @@ body {
   gap: 10px;
 }
 
-/* 4カードの場合は2列2行 */
-#stats-overview > *:nth-child(n+5) {
-  grid-column: span 2;
-}
+/* 6カードは2列3行で自然にレイアウト */
 
 .stat-card {
   background: var(--bg-card);
@@ -674,6 +706,15 @@ body {
 
 .stat-card-due .stat-value {
   color: #f59e0b;
+}
+
+.stat-card-master {
+  border-color: #818cf8;
+  background: rgba(129, 140, 248, 0.1);
+}
+
+.stat-card-master .stat-value {
+  color: #818cf8;
 }
 
 .stat-value {

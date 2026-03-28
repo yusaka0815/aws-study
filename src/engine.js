@@ -213,6 +213,14 @@ export function getStats(questions, userState) {
     return s && safeInt(s.attempts) > 0 && s.nextReviewAt <= now;
   }).length;
 
+  // マスター済み問題数（直近5回が全て正解）
+  const masteredCount = questions.filter(q => {
+    const s = userState.questions[q.id];
+    if (!s || safeInt(s.attempts) === 0) return false;
+    const recent = s.recentResults ?? [];
+    return recent.length >= 5 && recent.slice(-5).every(r => r === 1);
+  }).length;
+
   // 過去7日の回答数（週間チャート用）
   const weeklyLog = [];
   for (let i = 6; i >= 0; i--) {
@@ -232,6 +240,7 @@ export function getStats(questions, userState) {
     accuracy,
     weakCount,
     dueCount,
+    masteredCount,
     categoryList,
     weeklyLog,
   };
