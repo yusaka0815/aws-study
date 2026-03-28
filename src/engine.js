@@ -236,6 +236,12 @@ export function getStats(questions, userState) {
     return s && safeInt(s.attempts) > 0 && s.nextReviewAt <= now;
   }).length;
 
+  // 今後24時間以内に復習期限が来る問題数
+  const upcoming24h = questions.filter(q => {
+    const s = userState.questions[q.id];
+    return s && safeInt(s.attempts) > 0 && s.nextReviewAt > now && s.nextReviewAt <= now + 24 * 3600 * 1000;
+  }).length;
+
   // マスター済み問題数（直近5回が全て正解）
   const masteredCount = questions.filter(q => {
     const s = userState.questions[q.id];
@@ -300,6 +306,7 @@ export function getStats(questions, userState) {
     accuracy,
     weakCount,
     dueCount,
+    upcoming24h,
     masteredCount,
     bookmarkCount,
     categoryList,

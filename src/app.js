@@ -1280,6 +1280,7 @@ function buildProgressMap() {
   const due = {};
   const lastStudied = {};
   const lastCorrect = {}; // 直近回答が正解の問題数（予測スコア用）
+  const mastered = {};    // マスター済み問題数（直近5回全正解）
   const now = Date.now();
   for (const [id, state] of Object.entries(appState.userState?.questions ?? {})) {
     if (state.attempts > 0) {
@@ -1292,6 +1293,11 @@ function buildProgressMap() {
       }
       if (state.lastAnsweredAt > (lastStudied[prefix] || 0)) {
         lastStudied[prefix] = state.lastAnsweredAt;
+      }
+      // マスター判定（直近5回全正解）
+      const recent = state.recentResults ?? [];
+      if (recent.length >= 5 && recent.slice(-5).every(r => r === 1)) {
+        mastered[prefix] = (mastered[prefix] || 0) + 1;
       }
     }
     // 直近回答の正誤（attempts=0の未回答問題も対象: 未回答=不正解として換算）
@@ -1312,7 +1318,7 @@ function buildProgressMap() {
       predictedMap[exam.examCode] = Math.round((lc / exam.questionCount) * 100);
     }
   }
-  return { counts, accuracyMap, dueMap: due, lastStudied, predictedMap };
+  return { counts, accuracyMap, dueMap: due, lastStudied, predictedMap, masteredMap: mastered };
 }
 
 // ============================================================

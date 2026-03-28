@@ -41,6 +41,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   const dueMap = progressMap.dueMap ?? {};
   const lastStudiedMap = progressMap.lastStudied ?? {};
   const predictedMap = progressMap.predictedMap ?? {};
+  const masteredMap = progressMap.masteredMap ?? {};
 
   // 復習待ち数が多い順 → 進捗あり順 → 未開始（元の順序）
   const sorted = [...exams].sort((a, b) => {
@@ -59,6 +60,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
     const accuracy = accuracyMap[exam.examCode] ?? null;
     const predicted = predictedMap[exam.examCode] ?? null;
     const due = dueMap[exam.examCode] ?? 0;
+    const masteredCount = masteredMap[exam.examCode] ?? 0;
     const lastAt = lastStudiedMap[exam.examCode] ?? 0;
     const lastText = lastAt ? fmtLastStudied(lastAt) : null;
 
@@ -86,7 +88,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       </div>
       <div class="exam-card-meta">
         ${answered > 0
-          ? `<div class="exam-card-badges">${dueBadge}<span class="exam-progress">${answered}/${total}問<span class="exam-accuracy ${scoreClass}"> 予測${displayScore}%</span></span></div>`
+          ? `<div class="exam-card-badges">${dueBadge}${masteredCount > 0 ? `<span class="exam-mastered-badge">⭐${masteredCount}</span>` : ''}<span class="exam-progress">${answered}/${total}問<span class="exam-accuracy ${scoreClass}"> 予測${displayScore}%</span></span></div>`
           : `<div class="exam-card-badges">${dueBadge}<span class="exam-new-label">はじめる →</span></div>`}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
@@ -483,6 +485,7 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
     <div class="stat-card ${stats.dueCount > 0 ? 'stat-card-due' : ''}">
       <div class="stat-value">${stats.dueCount}</div>
       <div class="stat-label">復習待ち</div>
+      ${(stats.upcoming24h ?? 0) > 0 ? `<div class="stat-sub">+${stats.upcoming24h}問/24h</div>` : ''}
     </div>
     <div class="stat-card ${stats.weakCount > 0 ? 'stat-card-warn' : ''}">
       <div class="stat-value">${stats.weakCount}</div>

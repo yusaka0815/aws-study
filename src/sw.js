@@ -3,7 +3,7 @@
  * Service Worker - オフラインキャッシュ
  */
 
-const CACHE_NAME = 'aws-study-v45';
+const CACHE_NAME = 'aws-study-v46';
 
 // アプリシェル: 常にネットワーク優先で更新を即座に反映
 const APP_SHELL = new Set([
