@@ -361,6 +361,14 @@ function setupNavigationListeners() {
 
   document.getElementById('stats-back-btn').addEventListener('click', () => history.back());
 
+  document.getElementById('btn-drill-weak').addEventListener('click', () => {
+    settings.weakOnly = true;
+    saveSetting('weak-only', true);
+    document.getElementById('toggle-weak-only').checked = true;
+    showToast('苦手問題モード ON', 'info');
+    history.back(); // 統計画面から問題画面に戻る
+  });
+
   document.getElementById('settings-back-btn').addEventListener('click', () => history.back());
 
   document.getElementById('btn-settings-from-select').addEventListener('click', () => {
@@ -501,13 +509,21 @@ function setupKeyboardShortcuts() {
 // ============================================================
 function buildProgressMap() {
   const counts = {};
+  const attempts = {};
+  const correct = {};
   for (const [id, state] of Object.entries(appState.userState?.questions ?? {})) {
     if (state.attempts > 0) {
       const prefix = id.split('-')[0];
       counts[prefix] = (counts[prefix] || 0) + 1;
+      attempts[prefix] = (attempts[prefix] || 0) + state.attempts;
+      correct[prefix] = (correct[prefix] || 0) + state.correct;
     }
   }
-  return counts;
+  const accuracyMap = {};
+  for (const code of Object.keys(attempts)) {
+    accuracyMap[code] = Math.round((correct[code] / attempts[code]) * 100);
+  }
+  return { counts, accuracyMap };
 }
 
 // ============================================================

@@ -256,6 +256,12 @@ body {
   flex-shrink: 0;
 }
 
+.exam-accuracy {
+  color: var(--text-sub);
+  font-weight: 500;
+  margin-left: 6px;
+}
+
 .exam-progress {
   font-size: 12px;
   font-weight: 700;

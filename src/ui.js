@@ -21,10 +21,15 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
+  // progressMap は { counts, accuracyMap } 形式を想定（後方互換で plain object も受け付ける）
+  const counts = progressMap.counts ?? progressMap;
+  const accuracyMap = progressMap.accuracyMap ?? {};
+
   exams.forEach(exam => {
-    const answered = progressMap[exam.examCode] ?? 0;
+    const answered = counts[exam.examCode] ?? 0;
     const total = exam.questionCount ?? 0;
     const pct = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
+    const accuracy = accuracyMap[exam.examCode] ?? null;
 
     const btn = document.createElement('button');
     btn.className = 'exam-card';
@@ -35,7 +40,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
       </div>
       <div class="exam-card-meta">
         ${answered > 0
-          ? `<span class="exam-progress">${answered}問 (${pct}%)</span>`
+          ? `<span class="exam-progress">${answered}問 (${pct}%) <span class="exam-accuracy">${accuracy}%正解</span></span>`
           : '<span class="exam-arrow">→</span>'}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
@@ -229,6 +234,17 @@ export function renderStats(examCode, examName, stats) {
       <div class="stat-label">苦手問題数</div>
     </div>
   `;
+
+  // 苦手問題ドリルボタン
+  const drillBtn = document.getElementById('btn-drill-weak');
+  if (drillBtn) {
+    if (stats.weakCount > 0) {
+      drillBtn.textContent = `苦手 ${stats.weakCount} 問を集中練習`;
+      drillBtn.classList.remove('hidden');
+    } else {
+      drillBtn.classList.add('hidden');
+    }
+  }
 
   // カテゴリ別
   const catList = document.getElementById('category-stats');
