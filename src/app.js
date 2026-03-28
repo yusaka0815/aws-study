@@ -532,6 +532,13 @@ function setupKeyboardShortcuts() {
       e.preventDefault();
       const nextBtn = document.getElementById('next-btn');
       if (!nextBtn.disabled) nextBtn.click();
+      return;
+    }
+
+    // E: 解説のトグル（回答済みの場合のみ）
+    if ((key === 'e' || key === 'E') && appState.answered) {
+      const toggleBtn = document.getElementById('explanation-toggle');
+      if (!toggleBtn.classList.contains('hidden')) toggleBtn.click();
     }
   });
 }

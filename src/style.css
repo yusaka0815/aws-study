@@ -280,15 +280,27 @@ body {
 }
 
 .exam-code {
-  background: var(--primary-dim);
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 700;
-  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 9px;
   border-radius: 6px;
   letter-spacing: 0.5px;
   flex-shrink: 0;
+  /* デフォルト（CLF・その他） */
+  background: var(--primary-dim);
+  color: var(--primary);
 }
+
+/* 試験コード別カラー */
+[data-exam="CLF"] .exam-code { background: rgba(34,197,94,.15); color: var(--success); }
+[data-exam="AIF"] .exam-code { background: rgba(139,92,246,.15); color: #a78bfa; }
+[data-exam="SAA"] .exam-code { background: var(--primary-dim); color: var(--primary); }
+[data-exam="MLA"] .exam-code { background: rgba(59,130,246,.15); color: #60a5fa; }
+[data-exam="DVA"] .exam-code { background: rgba(245,158,11,.15); color: #fbbf24; }
+[data-exam="SOA"] .exam-code { background: rgba(236,72,153,.15); color: #f472b6; }
+[data-exam="DEA"] .exam-code { background: rgba(20,184,166,.15); color: #2dd4bf; }
+[data-exam="SAP"] .exam-code { background: rgba(239,68,68,.15); color: #f87171; }
+[data-exam="DOP"] .exam-code { background: rgba(129,140,248,.15); color: #818cf8; }
 
 .exam-name {
   flex: 1;
@@ -1163,6 +1175,16 @@ body {
 
 .choice-btn.pending-selected .choice-label {
   background: var(--primary);
+  color: white;
+}
+
+.choice-btn.correct .choice-label {
+  background: var(--success);
+  color: white;
+}
+
+.choice-btn.wrong .choice-label {
+  background: var(--danger);
   color: white;
 }
 

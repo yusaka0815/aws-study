@@ -57,6 +57,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
 
     const btn = document.createElement('button');
     btn.className = `exam-card${isActive ? ' exam-card-active' : ''}`;
+    btn.dataset.exam = exam.examCode;
     btn.innerHTML = `
       <div class="exam-card-main">
         <span class="exam-code">${exam.examCode}</span>
