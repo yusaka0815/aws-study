@@ -537,43 +537,79 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
     }
   }
 
-  // カテゴリ別
+  // カテゴリ別（ソートタブ付き）
   const catList = document.getElementById('category-stats');
-  catList.innerHTML = '';
+  const sortTabsEl = document.getElementById('category-sort-tabs');
 
   if (stats.categoryList.length === 0) {
     catList.innerHTML = '<p class="empty-msg">まだ回答データがありません</p>';
+    if (sortTabsEl) sortTabsEl.innerHTML = '';
     return;
   }
 
-  stats.categoryList.forEach(cat => {
-    const accuracy = cat.accuracy !== null ? cat.accuracy : null;
-    const barWidth = accuracy !== null ? accuracy : 0;
-    const barClass = accuracy === null ? 'bar-neutral' : accuracy >= 80 ? 'bar-good' : accuracy >= 60 ? 'bar-mid' : 'bar-bad';
-    const accuracyText = accuracy !== null ? `${accuracy}%` : '未回答';
-    const coveragePct = cat.total > 0 ? Math.round((cat.answered / cat.total) * 100) : 0;
-    const allMastered = accuracy === 100 && cat.answered === cat.total && cat.total > 0;
+  let catSortMode = 'accuracy';
 
-    const item = document.createElement('div');
-    item.className = `category-item${allMastered ? ' cat-perfect' : ''}`;
+  function renderCategoryList() {
+    const sorted = [...stats.categoryList].sort((a, b) => {
+      if (catSortMode === 'coverage') {
+        const cA = a.total > 0 ? a.answered / a.total : 0;
+        const cB = b.total > 0 ? b.answered / b.total : 0;
+        return cA - cB;
+      }
+      if (catSortMode === 'due') return (b.due ?? 0) - (a.due ?? 0);
+      // accuracy: null（未回答）を末尾に
+      return (a.accuracy ?? 101) - (b.accuracy ?? 101);
+    });
 
-    item.innerHTML = `
-      <div class="cat-header">
-        <span class="cat-name">${cat.name}${allMastered ? ' ⭐' : ''}</span>
-        <span class="cat-accuracy ${barClass.replace('bar-', 'acc-')}">${accuracyText}</span>
-      </div>
-      <div class="cat-bar-bg">
-        <div class="cat-bar ${barClass}" style="width: ${barWidth}%"></div>
-      </div>
-      <div class="cat-sub">${cat.answered} / ${cat.total} 問回答 (${coveragePct}%カバー)${cat.due > 0 ? `　<span class="due-badge">復習 ${cat.due}</span>` : ''}　<span class="cat-drill-hint">タップして絞り込み →</span></div>
-    `;
+    catList.innerHTML = '';
+    sorted.forEach(cat => {
+      const accuracy = cat.accuracy !== null ? cat.accuracy : null;
+      const barWidth = accuracy !== null ? accuracy : 0;
+      const barClass = accuracy === null ? 'bar-neutral' : accuracy >= 80 ? 'bar-good' : accuracy >= 60 ? 'bar-mid' : 'bar-bad';
+      const accuracyText = accuracy !== null ? `${accuracy}%` : '未回答';
+      const coveragePct = cat.total > 0 ? Math.round((cat.answered / cat.total) * 100) : 0;
+      const allMastered = accuracy === 100 && cat.answered === cat.total && cat.total > 0;
 
-    if (onDrillCategory) {
-      item.addEventListener('click', () => onDrillCategory(cat.name));
+      const item = document.createElement('div');
+      item.className = `category-item${allMastered ? ' cat-perfect' : ''}`;
+
+      item.innerHTML = `
+        <div class="cat-header">
+          <span class="cat-name">${cat.name}${allMastered ? ' ⭐' : ''}</span>
+          <span class="cat-accuracy ${barClass.replace('bar-', 'acc-')}">${accuracyText}</span>
+        </div>
+        <div class="cat-bar-bg">
+          <div class="cat-bar ${barClass}" style="width: ${barWidth}%"></div>
+        </div>
+        <div class="cat-sub">${cat.answered} / ${cat.total} 問回答 (${coveragePct}%カバー)${cat.due > 0 ? `　<span class="due-badge">復習 ${cat.due}</span>` : ''}　<span class="cat-drill-hint">タップして絞り込み →</span></div>
+      `;
+
+      if (onDrillCategory) {
+        item.addEventListener('click', () => onDrillCategory(cat.name));
+      }
+
+      catList.appendChild(item);
+    });
+  }
+
+  if (sortTabsEl) {
+    const SORT_LABELS = { accuracy: '正答率', coverage: 'カバー率', due: '復習待ち' };
+    function renderSortTabs() {
+      sortTabsEl.innerHTML = Object.entries(SORT_LABELS).map(([key, label]) =>
+        `<button class="sort-tab${catSortMode === key ? ' active' : ''}" data-sort="${key}">${label}</button>`
+      ).join('');
+      sortTabsEl.querySelectorAll('.sort-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          catSortMode = btn.dataset.sort;
+          renderSortTabs();
+          renderCategoryList();
+        });
+      });
     }
+    renderSortTabs();
+  }
 
-    catList.appendChild(item);
-  });
+  renderCategoryList();
 }
 
 // ============================================================
