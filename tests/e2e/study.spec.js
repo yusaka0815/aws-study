@@ -66,6 +66,8 @@ test.describe('起動・試験選択画面', () => {
   test('exam-cardにhover CSSルールが定義されている', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.exam-card');
+    // SW が controllerchange → reload を起こす場合があるので安定を待つ
+    await page.waitForLoadState('load');
     const hasHoverRule = await page.evaluate(() => {
       for (const sheet of document.styleSheets) {
         try {
@@ -600,6 +602,8 @@ test.describe('トースト通知', () => {
   test('トーストにsafe-area対応のCSSが設定されている', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.exam-card');
+    // SW が controllerchange → reload を起こす場合があるので安定を待つ
+    await page.waitForLoadState('load');
     const hasSafeArea = await page.evaluate(() => {
       for (const sheet of document.styleSheets) {
         try {
