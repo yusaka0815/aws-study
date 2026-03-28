@@ -271,6 +271,15 @@ function handleAnswer(selectedIndices) {
   const updatedState = updateQuestionState(prev, isCorrect, now);
   appState.userState.questions[appState.currentQuestion.id] = updatedState;
 
+  // マスター達成チェック（直近5回全正解の初達成時のみ通知）
+  const wasMastered = prev.recentResults && prev.recentResults.length >= 5
+    && prev.recentResults.slice(-5).every(r => r === 1);
+  const isMastered = updatedState.recentResults.length >= 5
+    && updatedState.recentResults.slice(-5).every(r => r === 1);
+  if (!wasMastered && isMastered) {
+    setTimeout(() => showToast('⭐ マスター達成！', 'success'), 600);
+  }
+
   // デイリーログを更新
   const DAILY_GOAL = 30;
   const today = new Date().toISOString().slice(0, 10);
@@ -316,7 +325,8 @@ function updateSessionBadge() {
   }
   const pct = Math.round((appState.sessionCorrect / appState.sessionAnswered) * 100);
   el.textContent = `${appState.sessionAnswered}問 ${pct}%`;
-  el.classList.remove('hidden');
+  el.classList.remove('hidden', 'badge-good', 'badge-mid', 'badge-bad');
+  el.classList.add(pct >= 80 ? 'badge-good' : pct >= 60 ? 'badge-mid' : 'badge-bad');
 }
 
 // ============================================================
