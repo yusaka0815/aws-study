@@ -614,6 +614,7 @@ body {
 }
 
 .due-badge {
+  display: inline-block;
   font-size: 11px;
   font-weight: 700;
   color: #f59e0b;
@@ -1443,15 +1444,7 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   opacity: 0.7;
 }
 
-.due-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.15);
-  border-radius: 4px;
-  padding: 1px 5px;
-}
+/* .due-badge は上部（exam-card-badges セクション）で定義済み */
 
 .empty-msg {
   color: var(--text-muted);
