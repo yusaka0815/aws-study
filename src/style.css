@@ -1498,6 +1498,20 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 }
 .worst-item-drill:hover { background: var(--bg-card-hover); border-color: var(--danger); }
 
+.review-eta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.review-due-now {
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-left: 6px;
+}
+
 .worst-drill-hint {
   font-size: 11px;
   color: var(--text-muted);

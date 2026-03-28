@@ -549,6 +549,20 @@ function handleAnswer(selectedIndices) {
 }
 
 // ============================================================
+// セッションサマリー（ホーム画面への遷移時に表示）
+// ============================================================
+function showSessionSummaryToast() {
+  if (appState.sessionAnswered < 3) return;
+  const pct = Math.round((appState.sessionCorrect / appState.sessionAnswered) * 100);
+  const elapsed = appState.sessionStartTime
+    ? Math.floor((Date.now() - appState.sessionStartTime) / 60_000)
+    : 0;
+  const timeStr = elapsed >= 1 ? `・${elapsed}分` : '';
+  const icon = pct >= 80 ? '🎯' : pct >= 60 ? '📚' : '💪';
+  showToast(`${icon} セッション: ${appState.sessionAnswered}問 ${pct}%正解${timeStr}`, 'info');
+}
+
+// ============================================================
 // セッションバッジ（ヘッダー右上の今日の回答数表示）
 // ============================================================
 function updateSessionBadge() {
@@ -638,9 +652,15 @@ function showExamModeModal() {
     const total = appState.examQuestions.length;
     const min = Math.floor(appState.examTimeLeft / 60).toString().padStart(2, '0');
     const sec = (appState.examTimeLeft % 60).toString().padStart(2, '0');
+    const scorePct = answered > 0 ? Math.round((appState.examCorrect / answered) * 100) : null;
+    const scoreClass = scorePct !== null ? (scorePct >= 72 ? 'acc-good' : 'acc-bad') : '';
+    const scoreStr = scorePct !== null
+      ? `<p style="margin-bottom:8px;">現在のスコア: <span class="${scoreClass}" style="font-weight:700;">${appState.examCorrect}/${answered}問正解 (${scorePct}%)</span></p>`
+      : '';
     content.innerHTML = `
       <h3>📝 試験中 (問${answered}/${total})</h3>
       <p style="margin-bottom:8px;">残り時間: ${min}:${sec}</p>
+      ${scoreStr}
       <div class="exam-modal-actions">
         <button class="btn-primary" id="exam-modal-resume">試験を続ける</button>
         <button class="btn-secondary" id="exam-modal-end" style="color:var(--danger);border-color:var(--danger);">終了して結果を見る</button>
@@ -946,6 +966,7 @@ function setupNavigationListeners() {
   });
 
   document.getElementById('btn-change-exam').addEventListener('click', () => {
+    showSessionSummaryToast();
     renderHomeScreen();
     navigateTo('screen-select');
   });
@@ -1039,6 +1060,7 @@ function setupNavigationListeners() {
   // ロゴタップ → ホーム画面
   document.querySelectorAll('.app-logo').forEach(el => {
     el.addEventListener('click', () => {
+      showSessionSummaryToast();
       renderHomeScreen();
       navigateTo('screen-select');
     });
@@ -1249,6 +1271,13 @@ function setupKeyboardShortcuts() {
         showToast('復習モード OFF', 'info');
       }
       showNextQuestion();
+      return;
+    }
+
+    // X: スキップ（わからない → 答えを即表示）
+    if ((key === 'x' || key === 'X') && !appState.answered && !appState.examMode) {
+      const skipBtn = document.getElementById('btn-skip');
+      if (skipBtn && !skipBtn.closest('#skip-btn-wrap')?.classList.contains('hidden')) skipBtn.click();
       return;
     }
 

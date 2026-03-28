@@ -634,16 +634,25 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
   const worstEl = document.getElementById('worst-questions');
   if (worstEl) {
     if (stats.worstQuestions && stats.worstQuestions.length > 0) {
-      worstEl.innerHTML = stats.worstQuestions.map(q => `
+      const nowMs = Date.now();
+      worstEl.innerHTML = stats.worstQuestions.map(q => {
+        const reviewMs = q.nextReviewAt ? q.nextReviewAt - nowMs : null;
+        const reviewBadge = reviewMs !== null
+          ? (reviewMs <= 0
+            ? '<span class="review-due-now">今すぐ復習</span>'
+            : `<span class="review-eta">${fmtNextReview(reviewMs)}後</span>`)
+          : '';
+        return `
         <div class="worst-item${onDrillCategory ? ' worst-item-drill' : ''}" data-cat="${q.category}">
           <div class="worst-meta">
             <span class="worst-category">${q.category}</span>
-            <span class="worst-accuracy acc-bad">${q.accuracy}% (${q.attempts}回)</span>
+            <span class="worst-accuracy acc-bad">${q.accuracy}% (${q.attempts}回)${reviewBadge}</span>
           </div>
           <div class="worst-text">${q.text}</div>
           ${onDrillCategory ? '<div class="worst-drill-hint">タップしてカテゴリを絞り込み →</div>' : ''}
         </div>
-      `).join('');
+        `;
+      }).join('');
       if (onDrillCategory) {
         worstEl.querySelectorAll('.worst-item-drill').forEach(item => {
           item.addEventListener('click', () => onDrillCategory(item.dataset.cat));

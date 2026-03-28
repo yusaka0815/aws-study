@@ -272,7 +272,7 @@ export function getStats(questions, userState) {
     .map(q => {
       const s = userState.questions[q.id];
       const acc = Math.round((safeInt(s.correct) / safeInt(s.attempts)) * 100);
-      return { id: q.id, text: q.question, category: q.category, accuracy: acc, attempts: safeInt(s.attempts) };
+      return { id: q.id, text: q.question, category: q.category, accuracy: acc, attempts: safeInt(s.attempts), nextReviewAt: s.nextReviewAt ?? null };
     })
     .filter(q => q.accuracy < 60)
     .sort((a, b) => a.accuracy - b.accuracy)
