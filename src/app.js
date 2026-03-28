@@ -787,10 +787,17 @@ function endExamMode(timeUp = false) {
   const catRows = Object.entries(catStats)
     .map(([name, s]) => ({ name, correct: s.correct, total: s.correct + s.wrong, pct: Math.round(s.correct / (s.correct + s.wrong) * 100) }))
     .sort((a, b) => a.pct - b.pct)
-    .map(c => `<div class="exam-cat-row">
-      <span class="exam-cat-name">${c.name}</span>
-      <span class="exam-cat-pct ${c.pct >= 72 ? 'acc-good' : 'acc-bad'}">${c.correct}/${c.total}　${c.pct}%</span>
-    </div>`).join('');
+    .map(c => {
+      const barClass = c.pct >= 72 ? 'bar-good' : c.pct >= 50 ? 'bar-mid' : 'bar-bad';
+      const pctClass = c.pct >= 72 ? 'acc-good' : 'acc-bad';
+      return `<div class="exam-cat-row">
+        <div class="exam-cat-header">
+          <span class="exam-cat-name">${c.name}</span>
+          <span class="exam-cat-pct ${pctClass}">${c.correct}/${c.total}　${c.pct}%</span>
+        </div>
+        <div class="cat-bar-bg exam-cat-bar-bg"><div class="cat-bar ${barClass}" style="width:${c.pct}%"></div></div>
+      </div>`;
+    }).join('');
   const catSection = catRows
     ? `<div class="exam-cat-breakdown">${catRows}</div>`
     : '';

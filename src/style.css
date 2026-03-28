@@ -299,8 +299,19 @@ body {
 
 .exam-cat-row {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 3px;
   font-size: 13px;
+}
+
+.exam-cat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.exam-cat-bar-bg {
+  height: 4px;
 }
 
 .exam-cat-name {
@@ -316,6 +327,7 @@ body {
   font-weight: 600;
   flex-shrink: 0;
   margin-left: 8px;
+  font-size: 12px;
 }
 
 /* ============================================================
