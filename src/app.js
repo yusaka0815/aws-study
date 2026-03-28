@@ -407,6 +407,12 @@ function setupNavigationListeners() {
     navigateTo('screen-settings');
   });
 
+  // クイック再開ボタン
+  document.getElementById('select-resume').addEventListener('click', e => {
+    const code = e.currentTarget.dataset.exam;
+    if (code) selectExam(code);
+  });
+
   // ロゴタップ → ホーム画面
   document.querySelectorAll('.app-logo').forEach(el => {
     el.addEventListener('click', () => {

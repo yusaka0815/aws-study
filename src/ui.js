@@ -85,11 +85,24 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   if (statsEl) {
     if (todayStats && (todayStats.todayCount > 0 || todayStats.streak > 0)) {
       const streakText = todayStats.streak > 1 ? ` 🔥 ${todayStats.streak}日連続` : '';
-      statsEl.innerHTML = `今日 <strong>${todayStats.todayCount}</strong> 問回答${streakText}`;
+      const totalText = total > 0 ? `　累計 ${total} 問` : '';
+      statsEl.innerHTML = `今日 <strong>${todayStats.todayCount}</strong> 問${streakText}${totalText}`;
     } else if (total > 0) {
       statsEl.textContent = `累計 ${total} 問回答済み`;
     } else {
       statsEl.textContent = 'さあ、学習を始めよう！';
+    }
+  }
+
+  // 前回の続きから: クイックアクセスボタン
+  const resumeEl = document.getElementById('select-resume');
+  if (resumeEl) {
+    if (currentExamCode && counts[currentExamCode] > 0) {
+      resumeEl.textContent = `▶ ${currentExamCode} の続きから`;
+      resumeEl.dataset.exam = currentExamCode;
+      resumeEl.classList.remove('hidden');
+    } else {
+      resumeEl.classList.add('hidden');
     }
   }
 
@@ -309,7 +322,8 @@ export function toggleExplanation(explanation) {
 // ============================================================
 
 export function renderStats(examCode, examName, stats) {
-  document.getElementById('stats-exam-name').textContent = examName;
+  const nameEl = document.getElementById('stats-exam-name');
+  nameEl.innerHTML = `<span class="exam-code" data-exam-badge="${examCode}">${examCode}</span> ${examName}`;
 
   const coverage = stats.total > 0 ? Math.round((stats.answered / stats.total) * 100) : 0;
 
