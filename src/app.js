@@ -95,6 +95,13 @@ const appState = {
   bookmarkMode: false,      // boolean: ブックマーク問題のみ出題
   _autoNextTimer: null,     // タイマーID（自動次へ）
   _autoNextCancelled: false,// 手動でキャンセルしたか
+  // 模擬試験モード
+  examMode: false,
+  examQuestions: [],        // 今回の試験問題（ランダム選択済み）
+  examIndex: 0,             // 現在の問題インデックス
+  examCorrect: 0,           // 正解数
+  examTimerInterval: null,  // タイマーintervalID
+  examTimeLeft: 0,          // 残り秒数
 };
 
 // ============================================================
@@ -191,6 +198,15 @@ async function selectExam(examCode) {
   appState.sessionCorrect = 0;
   appState.categoryFilter = null;
   appState.bookmarkMode = false;
+  // 模擬試験モードをリセット
+  if (appState.examMode) {
+    appState.examMode = false;
+    if (appState.examTimerInterval) {
+      clearInterval(appState.examTimerInterval);
+      appState.examTimerInterval = null;
+    }
+    document.getElementById('exam-mode-timer')?.classList.add('hidden');
+  }
   updateSessionBadge();
 
   // 即座に画面遷移（ローディング感を排除）
@@ -232,6 +248,29 @@ function showNextQuestion() {
 
   appState.pendingSelections = new Set();
 
+  // ===== 模擬試験モード =====
+  if (appState.examMode) {
+    if (appState.examIndex >= appState.examQuestions.length) {
+      endExamMode(false);
+      return;
+    }
+    const q = appState.examQuestions[appState.examIndex];
+    appState.currentQuestion = q;
+    appState.answered = false;
+    const qNum = appState.examIndex + 1;
+    const total = appState.examQuestions.length;
+    const qState = userState.questions[q.id] ?? null;
+    // バナーをすべて隠す
+    document.getElementById('category-banner')?.classList.add('hidden');
+    document.getElementById('bookmark-mode-banner')?.classList.add('hidden');
+    document.getElementById('weak-only-banner')?.classList.add('hidden');
+    appState.shuffleMap = renderQuestion(q, qNum - 1, total, false, qState, 0);
+    // プログレステキストを上書き（試験用）
+    document.getElementById('progress-text').textContent = `問 ${qNum} / ${total}`;
+    return;
+  }
+
+  // ===== 通常学習モード =====
   // カテゴリフィルター
   let pool = currentExam.questions;
   if (appState.categoryFilter) {
@@ -303,6 +342,19 @@ function handleAnswer(selectedIndices) {
     ? selectedIndices.map(i => appState.shuffleMap[i])
     : selectedIndices;
   const isCorrect = isAnswerCorrect(originalIndices, appState.currentQuestion.answers);
+
+  // 模擬試験モード: 正解数とインデックスのみ追跡、SRS更新なし
+  if (appState.examMode) {
+    if (isCorrect) appState.examCorrect++;
+    appState.examIndex++;
+    renderResult(appState.currentQuestion, selectedIndices, isCorrect, null, appState.shuffleMap);
+    setTimeout(() => {
+      document.getElementById('answer-area')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 80);
+    if (settings.sound) { isCorrect ? playCorrectSound() : playWrongSound(); }
+    return;
+  }
+
   appState.sessionAnswered++;
   if (isCorrect) appState.sessionCorrect++;
   updateSessionBadge();
@@ -415,6 +467,132 @@ function showStatsScreen() {
 }
 
 // ============================================================
+// 模擬試験モード
+// ============================================================
+
+function showExamModeModal() {
+  if (!appState.currentExam) {
+    showToast('先に試験を選択してください', 'error');
+    return;
+  }
+  const overlay = document.getElementById('exam-modal-overlay');
+  const content = document.getElementById('exam-modal-content');
+
+  let selectedCount = 20;
+  const options = [10, 20, 30, 65];
+
+  function renderStart() {
+    const timeMins = selectedCount * 2;
+    content.innerHTML = `
+      <h3>📝 模擬試験モード</h3>
+      <p>実際の試験を想定したランダム出題です。SRS記録は更新されません。</p>
+      <div class="exam-modal-count-row">
+        ${options.map(n => `<button class="exam-count-btn${n === selectedCount ? ' selected' : ''}" data-count="${n}">${n}問</button>`).join('')}
+      </div>
+      <p style="margin-bottom:8px;font-size:13px;">目安時間: ${timeMins}分　合格ライン: 72%</p>
+      <div class="exam-modal-actions">
+        <button class="btn-primary" id="exam-modal-start">開始する</button>
+        <button class="btn-secondary" id="exam-modal-cancel" style="color:var(--text-sub);background:transparent;border-color:var(--border);">キャンセル</button>
+      </div>
+    `;
+
+    content.querySelectorAll('.exam-count-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedCount = Number(btn.dataset.count);
+        renderStart();
+      });
+    });
+    document.getElementById('exam-modal-start').addEventListener('click', () => {
+      overlay.classList.add('hidden');
+      startExamMode(selectedCount);
+    });
+    document.getElementById('exam-modal-cancel').addEventListener('click', () => {
+      overlay.classList.add('hidden');
+    });
+  }
+
+  renderStart();
+  overlay.classList.remove('hidden');
+}
+
+function startExamMode(count) {
+  const questions = appState.currentExam.questions;
+  // ランダムシャッフルして最初のcountを使用
+  const shuffled = [...questions].sort(() => Math.random() - 0.5);
+  appState.examMode = true;
+  appState.examQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
+  appState.examIndex = 0;
+  appState.examCorrect = 0;
+  appState.examTimeLeft = count * 2 * 60; // 2分/問
+
+  // セッションバッジを隠してタイマーを表示
+  document.getElementById('session-badge').classList.add('hidden');
+  const timerEl = document.getElementById('exam-mode-timer');
+  timerEl.classList.remove('hidden');
+
+  appState.examTimerInterval = setInterval(() => {
+    appState.examTimeLeft--;
+    updateExamTimer();
+    if (appState.examTimeLeft <= 0) {
+      endExamMode(true); // 時間切れ
+    }
+  }, 1000);
+
+  updateExamTimer();
+  showToast(`📝 模擬試験開始！ ${appState.examQuestions.length}問`, 'info');
+  showNextQuestion();
+}
+
+function updateExamTimer() {
+  const timerEl = document.getElementById('exam-mode-timer');
+  if (!timerEl) return;
+  const left = Math.max(0, appState.examTimeLeft);
+  const min = Math.floor(left / 60).toString().padStart(2, '0');
+  const sec = (left % 60).toString().padStart(2, '0');
+  timerEl.textContent = `⏱ ${min}:${sec}`;
+  timerEl.classList.toggle('urgent', left <= 60);
+}
+
+function endExamMode(timeUp = false) {
+  if (!appState.examMode) return;
+  appState.examMode = false;
+
+  if (appState.examTimerInterval) {
+    clearInterval(appState.examTimerInterval);
+    appState.examTimerInterval = null;
+  }
+
+  // タイマー非表示・バッジ復元
+  document.getElementById('exam-mode-timer').classList.add('hidden');
+  updateSessionBadge();
+
+  const total = appState.examQuestions.length;
+  const correct = appState.examCorrect;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const passed = pct >= 72;
+
+  const overlay = document.getElementById('exam-modal-overlay');
+  const content = document.getElementById('exam-modal-content');
+  content.innerHTML = `
+    <h3>📝 試験結果</h3>
+    ${timeUp ? '<p style="color:var(--danger);font-weight:700;">⏰ 時間切れ</p>' : ''}
+    <div class="exam-modal-result">
+      <div class="exam-result-score ${passed ? 'pass' : 'fail'}">${pct}%</div>
+      <div class="exam-result-verdict ${passed ? 'pass' : 'fail'}">${passed ? '✓ 合格ライン達成' : '✗ 不合格'}</div>
+      <div class="exam-result-detail">${correct} / ${total} 問正解　合格ライン: 72%</div>
+    </div>
+    <div class="exam-modal-actions">
+      <button class="btn-primary" id="exam-result-close">学習を続ける</button>
+    </div>
+  `;
+  overlay.classList.remove('hidden');
+  document.getElementById('exam-result-close').addEventListener('click', () => {
+    overlay.classList.add('hidden');
+    showNextQuestion(); // 通常学習に戻る
+  });
+}
+
+// ============================================================
 // イベントリスナー（責務ごとに分割）
 // ============================================================
 
@@ -481,6 +659,15 @@ function setupStudyListeners() {
 
 /** 画面間ナビゲーション（試験変更・統計・設定・戻る） */
 function setupNavigationListeners() {
+  document.getElementById('btn-exam-mode').addEventListener('click', showExamModeModal);
+
+  // 模擬試験モーダルの背景クリックで閉じる（試験中でない場合）
+  document.getElementById('exam-modal-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget && !appState.examMode) {
+      e.currentTarget.classList.add('hidden');
+    }
+  });
+
   document.getElementById('btn-change-exam').addEventListener('click', () => {
     renderHomeScreen();
     navigateTo('screen-select');

@@ -162,7 +162,7 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   }
 
   document.getElementById('question-meta').innerHTML =
-    `<span>${question.category}  ${diffStars}</span>${typeTag}${historyChip}<span class="question-id">${question.id}</span>`;
+    `<span>${question.category}  ${diffStars}</span>${typeTag}<span class="question-id">${question.id}</span>${historyChip}`;
 
   // ブックマークボタン
   const bookmarkBtn = document.getElementById('btn-bookmark');

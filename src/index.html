@@ -70,6 +70,8 @@
       </h1>
       <div class="header-actions">
         <span id="session-badge" class="session-badge hidden"></span>
+        <span id="exam-mode-timer" class="exam-mode-timer hidden"></span>
+        <button class="icon-btn" id="btn-exam-mode" title="模擬試験" aria-label="模擬試験">📝</button>
         <button class="icon-btn" id="btn-stats" title="統計" aria-label="統計">📊</button>
         <button class="icon-btn" id="btn-change-exam" title="試験変更" aria-label="試験変更">🔄</button>
         <button class="icon-btn" id="btn-settings" title="設定" aria-label="設定">⚙️</button>
@@ -342,7 +344,7 @@
           <span class="settings-item-icon">ℹ️</span>
           <span class="settings-item-text">
             <span class="settings-item-label">AWS Certification Study</span>
-            <span class="settings-item-desc">v1.7.0　CLF・AIF・SAA・MLA・DVA・SOA・DEA・SAP・DOP 収録</span>
+            <span class="settings-item-desc">v1.8.0　CLF・AIF・SAA・MLA・DVA・SOA・DEA・SAP・DOP 収録</span>
           </span>
         </div>
 
@@ -374,6 +376,17 @@
   </div>
 
 </div><!-- /#app -->
+
+<!-- ========================================================
+     模擬試験モーダル
+     ======================================================== -->
+<div id="exam-modal-overlay" class="exam-modal-overlay hidden" role="dialog" aria-modal="true">
+  <div class="exam-modal">
+    <div id="exam-modal-content">
+      <!-- JavaScript で描画 -->
+    </div>
+  </div>
+</div>
 
 <script type="module" src="app.js"></script>
 </body>
