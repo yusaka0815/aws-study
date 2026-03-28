@@ -15,6 +15,7 @@ export function createInitialState() {
     currentExam: null,
     questions: {},
     dailyLog: {}, // { 'YYYY-MM-DD': 回答数 }
+    dailyCorrectLog: {}, // { 'YYYY-MM-DD': 正解数 }
     examHistory: [], // [{ examCode, date, total, correct, wrong, pct, passed, timeUp }]
   };
 }
@@ -39,6 +40,7 @@ export function loadState() {
       currentExam: parsed.currentExam || null,
       questions: parsed.questions || {},
       dailyLog: (parsed.dailyLog && typeof parsed.dailyLog === 'object') ? parsed.dailyLog : {},
+      dailyCorrectLog: (parsed.dailyCorrectLog && typeof parsed.dailyCorrectLog === 'object') ? parsed.dailyCorrectLog : {},
       examHistory: Array.isArray(parsed.examHistory) ? parsed.examHistory : [],
     };
   } catch {
@@ -108,6 +110,7 @@ export function importBackup(jsonString) {
     currentExam: typeof parsed.currentExam === 'string' ? parsed.currentExam : null,
     questions: {},
     dailyLog: {},
+    dailyCorrectLog: {},
     examHistory: [],
   };
 
@@ -132,6 +135,15 @@ export function importBackup(jsonString) {
     for (const [date, count] of Object.entries(parsed.dailyLog)) {
       if (/^\d{4}-\d{2}-\d{2}$/.test(date) && typeof count === 'number') {
         safeState.dailyLog[date] = count;
+      }
+    }
+  }
+
+  // dailyCorrectLog の復元
+  if (parsed.dailyCorrectLog && typeof parsed.dailyCorrectLog === 'object') {
+    for (const [date, count] of Object.entries(parsed.dailyCorrectLog)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date) && typeof count === 'number') {
+        safeState.dailyCorrectLog[date] = count;
       }
     }
   }

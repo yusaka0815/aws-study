@@ -38,8 +38,8 @@ const VALID_BACKUP = {
 // createInitialState
 // ============================================================
 describe('createInitialState', () => {
-  it('version=1, currentExam=null, questions={}, dailyLog={}, examHistory=[] を返す', () => {
-    expect(createInitialState()).toEqual({ version: 1, currentExam: null, questions: {}, dailyLog: {}, examHistory: [] });
+  it('version=1, currentExam=null, questions={}, dailyLog={}, dailyCorrectLog={}, examHistory=[] を返す', () => {
+    expect(createInitialState()).toEqual({ version: 1, currentExam: null, questions: {}, dailyLog: {}, dailyCorrectLog: {}, examHistory: [] });
   });
 });
 

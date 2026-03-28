@@ -362,9 +362,9 @@ describe('getStats', () => {
 describe('getTodayStats', () => {
   const today = new Date().toISOString().slice(0, 10);
 
-  it('dailyLog が未定義でも todayCount=0, streak=0, prevStreak=0 を返す', () => {
+  it('dailyLog が未定義でも todayCount=0, streak=0, prevStreak=0, todayAccuracy=null を返す', () => {
     const result = getTodayStats({ questions: {} });
-    expect(result).toMatchObject({ todayCount: 0, streak: 0, prevStreak: 0 });
+    expect(result).toMatchObject({ todayCount: 0, streak: 0, prevStreak: 0, todayAccuracy: null });
   });
 
   it('今日の回答数を正しく返す', () => {
@@ -399,6 +399,17 @@ describe('getTodayStats', () => {
   it('今日回答済みの場合 prevStreak=0', () => {
     const state = { dailyLog: { [today]: 3 } };
     expect(getTodayStats(state).prevStreak).toBe(0);
+  });
+
+  it('dailyCorrectLog から todayAccuracy を正しく計算', () => {
+    const state = { dailyLog: { [today]: 10 }, dailyCorrectLog: { [today]: 7 } };
+    const result = getTodayStats(state);
+    expect(result.todayCorrect).toBe(7);
+    expect(result.todayAccuracy).toBe(70);
+  });
+
+  it('今日未回答の場合 todayAccuracy=null', () => {
+    expect(getTodayStats({ dailyLog: {} }).todayAccuracy).toBeNull();
   });
 });
 

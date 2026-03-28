@@ -157,7 +157,9 @@ export function getTodayStats(userState) {
     }
   }
 
-  return { todayCount, streak, prevStreak };
+  const todayCorrect = userState.dailyCorrectLog?.[today] ?? 0;
+  const todayAccuracy = todayCount > 0 ? Math.round((todayCorrect / todayCount) * 100) : null;
+  return { todayCount, streak, prevStreak, todayCorrect, todayAccuracy };
 }
 
 /**

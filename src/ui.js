@@ -105,9 +105,10 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
 
   if (statsEl) {
     if (todayStats && todayStats.todayCount > 0) {
+      const accStr = todayStats.todayAccuracy != null ? ` ${todayStats.todayAccuracy}%正解` : '';
       const streakText = todayStats.streak > 1 ? ` 🔥 ${todayStats.streak}日連続` : '';
       const totalText = total > 0 ? `　累計 ${total} 問` : '';
-      statsEl.innerHTML = `今日 <strong>${todayStats.todayCount}</strong> 問${streakText}${totalText}`;
+      statsEl.innerHTML = `今日 <strong>${todayStats.todayCount}</strong> 問${accStr}${streakText}${totalText}`;
     } else if (todayStats?.prevStreak > 0) {
       statsEl.innerHTML = `<span class="streak-risk">⚠️ ${todayStats.prevStreak}日連続が途切れそう！今日まだ0問</span>`;
     } else if (total > 0) {
