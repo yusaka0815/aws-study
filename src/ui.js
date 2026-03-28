@@ -167,15 +167,23 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   // 問題文
   document.getElementById('question-text').textContent = question.question;
 
-  // 選択肢
+  // 選択肢（シャッフルして表示順 → 元インデックスのマッピングを返す）
   const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E'];
   const choicesEl = document.getElementById('choices-list');
   choicesEl.innerHTML = '';
-  question.choices.forEach((choice, idx) => {
+
+  // Fisher-Yates shuffle: shuffleMap[displayPos] = originalIdx
+  const shuffleMap = question.choices.map((_, i) => i);
+  for (let i = shuffleMap.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffleMap[i], shuffleMap[j]] = [shuffleMap[j], shuffleMap[i]];
+  }
+
+  shuffleMap.forEach((originalIdx, displayPos) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
-    btn.dataset.index = idx;
-    btn.innerHTML = `<span class="choice-label">${CHOICE_LABELS[idx] ?? idx + 1}</span><span class="choice-text">${choice}</span>`;
+    btn.dataset.index = displayPos;
+    btn.innerHTML = `<span class="choice-label">${CHOICE_LABELS[displayPos] ?? displayPos + 1}</span><span class="choice-text">${question.choices[originalIdx]}</span>`;
     choicesEl.appendChild(btn);
   });
 
@@ -204,6 +212,8 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   void card.offsetHeight; // reflow を強制してアニメーションをリセット
   card.classList.add('entering');
   choicesEl.classList.add('entering');
+
+  return shuffleMap;
 }
 
 /**
@@ -213,22 +223,23 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
  * @param {boolean} isCorrect
  * @param {number} [nextReviewAt] - 次回復習タイムスタンプ（ms）
  */
-export function renderResult(question, selectedIndices, isCorrect, nextReviewAt) {
+export function renderResult(question, selectedIndices, isCorrect, nextReviewAt, shuffleMap = null) {
   const choicesEl = document.getElementById('choices-list');
   const buttons = choicesEl.querySelectorAll('.choice-btn');
 
   // 複数選択提出エリアを隠す
   document.getElementById('multi-submit-area').classList.add('hidden');
 
-  buttons.forEach((btn, idx) => {
+  buttons.forEach((btn, displayPos) => {
     btn.disabled = true;
     btn.classList.remove('pending-selected');
-    if (selectedIndices.includes(idx)) {
+    const originalIdx = shuffleMap ? shuffleMap[displayPos] : displayPos;
+    if (selectedIndices.includes(displayPos)) {
       btn.classList.add('selected');
     }
-    if (question.answers.includes(idx)) {
+    if (question.answers.includes(originalIdx)) {
       btn.classList.add('correct');
-    } else if (selectedIndices.includes(idx)) {
+    } else if (selectedIndices.includes(displayPos)) {
       // 選択したが正解ではない選択肢を赤表示
       btn.classList.add('wrong');
     }
@@ -268,7 +279,17 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt)
   if (correctLabels) {
     if (!isCorrect) {
       const LABELS = ['A', 'B', 'C', 'D', 'E'];
-      const labelStr = question.answers.map(i => LABELS[i] ?? (i + 1)).join('・');
+      // シャッフル後の表示位置でラベルを示す
+      const originalToDisplay = shuffleMap
+        ? Object.fromEntries(shuffleMap.map((origIdx, dispPos) => [origIdx, dispPos]))
+        : null;
+      const labelStr = question.answers
+        .map(origIdx => {
+          const dispPos = originalToDisplay ? (originalToDisplay[origIdx] ?? origIdx) : origIdx;
+          return LABELS[dispPos] ?? (dispPos + 1);
+        })
+        .sort()
+        .join('・');
       correctLabels.textContent = `正解: ${labelStr}`;
       correctLabels.classList.remove('hidden');
     } else {

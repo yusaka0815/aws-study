@@ -88,6 +88,7 @@ const appState = {
   lastQuestionId: null,     // 直前に出題した問題ID（連続出題防止用）
   answered: false,          // 現在の問題に回答済みか
   pendingSelections: new Set(), // 複数選択問題の選択中インデックス
+  shuffleMap: null,         // number[] | null: 表示位置→元インデックスのマッピング
   sessionAnswered: 0,       // 今セッションで回答した問題数
   sessionCorrect: 0,        // 今セッションで正解した問題数
   categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
@@ -265,7 +266,7 @@ function showNextQuestion() {
     const s = userState.questions[pq.id];
     return s && s.attempts > 0 && s.nextReviewAt <= now;
   }).length;
-  renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
+  appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
 }
 
 // ============================================================
@@ -277,7 +278,11 @@ function handleAnswer(selectedIndices) {
   appState.answered = true;
   appState.lastQuestionId = appState.currentQuestion.id;
 
-  const isCorrect = isAnswerCorrect(selectedIndices, appState.currentQuestion.answers);
+  // シャッフルされた表示インデックスを元のインデックスに変換
+  const originalIndices = appState.shuffleMap
+    ? selectedIndices.map(i => appState.shuffleMap[i])
+    : selectedIndices;
+  const isCorrect = isAnswerCorrect(originalIndices, appState.currentQuestion.answers);
   appState.sessionAnswered++;
   if (isCorrect) appState.sessionCorrect++;
   updateSessionBadge();
@@ -320,7 +325,7 @@ function handleAnswer(selectedIndices) {
     navigator.vibrate(isCorrect ? 40 : [60, 30, 60]);
   }
 
-  renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt);
+  renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt, appState.shuffleMap);
 
   // 回答エリアへスムーズスクロール（問題文が長い場合に結果が見えるように）
   setTimeout(() => {
