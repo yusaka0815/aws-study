@@ -1028,6 +1028,11 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   font-weight: 600;
 }
 
+.answer-time-fast {
+  color: var(--success);
+  font-weight: 600;
+}
+
 #explanation-toggle {
   width: 100%;
   background: transparent;

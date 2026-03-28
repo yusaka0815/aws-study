@@ -357,8 +357,9 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
       const elapsedSec = Math.round(elapsedMs / 1000);
       const timeText = elapsedSec < 1 ? '< 1秒' : `${elapsedSec}秒`;
       const isSlow = elapsedSec >= 15;
-      answerTimeEl.textContent = isSlow ? `⚡ ${timeText}` : timeText;
-      answerTimeEl.className = `answer-time${isSlow ? ' answer-time-slow' : ''}`;
+      const isFast = isCorrect && elapsedSec < 5;
+      answerTimeEl.textContent = isSlow ? `⏱ ${timeText}` : isFast ? `⚡ ${timeText}` : timeText;
+      answerTimeEl.className = `answer-time${isSlow ? ' answer-time-slow' : isFast ? ' answer-time-fast' : ''}`;
       answerTimeEl.classList.remove('hidden');
     } else {
       answerTimeEl.classList.add('hidden');
