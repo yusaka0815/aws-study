@@ -183,7 +183,11 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
     const chipClass = acc >= 80 ? 'chip-good' : acc >= 60 ? 'chip-mid' : 'chip-bad';
     const lastResult = qState.recentResults?.at(-1);
     const lastIcon = lastResult === 1 ? ' ✓' : lastResult === 0 ? ' ✗' : '';
-    historyChip = `<span class="history-chip ${chipClass}">${qState.attempts}回 ${acc}%${lastIcon}</span>`;
+    const recent = qState.recentResults ?? [];
+    const isNemesis = recent.length >= 3 && recent.slice(-3).every(r => r === 0);
+    historyChip = isNemesis
+      ? `<span class="history-chip chip-nemesis">🔥 ${qState.attempts}回 ${acc}%</span>`
+      : `<span class="history-chip ${chipClass}">${qState.attempts}回 ${acc}%${lastIcon}</span>`;
   } else {
     historyChip = `<span class="history-chip chip-new">NEW</span>`;
   }

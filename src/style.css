@@ -746,10 +746,11 @@ body {
   margin-left: auto;
 }
 
-.chip-good { color: var(--success); background: var(--success-dim); }
-.chip-mid  { color: #f59e0b;        background: rgba(245,158,11,0.15); }
-.chip-bad  { color: var(--danger);  background: var(--danger-dim); }
-.chip-new  { color: var(--primary); background: var(--primary-dim); }
+.chip-good    { color: var(--success); background: var(--success-dim); }
+.chip-mid     { color: #f59e0b;        background: rgba(245,158,11,0.15); }
+.chip-bad     { color: var(--danger);  background: var(--danger-dim); }
+.chip-new     { color: var(--primary); background: var(--primary-dim); }
+.chip-nemesis { color: #ef4444; background: rgba(239,68,68,0.15); font-weight: 700; }
 
 .question-id {
   font-size: 10px;
