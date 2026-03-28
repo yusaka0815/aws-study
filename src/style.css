@@ -460,6 +460,17 @@ body {
 [data-exam="SAP"] .exam-progress-fill { background: #f87171; }
 [data-exam="DOP"] .exam-progress-fill { background: #818cf8; }
 
+/* 試験コード別: カードの左ボーダーアクセント */
+.exam-card[data-exam="CLF"] { border-left: 3px solid var(--success); }
+.exam-card[data-exam="SAA"] { border-left: 3px solid var(--primary); }
+.exam-card[data-exam="AIF"] { border-left: 3px solid #a78bfa; }
+.exam-card[data-exam="MLA"] { border-left: 3px solid #60a5fa; }
+.exam-card[data-exam="DVA"] { border-left: 3px solid #fbbf24; }
+.exam-card[data-exam="SOA"] { border-left: 3px solid #f472b6; }
+.exam-card[data-exam="DEA"] { border-left: 3px solid #2dd4bf; }
+.exam-card[data-exam="SAP"] { border-left: 3px solid #f87171; }
+.exam-card[data-exam="DOP"] { border-left: 3px solid #818cf8; }
+
 .exam-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--primary);

@@ -17,6 +17,15 @@ export function showScreen(screenId) {
 // 試験選択画面
 // ============================================================
 
+function fmtNextReview(ms) {
+  const min = Math.round(ms / 60_000);
+  if (min < 1) return 'まもなく';
+  if (min < 60) return `${min}分`;
+  const hr = Math.round(ms / 3_600_000);
+  if (hr < 24) return `${hr}時間`;
+  return `${Math.round(ms / 86_400_000)}日`;
+}
+
 function fmtLastStudied(ts) {
   if (!ts) return null;
   const ms = Date.now() - ts;
@@ -485,7 +494,11 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
     <div class="stat-card ${stats.dueCount > 0 ? 'stat-card-due' : ''}">
       <div class="stat-value">${stats.dueCount}</div>
       <div class="stat-label">復習待ち</div>
-      ${(stats.upcoming24h ?? 0) > 0 ? `<div class="stat-sub">+${stats.upcoming24h}問/24h</div>` : ''}
+      ${(stats.upcoming24h ?? 0) > 0
+        ? `<div class="stat-sub">+${stats.upcoming24h}問/24h</div>`
+        : stats.dueCount === 0 && stats.nextReviewIn != null
+          ? `<div class="stat-sub">${fmtNextReview(stats.nextReviewIn)}後</div>`
+          : ''}
     </div>
     <div class="stat-card ${stats.weakCount > 0 ? 'stat-card-warn' : ''}">
       <div class="stat-value">${stats.weakCount}</div>

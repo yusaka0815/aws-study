@@ -242,6 +242,16 @@ export function getStats(questions, userState) {
     return s && safeInt(s.attempts) > 0 && s.nextReviewAt > now && s.nextReviewAt <= now + 24 * 3600 * 1000;
   }).length;
 
+  // 次の復習が来るまでの時間（msで返す）
+  let nextReviewIn = null;
+  for (const q of questions) {
+    const s = userState.questions[q.id];
+    if (s && safeInt(s.attempts) > 0 && s.nextReviewAt > now) {
+      const ms = s.nextReviewAt - now;
+      if (nextReviewIn === null || ms < nextReviewIn) nextReviewIn = ms;
+    }
+  }
+
   // マスター済み問題数（直近5回が全て正解）
   const masteredCount = questions.filter(q => {
     const s = userState.questions[q.id];
@@ -307,6 +317,7 @@ export function getStats(questions, userState) {
     weakCount,
     dueCount,
     upcoming24h,
+    nextReviewIn,
     masteredCount,
     bookmarkCount,
     categoryList,
