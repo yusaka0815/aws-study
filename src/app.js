@@ -200,8 +200,12 @@ async function selectExam(examCode) {
     saveState(appState.userState);
     showNextQuestion();
   } catch (e) {
-    showToast('問題データの読み込みに失敗しました', 'error');
     console.error(e);
+    showToast('読み込み失敗。接続を確認してホームに戻ります...', 'error');
+    setTimeout(() => {
+      renderHomeScreen();
+      navigateTo('screen-select');
+    }, 1800);
   }
 }
 
@@ -261,9 +265,16 @@ function handleAnswer(selectedIndices) {
   appState.userState.questions[appState.currentQuestion.id] = updatedState;
 
   // デイリーログを更新
+  const DAILY_GOAL = 30;
   const today = new Date().toISOString().slice(0, 10);
   appState.userState.dailyLog = appState.userState.dailyLog ?? {};
-  appState.userState.dailyLog[today] = (appState.userState.dailyLog[today] ?? 0) + 1;
+  const prevCount = appState.userState.dailyLog[today] ?? 0;
+  appState.userState.dailyLog[today] = prevCount + 1;
+
+  // 今日の目標達成トースト（ちょうど30問目に表示）
+  if (prevCount + 1 === DAILY_GOAL) {
+    setTimeout(() => showToast('🎉 今日の目標 30問 達成！', 'success'), 300);
+  }
 
   saveState(appState.userState);
 
@@ -549,7 +560,8 @@ function buildProgressMap() {
 function renderHomeScreen() {
   const pm = buildProgressMap();
   const ts = getTodayStats(appState.userState);
-  renderExamSelect(EXAM_LIST, selectExam, pm, ts);
+  const currentCode = appState.currentExam?.examCode ?? null;
+  renderExamSelect(EXAM_LIST, selectExam, pm, ts, currentCode);
 }
 
 // ============================================================

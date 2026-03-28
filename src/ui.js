@@ -17,7 +17,7 @@ export function showScreen(screenId) {
 // 試験選択画面
 // ============================================================
 
-export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats = null) {
+export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats = null, currentExamCode = null) {
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
@@ -53,8 +53,10 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       ? `<span class="due-badge">復習 ${due}</span>`
       : '';
 
+    const isActive = exam.examCode === currentExamCode;
+
     const btn = document.createElement('button');
-    btn.className = 'exam-card';
+    btn.className = `exam-card${isActive ? ' exam-card-active' : ''}`;
     btn.innerHTML = `
       <div class="exam-card-main">
         <span class="exam-code">${exam.examCode}</span>
@@ -62,9 +64,8 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       </div>
       <div class="exam-card-meta">
         ${answered > 0
-          ? `<span class="exam-progress">${answered}問 (${pct}%)<span class="exam-accuracy ${accuracyClass}"> ${accuracy}%正解</span></span>`
-          : '<span class="exam-arrow">→</span>'}
-        ${dueBadge}
+          ? `<div class="exam-card-badges">${dueBadge}<span class="exam-progress">${pct}%カバー<span class="exam-accuracy ${accuracyClass}"> ${accuracy}%正解</span></span></div>`
+          : `<div class="exam-card-badges">${dueBadge}<span class="exam-arrow">→</span></div>`}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
           : ''}

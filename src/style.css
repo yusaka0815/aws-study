@@ -266,6 +266,19 @@ body {
   border-color: var(--primary);
 }
 
+.exam-card-active {
+  border-color: var(--primary);
+  background: var(--primary-dim);
+}
+
+.exam-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .exam-code {
   background: var(--primary-dim);
   color: var(--primary);
@@ -608,9 +621,6 @@ body {
   border-radius: var(--radius-sm);
   padding: 14px;
   border: 1px solid var(--border);
-  max-height: 220px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox */
 }
 
