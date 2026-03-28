@@ -1219,6 +1219,19 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   overflow: hidden;
 }
 
+.worst-item-drill {
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.worst-item-drill:hover { background: var(--bg-card-hover); border-color: var(--danger); }
+
+.worst-drill-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: right;
+}
+
 /* 模擬試験履歴 */
 #exam-history-list {
   display: flex;

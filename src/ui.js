@@ -489,14 +489,20 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
   if (worstEl) {
     if (stats.worstQuestions && stats.worstQuestions.length > 0) {
       worstEl.innerHTML = stats.worstQuestions.map(q => `
-        <div class="worst-item">
+        <div class="worst-item${onDrillCategory ? ' worst-item-drill' : ''}" data-cat="${q.category}">
           <div class="worst-meta">
             <span class="worst-category">${q.category}</span>
             <span class="worst-accuracy acc-bad">${q.accuracy}% (${q.attempts}回)</span>
           </div>
           <div class="worst-text">${q.text}</div>
+          ${onDrillCategory ? '<div class="worst-drill-hint">タップしてカテゴリを絞り込み →</div>' : ''}
         </div>
       `).join('');
+      if (onDrillCategory) {
+        worstEl.querySelectorAll('.worst-item-drill').forEach(item => {
+          item.addEventListener('click', () => onDrillCategory(item.dataset.cat));
+        });
+      }
       worstEl.previousElementSibling?.classList.remove('hidden');
     } else {
       worstEl.innerHTML = '';
