@@ -265,6 +265,17 @@ body {
 .exam-accuracy.acc-mid  { color: #f59e0b; }
 .exam-accuracy.acc-bad  { color: var(--danger); }
 
+.due-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245,158,11,0.15);
+  padding: 2px 7px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .exam-progress {
   font-size: 12px;
   font-weight: 700;
@@ -515,6 +526,16 @@ body {
 .result-correct #answer-label { color: var(--success); }
 .result-wrong #answer-label { color: var(--danger); }
 
+.next-review {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.next-review.hidden { display: none; }
+
 #explanation-toggle {
   width: 100%;
   background: transparent;
@@ -624,6 +645,11 @@ body {
   gap: 10px;
 }
 
+/* 4カードの場合は2列2行 */
+#stats-overview > *:nth-child(n+5) {
+  grid-column: span 2;
+}
+
 .stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -639,6 +665,15 @@ body {
 
 .stat-card-warn .stat-value {
   color: var(--danger);
+}
+
+.stat-card-due {
+  border-color: #f59e0b;
+  background: rgba(245,158,11,0.1);
+}
+
+.stat-card-due .stat-value {
+  color: #f59e0b;
 }
 
 .stat-value {

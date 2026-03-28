@@ -8,7 +8,7 @@
  * - appState は実行時のみ存在するミュータブルな状態オブジェクト
  */
 
-import { getNextQuestion, updateQuestionState, getStats, isAnswerCorrect, getTodayStats } from './engine.js';
+import { getNextQuestion, updateQuestionState, getStats, isAnswerCorrect, getTodayStats, formatInterval } from './engine.js';
 import { loadState, saveState, exportBackup, importBackup, resetState } from './storage.js';
 import {
   showScreen, renderExamSelect, renderQuestion, renderResult,
@@ -257,8 +257,8 @@ function handleAnswer(selectedIndices) {
   const now = Date.now();
   const prev = appState.userState.questions[appState.currentQuestion.id] ?? { attempts: 0 };
 
-  appState.userState.questions[appState.currentQuestion.id] =
-    updateQuestionState(prev, isCorrect, now);
+  const updatedState = updateQuestionState(prev, isCorrect, now);
+  appState.userState.questions[appState.currentQuestion.id] = updatedState;
 
   // デイリーログを更新
   const today = new Date().toISOString().slice(0, 10);
@@ -272,7 +272,7 @@ function handleAnswer(selectedIndices) {
     else playWrongSound();
   }
 
-  renderResult(appState.currentQuestion, selectedIndices, isCorrect);
+  renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt);
 }
 
 // ============================================================
@@ -518,19 +518,24 @@ function buildProgressMap() {
   const counts = {};
   const attempts = {};
   const correct = {};
+  const due = {};
+  const now = Date.now();
   for (const [id, state] of Object.entries(appState.userState?.questions ?? {})) {
     if (state.attempts > 0) {
       const prefix = id.split('-')[0];
       counts[prefix] = (counts[prefix] || 0) + 1;
       attempts[prefix] = (attempts[prefix] || 0) + state.attempts;
       correct[prefix] = (correct[prefix] || 0) + state.correct;
+      if (state.nextReviewAt <= now) {
+        due[prefix] = (due[prefix] || 0) + 1;
+      }
     }
   }
   const accuracyMap = {};
   for (const code of Object.keys(attempts)) {
     accuracyMap[code] = Math.round((correct[code] / attempts[code]) * 100);
   }
-  return { counts, accuracyMap };
+  return { counts, accuracyMap, dueMap: due };
 }
 
 // ============================================================

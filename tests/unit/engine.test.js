@@ -14,6 +14,7 @@ import {
   updateQuestionState,
   getStats,
   getTodayStats,
+  formatInterval,
   isAnswerCorrect,
 } from '../../src/engine.js';
 
@@ -411,6 +412,63 @@ describe('getStats / weeklyLog', () => {
 
   it('dailyLog が undefined でもクラッシュしない', () => {
     expect(() => getStats(questions, { questions: {} })).not.toThrow();
+  });
+});
+
+// ============================================================
+// formatInterval: 次回復習時間のフォーマット
+// ============================================================
+describe('formatInterval', () => {
+  const now = Date.now();
+
+  it('過去または現在は「すぐ」', () => {
+    expect(formatInterval(now - 1000)).toBe('すぐ');
+    expect(formatInterval(now)).toBe('すぐ');
+  });
+
+  it('5分後', () => {
+    expect(formatInterval(now + 5 * 60_000)).toBe('5分後');
+  });
+
+  it('1時間後', () => {
+    expect(formatInterval(now + 60 * 60_000)).toBe('1時間後');
+  });
+
+  it('3日後', () => {
+    expect(formatInterval(now + 3 * 86_400_000)).toBe('3日後');
+  });
+});
+
+// ============================================================
+// getStats: dueCount
+// ============================================================
+describe('getStats / dueCount', () => {
+  const questions = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2')];
+  const now = Date.now();
+
+  it('未回答問題は dueCount に含まれない', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.dueCount).toBe(0);
+  });
+
+  it('nextReviewAt が過去の問題は dueCount に含まれる', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now - 1 },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).dueCount).toBe(1);
+  });
+
+  it('nextReviewAt が未来の問題は dueCount に含まれない', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now + 999_999 },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).dueCount).toBe(0);
   });
 });
 

@@ -21,21 +21,27 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
-  // progressMap は { counts, accuracyMap } 形式を想定
+  // progressMap は { counts, accuracyMap, dueMap } 形式を想定
   const counts = progressMap.counts ?? progressMap;
   const accuracyMap = progressMap.accuracyMap ?? {};
+  const dueMap = progressMap.dueMap ?? {};
 
   exams.forEach(exam => {
     const answered = counts[exam.examCode] ?? 0;
     const total = exam.questionCount ?? 0;
     const pct = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
     const accuracy = accuracyMap[exam.examCode] ?? null;
+    const due = dueMap[exam.examCode] ?? 0;
 
     // 正答率に応じたカラークラス
     let accuracyClass = '';
     if (accuracy !== null) {
       accuracyClass = accuracy >= 80 ? 'acc-good' : accuracy >= 60 ? 'acc-mid' : 'acc-bad';
     }
+
+    const dueBadge = due > 0
+      ? `<span class="due-badge">復習 ${due}</span>`
+      : '';
 
     const btn = document.createElement('button');
     btn.className = 'exam-card';
@@ -48,6 +54,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
         ${answered > 0
           ? `<span class="exam-progress">${answered}問 (${pct}%)<span class="exam-accuracy ${accuracyClass}"> ${accuracy}%正解</span></span>`
           : '<span class="exam-arrow">→</span>'}
+        ${dueBadge}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
           : ''}
@@ -131,6 +138,8 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   document.getElementById('explanation-toggle').classList.add('hidden');
   document.getElementById('explanation-text').classList.add('hidden');
   document.getElementById('multi-submit-area').classList.add('hidden');
+  const nextReviewEl = document.getElementById('next-review');
+  if (nextReviewEl) nextReviewEl.classList.add('hidden');
 
   // 複数選択問題の場合: ヒントと提出エリアを表示
   if (question.answers.length > 1) {
@@ -153,8 +162,9 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
  * @param {object} question
  * @param {number[]} selectedIndices - 選択したインデックスの配列（単一選択も配列で渡す）
  * @param {boolean} isCorrect
+ * @param {number} [nextReviewAt] - 次回復習タイムスタンプ（ms）
  */
-export function renderResult(question, selectedIndices, isCorrect) {
+export function renderResult(question, selectedIndices, isCorrect, nextReviewAt) {
   const choicesEl = document.getElementById('choices-list');
   const buttons = choicesEl.querySelectorAll('.choice-btn');
 
@@ -184,6 +194,21 @@ export function renderResult(question, selectedIndices, isCorrect) {
   const answerLabel = document.getElementById('answer-label');
   answerIcon.textContent = isCorrect ? '○' : '×';
   answerLabel.textContent = isCorrect ? '正解！' : '不正解';
+
+  // 次回復習時間
+  const nextReviewEl = document.getElementById('next-review');
+  if (nextReviewEl && nextReviewAt != null) {
+    const ms = nextReviewAt - Date.now();
+    const label = ms <= 0 ? 'すぐ再出題' : (() => {
+      const min = Math.round(ms / 60_000);
+      if (min < 60) return `${min}分後に復習`;
+      const hr = Math.round(ms / 3_600_000);
+      if (hr < 24) return `${hr}時間後に復習`;
+      return `${Math.round(ms / 86_400_000)}日後に復習`;
+    })();
+    nextReviewEl.textContent = label;
+    nextReviewEl.classList.remove('hidden');
+  }
 
   // 解説ボタンと次へボタンを表示・有効化
   document.getElementById('explanation-toggle').classList.remove('hidden');
@@ -258,6 +283,10 @@ export function renderStats(examCode, examName, stats) {
     <div class="stat-card ${stats.weakCount > 0 ? 'stat-card-warn' : ''}">
       <div class="stat-value">${stats.weakCount}</div>
       <div class="stat-label">苦手問題数</div>
+    </div>
+    <div class="stat-card ${stats.dueCount > 0 ? 'stat-card-due' : ''}">
+      <div class="stat-value">${stats.dueCount}</div>
+      <div class="stat-label">今すぐ復習待ち</div>
     </div>
   `;
 

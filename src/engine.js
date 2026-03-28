@@ -145,6 +145,20 @@ export function getTodayStats(userState) {
 }
 
 /**
+ * 次回復習時間を人間が読みやすい文字列に変換
+ */
+export function formatInterval(nextReviewAt) {
+  const ms = nextReviewAt - Date.now();
+  if (ms <= 0) return 'すぐ';
+  const min = Math.round(ms / 60_000);
+  if (min < 60) return `${min}分後`;
+  const hr = Math.round(ms / 3_600_000);
+  if (hr < 24) return `${hr}時間後`;
+  const days = Math.round(ms / 86_400_000);
+  return `${days}日後`;
+}
+
+/**
  * 学習統計の計算
  */
 export function getStats(questions, userState) {
@@ -192,6 +206,13 @@ export function getStats(questions, userState) {
     return (safeInt(s.correct) / safeInt(s.attempts)) < 0.6;
   }).length;
 
+  // SRS 復習待ち問題数（nextReviewAt が現在以前）
+  const now = Date.now();
+  const dueCount = questions.filter(q => {
+    const s = userState.questions[q.id];
+    return s && safeInt(s.attempts) > 0 && s.nextReviewAt <= now;
+  }).length;
+
   // 過去7日の回答数（週間チャート用）
   const weeklyLog = [];
   for (let i = 6; i >= 0; i--) {
@@ -210,6 +231,7 @@ export function getStats(questions, userState) {
     totalCorrect,
     accuracy,
     weakCount,
+    dueCount,
     categoryList,
     weeklyLog,
   };
