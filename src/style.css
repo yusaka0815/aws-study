@@ -631,6 +631,26 @@ body {
 
 .bookmark-mode-banner.hidden { display: none; }
 
+.review-mode-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px 4px 12px;
+}
+
+.review-mode-banner.hidden { display: none; }
+
+.review-mode-banner .banner-clear-btn {
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #22c55e;
+}
+
 .category-banner {
   display: flex;
   align-items: center;
@@ -902,6 +922,19 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 }
 
 .correct-labels.hidden { display: none; }
+
+.answer-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.answer-time.hidden { display: none; }
+
+.answer-time-slow {
+  color: #f59e0b;
+  font-weight: 600;
+}
 
 #explanation-toggle {
   width: 100%;
@@ -1609,6 +1642,24 @@ button.settings-item {
 .btn-secondary:hover  { background: rgba(245, 158, 11, 0.2); }
 .btn-secondary:active { transform: scale(0.97); }
 .btn-secondary.hidden { display: none; }
+
+.btn-review {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-review:hover  { background: rgba(34, 197, 94, 0.2); }
+.btn-review:active { transform: scale(0.97); }
+.btn-review.hidden { display: none; }
 
 /* ============================================================
    トースト通知

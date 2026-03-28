@@ -231,6 +231,7 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   if (nextReviewEl) nextReviewEl.classList.add('hidden');
   const correctLabelsEl = document.getElementById('correct-labels');
   if (correctLabelsEl) correctLabelsEl.classList.add('hidden');
+  document.getElementById('answer-time')?.classList.add('hidden');
 
   // 複数選択問題の場合: ヒントと提出エリアを表示
   if (question.answers.length > 1) {
@@ -257,7 +258,7 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
  * @param {boolean} isCorrect
  * @param {number} [nextReviewAt] - 次回復習タイムスタンプ（ms）
  */
-export function renderResult(question, selectedIndices, isCorrect, nextReviewAt, shuffleMap = null) {
+export function renderResult(question, selectedIndices, isCorrect, nextReviewAt, shuffleMap = null, elapsedMs = null) {
   const choicesEl = document.getElementById('choices-list');
   const buttons = choicesEl.querySelectorAll('.choice-btn');
 
@@ -309,6 +310,21 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
   document.getElementById('next-btn').disabled = false;
 
   // 複数選択・不正解時: 正解の選択肢を明示
+  // 回答時間表示
+  const answerTimeEl = document.getElementById('answer-time');
+  if (answerTimeEl) {
+    if (elapsedMs != null) {
+      const elapsedSec = Math.round(elapsedMs / 1000);
+      const timeText = elapsedSec < 1 ? '< 1秒' : `${elapsedSec}秒`;
+      const isSlow = elapsedSec >= 15;
+      answerTimeEl.textContent = isSlow ? `⚡ ${timeText}` : timeText;
+      answerTimeEl.className = `answer-time${isSlow ? ' answer-time-slow' : ''}`;
+      answerTimeEl.classList.remove('hidden');
+    } else {
+      answerTimeEl.classList.add('hidden');
+    }
+  }
+
   const correctLabels = document.getElementById('correct-labels');
   if (correctLabels) {
     if (!isCorrect) {
@@ -460,6 +476,17 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       const intensity = count === 0 ? 0 : count < 5 ? 1 : count < 15 ? 2 : count < 30 ? 3 : 4;
       return `<div class="cal-cell cal-int-${intensity}${isToday ? ' cal-today' : ''}" title="${date}: ${count}問"></div>`;
     }).join('');
+  }
+
+  // 復習待ちドリルボタン
+  const dueDrillBtn = document.getElementById('btn-drill-due');
+  if (dueDrillBtn) {
+    if (stats.dueCount > 0) {
+      dueDrillBtn.textContent = `📋 復習待ち ${stats.dueCount} 問を練習`;
+      dueDrillBtn.classList.remove('hidden');
+    } else {
+      dueDrillBtn.classList.add('hidden');
+    }
   }
 
   // 苦手問題ドリルボタン

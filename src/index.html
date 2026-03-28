@@ -93,6 +93,12 @@
       <!-- ブックマークモードバナー -->
       <div id="bookmark-mode-banner" class="bookmark-mode-banner hidden">★ ブックマークモード</div>
 
+      <!-- 復習モードバナー -->
+      <div id="review-mode-banner" class="review-mode-banner hidden">
+        <span>📋 <span id="review-mode-count">復習モード</span></span>
+        <button id="btn-clear-review" class="banner-clear-btn" aria-label="復習モード解除">解除</button>
+      </div>
+
       <!-- カテゴリフィルターバナー -->
       <div id="category-banner" class="category-banner hidden">
         <span>📂 <span id="category-banner-name"></span></span>
@@ -126,6 +132,7 @@
           <span id="next-review" class="next-review hidden"></span>
         </div>
         <div id="correct-labels" class="correct-labels hidden"></div>
+        <div id="answer-time" class="answer-time hidden"></div>
         <button id="explanation-toggle" class="hidden">解説を見る</button>
         <div id="explanation-text" class="hidden"></div>
       </div>
@@ -170,6 +177,7 @@
       </div>
 
       <div>
+        <button id="btn-drill-due" class="btn-review hidden" style="width:100%;margin-bottom:8px;">📋 復習待ち問題を練習</button>
         <button id="btn-drill-weak" class="btn-primary hidden" style="width:100%;margin-bottom:8px;">苦手問題を集中練習</button>
         <button id="btn-drill-bookmark" class="btn-secondary hidden" style="width:100%;margin-bottom:12px;">★ ブックマーク問題を練習</button>
       </div>
@@ -378,6 +386,13 @@
           </span>
         </div>
         <div class="settings-item settings-item-static">
+          <span class="settings-item-icon">R</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">R</span>
+            <span class="settings-item-desc">SRS復習モード ON/OFF（復習待ち問題のみ出題）</span>
+          </span>
+        </div>
+        <div class="settings-item settings-item-static">
           <span class="settings-item-icon">👆</span>
           <span class="settings-item-text">
             <span class="settings-item-label">左スワイプ</span>
@@ -401,7 +416,7 @@
           <span class="settings-item-icon">ℹ️</span>
           <span class="settings-item-text">
             <span class="settings-item-label">AWS Certification Study</span>
-            <span class="settings-item-desc">v1.9.0　CLF・AIF・SAA・MLA・DVA・SOA・DEA・SAP・DOP 収録</span>
+            <span class="settings-item-desc">v2.0.0　CLF・AIF・SAA・MLA・DVA・SOA・DEA・SAP・DOP 収録</span>
           </span>
         </div>
 

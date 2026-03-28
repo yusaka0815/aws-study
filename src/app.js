@@ -92,8 +92,10 @@ const appState = {
   sessionAnswered: 0,       // 今セッションで回答した問題数
   sessionCorrect: 0,        // 今セッションで正解した問題数
   sessionStartTime: null,   // セッション開始タイムスタンプ
+  questionStartTime: null,  // 問題表示開始タイムスタンプ（回答時間計測用）
   categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
   bookmarkMode: false,      // boolean: ブックマーク問題のみ出題
+  reviewMode: false,        // boolean: SRS復習待ち問題のみ出題
   _autoNextTimer: null,     // タイマーID（自動次へ）
   _autoNextCancelled: false,// 手動でキャンセルしたか
   // 模擬試験モード
@@ -216,6 +218,7 @@ async function selectExam(examCode) {
   appState.sessionStartTime = Date.now();
   appState.categoryFilter = null;
   appState.bookmarkMode = false;
+  appState.reviewMode = false;
   // 模擬試験モードをリセット
   if (appState.examMode) {
     appState.examMode = false;
@@ -282,7 +285,9 @@ function showNextQuestion() {
     document.getElementById('category-banner')?.classList.add('hidden');
     document.getElementById('bookmark-mode-banner')?.classList.add('hidden');
     document.getElementById('weak-only-banner')?.classList.add('hidden');
+    document.getElementById('review-mode-banner')?.classList.add('hidden');
     appState.shuffleMap = renderQuestion(q, qNum - 1, total, false, qState, 0);
+    appState.questionStartTime = Date.now();
     // プログレステキストを上書き（試験用）
     document.getElementById('progress-text').textContent = `問 ${qNum} / ${total}`;
     return;
@@ -312,6 +317,16 @@ function showNextQuestion() {
     pool = bookmarked.length > 0 ? bookmarked : pool;
   }
 
+  // 復習モード: SRS復習待ち問題（nextReviewAt <= now）のみ
+  if (appState.reviewMode) {
+    const nowTs = Date.now();
+    const due = pool.filter(q => {
+      const s = userState.questions[q.id];
+      return s && s.attempts > 0 && s.nextReviewAt <= nowTs;
+    });
+    pool = due.length > 0 ? due : pool;
+  }
+
   // カテゴリバナーを更新
   const catBanner = document.getElementById('category-banner');
   const catBannerName = document.getElementById('category-banner-name');
@@ -327,6 +342,23 @@ function showNextQuestion() {
 
   // ブックマークモードバナーを更新
   document.getElementById('bookmark-mode-banner')?.classList.toggle('hidden', !appState.bookmarkMode);
+
+  // 復習モードバナーを更新
+  const revBanner = document.getElementById('review-mode-banner');
+  const revCountEl = document.getElementById('review-mode-count');
+  if (revBanner && revCountEl) {
+    if (appState.reviewMode) {
+      const nowTs = Date.now();
+      const dueRemaining = currentExam.questions.filter(q => {
+        const s = userState.questions[q.id];
+        return s && s.attempts > 0 && s.nextReviewAt <= nowTs;
+      }).length;
+      revCountEl.textContent = `復習モード (${dueRemaining}問)`;
+      revBanner.classList.remove('hidden');
+    } else {
+      revBanner.classList.add('hidden');
+    }
+  }
 
   const q = getNextQuestion(pool, userState, lastQuestionId);
   if (!q) {
@@ -349,6 +381,7 @@ function showNextQuestion() {
     return s && s.attempts > 0 && s.nextReviewAt <= now;
   }).length;
   appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
+  appState.questionStartTime = Date.now();
 }
 
 // ============================================================
@@ -359,6 +392,10 @@ function handleAnswer(selectedIndices) {
 
   appState.answered = true;
   appState.lastQuestionId = appState.currentQuestion.id;
+
+  // 回答時間を計測
+  const elapsedMs = appState.questionStartTime ? Date.now() - appState.questionStartTime : null;
+  appState.questionStartTime = null;
 
   // シャッフルされた表示インデックスを元のインデックスに変換
   const originalIndices = appState.shuffleMap
@@ -374,7 +411,7 @@ function handleAnswer(selectedIndices) {
       appState.examWrong.push(appState.currentQuestion);
     }
     appState.examIndex++;
-    renderResult(appState.currentQuestion, selectedIndices, isCorrect, null, appState.shuffleMap);
+    renderResult(appState.currentQuestion, selectedIndices, isCorrect, null, appState.shuffleMap, elapsedMs);
     setTimeout(() => {
       document.getElementById('answer-area')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 80);
@@ -425,7 +462,7 @@ function handleAnswer(selectedIndices) {
     navigator.vibrate(isCorrect ? 40 : [60, 30, 60]);
   }
 
-  renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt, appState.shuffleMap);
+  renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt, appState.shuffleMap, elapsedMs);
 
   // 回答エリアへスムーズスクロール（問題文が長い場合に結果が見えるように）
   setTimeout(() => {
@@ -895,6 +932,21 @@ function setupNavigationListeners() {
     showNextQuestion();
   });
 
+  // 復習モード解除ボタン
+  document.getElementById('btn-clear-review').addEventListener('click', () => {
+    appState.reviewMode = false;
+    showToast('復習モード解除', 'info');
+    showNextQuestion();
+  });
+
+  // 復習待ちドリルボタン（統計画面から）
+  document.getElementById('btn-drill-due').addEventListener('click', () => {
+    appState.reviewMode = true;
+    appState._triggerNextQuestion = true;
+    showToast('📋 復習モード ON', 'info');
+    history.back();
+  });
+
   // ロゴタップ → ホーム画面
   document.querySelectorAll('.app-logo').forEach(el => {
     el.addEventListener('click', () => {
@@ -1085,6 +1137,29 @@ function setupKeyboardShortcuts() {
     // M: 模擬試験モーダルを開く
     if (key === 'm' || key === 'M') {
       document.getElementById('btn-exam-mode')?.click();
+      return;
+    }
+
+    // R: 復習モード（SRS復習待ちのみ）のON/OFF
+    if (key === 'r' || key === 'R') {
+      if (!appState.currentExam) return;
+      appState.reviewMode = !appState.reviewMode;
+      if (appState.reviewMode) {
+        const nowTs = Date.now();
+        const dueCount = appState.currentExam.questions.filter(q => {
+          const s = appState.userState.questions[q.id];
+          return s && s.attempts > 0 && s.nextReviewAt <= nowTs;
+        }).length;
+        if (dueCount === 0) {
+          appState.reviewMode = false;
+          showToast('復習待ち問題はありません', 'info');
+          return;
+        }
+        showToast(`📋 復習モード ON (${dueCount}問)`, 'info');
+      } else {
+        showToast('復習モード OFF', 'info');
+      }
+      showNextQuestion();
       return;
     }
 
