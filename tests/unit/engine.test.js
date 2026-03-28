@@ -621,6 +621,82 @@ describe('getStats / predictedScore', () => {
 });
 
 // ============================================================
+// getStats: upcoming24h / nextReviewIn
+// ============================================================
+describe('getStats / upcoming24h and nextReviewIn', () => {
+  const questions = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2')];
+  const now = Date.now();
+  const HOUR = 3_600_000;
+  const DAY  = 24 * HOUR;
+
+  it('未回答問題は upcoming24h に含まれない', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.upcoming24h).toBe(0);
+  });
+
+  it('nextReviewAt が未来24h以内の問題は upcoming24h に含まれる', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now + HOUR },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).upcoming24h).toBe(1);
+  });
+
+  it('nextReviewAt が24h超の問題は upcoming24h に含まれない', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now + DAY + 1000 },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).upcoming24h).toBe(0);
+  });
+
+  it('期限切れ（dueCount）の問題は upcoming24h に含まれない', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now - 1 },
+      },
+      dailyLog: {},
+    };
+    const stats = getStats(questions, state);
+    expect(stats.dueCount).toBe(1);
+    expect(stats.upcoming24h).toBe(0);
+  });
+
+  it('nextReviewIn は未来の最小 nextReviewAt - now を返す', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now + 5 * HOUR },
+        'Q-002': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now + 2 * HOUR },
+      },
+      dailyLog: {},
+    };
+    const stats = getStats(questions, state);
+    // nextReviewIn は最小の待ち時間（2時間分）
+    expect(stats.nextReviewIn).toBeGreaterThanOrEqual(2 * HOUR - 100);
+    expect(stats.nextReviewIn).toBeLessThanOrEqual(2 * HOUR + 100);
+  });
+
+  it('全問未回答なら nextReviewIn は null', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.nextReviewIn).toBeNull();
+  });
+
+  it('全問が期限切れなら nextReviewIn は null（未来の予定なし）', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 0, wrong: 1, recentResults: [0], lastAnsweredAt: now, nextReviewAt: now - 1 },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).nextReviewIn).toBeNull();
+  });
+});
+
+// ============================================================
 // isAnswerCorrect: 回答正誤判定
 // ============================================================
 describe('isAnswerCorrect', () => {
