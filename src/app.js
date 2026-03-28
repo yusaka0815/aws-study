@@ -88,6 +88,8 @@ const appState = {
   lastQuestionId: null,     // 直前に出題した問題ID（連続出題防止用）
   answered: false,          // 現在の問題に回答済みか
   pendingSelections: new Set(), // 複数選択問題の選択中インデックス
+  sessionAnswered: 0,       // 今セッションで回答した問題数
+  sessionCorrect: 0,        // 今セッションで正解した問題数
 };
 
 // ============================================================
@@ -177,6 +179,11 @@ async function selectExam(examCode) {
   const examMeta = EXAM_LIST.find(e => e.examCode === examCode);
   if (!examMeta) return;
 
+  // セッションカウンターをリセット
+  appState.sessionAnswered = 0;
+  appState.sessionCorrect = 0;
+  updateSessionBadge();
+
   // 即座に画面遷移（ローディング感を排除）
   document.getElementById('header-exam-name').textContent = examMeta.examName;
   document.getElementById('question-text').textContent = '問題を読み込んでいます...';
@@ -231,6 +238,9 @@ function handleAnswer(selectedIndices) {
   appState.lastQuestionId = appState.currentQuestion.id;
 
   const isCorrect = isAnswerCorrect(selectedIndices, appState.currentQuestion.answers);
+  appState.sessionAnswered++;
+  if (isCorrect) appState.sessionCorrect++;
+  updateSessionBadge();
   const now = Date.now();
   const prev = appState.userState.questions[appState.currentQuestion.id] ?? { attempts: 0 };
 
@@ -244,6 +254,22 @@ function handleAnswer(selectedIndices) {
   }
 
   renderResult(appState.currentQuestion, selectedIndices, isCorrect);
+}
+
+// ============================================================
+// セッションバッジ（ヘッダー右上の今日の回答数表示）
+// ============================================================
+function updateSessionBadge() {
+  const el = document.getElementById('session-badge');
+  if (!el) return;
+  if (appState.sessionAnswered === 0) {
+    el.textContent = '';
+    el.classList.add('hidden');
+    return;
+  }
+  const pct = Math.round((appState.sessionCorrect / appState.sessionAnswered) * 100);
+  el.textContent = `${appState.sessionAnswered}問 ${pct}%`;
+  el.classList.remove('hidden');
 }
 
 // ============================================================

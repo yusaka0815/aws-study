@@ -67,9 +67,13 @@ export function renderQuestion(question, questionIndex, totalQuestions) {
   document.getElementById('progress-fill').style.width = `${pct}%`;
   document.getElementById('progress-text').textContent = `${questionIndex} / ${totalQuestions}`;
 
-  // カテゴリ・難易度
+  // カテゴリ・難易度・問題タイプ
   const diffStars = '★'.repeat(question.difficulty) + '☆'.repeat(3 - question.difficulty);
-  document.getElementById('question-meta').textContent = `${question.category}  ${diffStars}`;
+  const typeTag = question.answers.length > 1
+    ? `<span class="multi-badge">${question.answers.length}つ選択</span>`
+    : '';
+  document.getElementById('question-meta').innerHTML =
+    `<span>${question.category}  ${diffStars}</span>${typeTag}`;
 
   // 問題文
   document.getElementById('question-text').textContent = question.question;
