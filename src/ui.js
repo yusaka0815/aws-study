@@ -131,13 +131,26 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
 
   // 前回の続きから: クイックアクセスボタン
   const resumeEl = document.getElementById('select-resume');
+  const resumeReviewEl = document.getElementById('select-resume-review');
   if (resumeEl) {
     if (currentExamCode && counts[currentExamCode] > 0) {
       resumeEl.textContent = `▶ ${currentExamCode} の続きから`;
       resumeEl.dataset.exam = currentExamCode;
       resumeEl.classList.remove('hidden');
+      // 復習待ちクイックスタートボタン
+      if (resumeReviewEl) {
+        const dueNow = dueMap[currentExamCode] ?? 0;
+        if (dueNow > 0) {
+          resumeReviewEl.textContent = `📋 復習待ち ${dueNow} 問`;
+          resumeReviewEl.dataset.exam = currentExamCode;
+          resumeReviewEl.classList.remove('hidden');
+        } else {
+          resumeReviewEl.classList.add('hidden');
+        }
+      }
     } else {
       resumeEl.classList.add('hidden');
+      resumeReviewEl?.classList.add('hidden');
     }
   }
 

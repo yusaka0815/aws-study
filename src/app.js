@@ -982,6 +982,15 @@ function setupNavigationListeners() {
     if (code) selectExam(code);
   });
 
+  // 復習クイックスタートボタン（復習モードで即開始）
+  document.getElementById('select-resume-review').addEventListener('click', e => {
+    const code = e.currentTarget.dataset.exam;
+    if (code) {
+      appState.reviewMode = true;
+      selectExam(code);
+    }
+  });
+
   // カテゴリフィルター解除ボタン
   document.getElementById('btn-clear-category').addEventListener('click', () => {
     appState.categoryFilter = null;
