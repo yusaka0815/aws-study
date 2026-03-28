@@ -169,6 +169,20 @@ body {
 .exam-mode-timer.urgent { color: var(--danger); background: var(--danger-dim); }
 .exam-mode-timer.hidden { display: none; }
 
+/* 模擬試験タイムバー（画面上端の残り時間インジケーター） */
+.exam-time-bar {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  height: 3px;
+  background: var(--success);
+  transition: width 1s linear, background 0.5s ease;
+  z-index: 60;
+  border-radius: 0 2px 2px 0;
+}
+.exam-time-bar.urgent { background: var(--danger); }
+.exam-time-bar.hidden { display: none; }
+
 /* ============================================================
    模擬試験モーダル
    ============================================================ */

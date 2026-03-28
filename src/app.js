@@ -688,11 +688,14 @@ function startExamMode(count) {
   appState.examCorrect = 0;
   appState.examWrong = [];
   appState.examTimeLeft = count * 2 * 60; // 2分/問
+  appState._examTotalTime = appState.examTimeLeft;
 
-  // セッションバッジを隠してタイマーを表示
+  // セッションバッジを隠してタイマーとタイムバーを表示
   document.getElementById('session-badge').classList.add('hidden');
   const timerEl = document.getElementById('exam-mode-timer');
   timerEl.classList.remove('hidden');
+  const timeBarEl = document.getElementById('exam-time-bar');
+  if (timeBarEl) { timeBarEl.classList.remove('hidden'); timeBarEl.style.width = '100%'; }
 
   appState.examTimerInterval = setInterval(() => {
     appState.examTimeLeft--;
@@ -714,7 +717,15 @@ function updateExamTimer() {
   const min = Math.floor(left / 60).toString().padStart(2, '0');
   const sec = (left % 60).toString().padStart(2, '0');
   timerEl.textContent = `⏱ ${min}:${sec}`;
-  timerEl.classList.toggle('urgent', left <= 60);
+  const isUrgent = left <= 60;
+  timerEl.classList.toggle('urgent', isUrgent);
+  // タイムバー更新
+  const timeBarEl = document.getElementById('exam-time-bar');
+  if (timeBarEl && appState._examTotalTime > 0) {
+    const pct = Math.round((left / appState._examTotalTime) * 100);
+    timeBarEl.style.width = `${pct}%`;
+    timeBarEl.classList.toggle('urgent', isUrgent);
+  }
 }
 
 function endExamMode(timeUp = false) {
@@ -726,8 +737,9 @@ function endExamMode(timeUp = false) {
     appState.examTimerInterval = null;
   }
 
-  // タイマー非表示・バッジ復元
+  // タイマー・タイムバー非表示・バッジ復元
   document.getElementById('exam-mode-timer').classList.add('hidden');
+  document.getElementById('exam-time-bar')?.classList.add('hidden');
   updateSessionBadge();
 
   const total = appState.examQuestions.length;
