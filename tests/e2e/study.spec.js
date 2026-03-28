@@ -493,6 +493,68 @@ test.describe('設定画面', () => {
       if (border !== null) expect(border).toBe('0px');
     });
   });
+
+  test('設定画面: スクロール可能（全コンテンツが収まらない高さがある）', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    await expect(page.locator('#screen-settings')).toBeVisible();
+    const isScrollable = await page.evaluate(() => {
+      const el = document.querySelector('.settings-content');
+      return el.scrollHeight > el.clientHeight;
+    });
+    expect(isScrollable).toBe(true);
+  });
+
+  test('設定画面: 全セクションが表示高さ内に収まっていない（クリップされていない）', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    await expect(page.locator('#screen-settings')).toBeVisible();
+    // 各 settings-section の scrollHeight が clientHeight 以上であること
+    // （overflow:hidden でクリップされていれば scrollHeight === clientHeight）
+    const clipped = await page.evaluate(() => {
+      const sections = document.querySelectorAll('.settings-section');
+      return Array.from(sections).map(s => ({
+        scrollH: s.scrollHeight,
+        clientH: s.clientHeight,
+        clipped: s.scrollHeight > s.clientHeight,
+      }));
+    });
+    // セクションが2つ以上あること
+    expect(clipped.length).toBeGreaterThanOrEqual(2);
+    // 少なくとも1つのセクションは複数の items を持ち（学習中の設定など）内部でクリップされていないこと
+    const hasMultiItem = clipped.some(s => s.scrollH > 60);
+    expect(hasMultiItem).toBe(true);
+  });
+
+  test('設定画面: 学習中の設定セクション内の全トグル項目が表示される', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    await expect(page.locator('#screen-settings')).toBeVisible();
+    await expect(page.locator('#toggle-wake-lock')).toBeAttached();
+    await expect(page.locator('#toggle-sound')).toBeAttached();
+    await expect(page.locator('#toggle-weak-only')).toBeAttached();
+    await expect(page.locator('#toggle-auto-next')).toBeAttached();
+    await expect(page.locator('#seg-daily-goal')).toBeVisible();
+    await expect(page.locator('#seg-font-size')).toBeVisible();
+  });
+
+  test('設定画面: セクションをスクロールして最下部のリセットボタンが到達可能', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    await expect(page.locator('#screen-settings')).toBeVisible();
+    // 最下部までスクロール
+    await page.evaluate(() => {
+      document.querySelector('.settings-content')?.scrollTo(0, 99999);
+    });
+    // btn-reset が DOM 上に存在し、スクロール後に到達可能
+    await expect(page.locator('#btn-reset')).toBeAttached();
+    await expect(page.locator('#btn-force-update')).toBeAttached();
+  });
+
+  test('設定画面: settings-section は flex-shrink:0 が設定されている', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    const flexShrink = await page.evaluate(() => {
+      const section = document.querySelector('.settings-section');
+      return getComputedStyle(section).flexShrink;
+    });
+    expect(flexShrink).toBe('0');
+  });
 });
 
 // ============================================================

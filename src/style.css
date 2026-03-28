@@ -1695,6 +1695,7 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 }
 
 .settings-section {
+  flex-shrink: 0; /* flex-direction:column コンテナ内で縮小されてクリップされるのを防ぐ */
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
