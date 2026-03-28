@@ -164,6 +164,14 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   document.getElementById('question-meta').innerHTML =
     `<span>${question.category}  ${diffStars}</span>${typeTag}${historyChip}`;
 
+  // ブックマークボタン
+  const bookmarkBtn = document.getElementById('btn-bookmark');
+  if (bookmarkBtn) {
+    const isBookmarked = !!(qState?.bookmarked);
+    bookmarkBtn.textContent = isBookmarked ? '★' : '☆';
+    bookmarkBtn.classList.toggle('bookmarked', isBookmarked);
+  }
+
   // 問題文
   document.getElementById('question-text').textContent = question.question;
 
@@ -375,6 +383,10 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       <div class="stat-value">${stats.masteredCount}</div>
       <div class="stat-label">マスター済み</div>
     </div>
+    <div class="stat-card ${stats.bookmarkCount > 0 ? 'stat-card-bookmark' : ''}">
+      <div class="stat-value">${stats.bookmarkCount ?? 0}</div>
+      <div class="stat-label">ブックマーク</div>
+    </div>
     <div class="stat-card">
       <div class="stat-value">${stats.totalAttempts}</div>
       <div class="stat-label">総回答数</div>
@@ -419,6 +431,17 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       drillBtn.classList.remove('hidden');
     } else {
       drillBtn.classList.add('hidden');
+    }
+  }
+
+  // ブックマークドリルボタン
+  const bookmarkDrillBtn = document.getElementById('btn-drill-bookmark');
+  if (bookmarkDrillBtn) {
+    if ((stats.bookmarkCount ?? 0) > 0) {
+      bookmarkDrillBtn.textContent = `★ ブックマーク ${stats.bookmarkCount} 問を練習`;
+      bookmarkDrillBtn.classList.remove('hidden');
+    } else {
+      bookmarkDrillBtn.classList.add('hidden');
     }
   }
 

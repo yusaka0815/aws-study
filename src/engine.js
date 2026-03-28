@@ -226,6 +226,9 @@ export function getStats(questions, userState) {
     return recent.length >= 5 && recent.slice(-5).every(r => r === 1);
   }).length;
 
+  // ブックマーク済み問題数
+  const bookmarkCount = questions.filter(q => userState.questions[q.id]?.bookmarked).length;
+
   // よく間違える問題 Top5（3回以上回答・正答率 60% 未満）
   const worstQuestions = questions
     .filter(q => {
@@ -261,6 +264,7 @@ export function getStats(questions, userState) {
     weakCount,
     dueCount,
     masteredCount,
+    bookmarkCount,
     categoryList,
     weeklyLog,
     worstQuestions,

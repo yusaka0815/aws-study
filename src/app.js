@@ -92,6 +92,7 @@ const appState = {
   sessionAnswered: 0,       // 今セッションで回答した問題数
   sessionCorrect: 0,        // 今セッションで正解した問題数
   categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
+  bookmarkMode: false,      // boolean: ブックマーク問題のみ出題
 };
 
 // ============================================================
@@ -182,10 +183,11 @@ async function selectExam(examCode) {
   const examMeta = EXAM_LIST.find(e => e.examCode === examCode);
   if (!examMeta) return;
 
-  // セッションカウンターとカテゴリフィルターをリセット
+  // セッションカウンターとフィルターをリセット
   appState.sessionAnswered = 0;
   appState.sessionCorrect = 0;
   appState.categoryFilter = null;
+  appState.bookmarkMode = false;
   updateSessionBadge();
 
   // 即座に画面遷移（ローディング感を排除）
@@ -238,6 +240,12 @@ function showNextQuestion() {
     pool = weak.length > 0 ? weak : pool; // 苦手問題ゼロなら現在のプールを維持
   }
 
+  // ブックマークモード: ブックマーク済み問題のみ
+  if (appState.bookmarkMode) {
+    const bookmarked = pool.filter(q => userState.questions[q.id]?.bookmarked);
+    pool = bookmarked.length > 0 ? bookmarked : pool;
+  }
+
   // カテゴリバナーを更新
   const catBanner = document.getElementById('category-banner');
   const catBannerName = document.getElementById('category-banner-name');
@@ -245,6 +253,9 @@ function showNextQuestion() {
     catBannerName.textContent = appState.categoryFilter ?? '';
     catBanner.classList.toggle('hidden', !appState.categoryFilter);
   }
+
+  // ブックマークモードバナーを更新
+  document.getElementById('bookmark-mode-banner')?.classList.toggle('hidden', !appState.bookmarkMode);
 
   const q = getNextQuestion(pool, userState, lastQuestionId);
   if (!q) {
@@ -290,6 +301,8 @@ function handleAnswer(selectedIndices) {
   const prev = appState.userState.questions[appState.currentQuestion.id] ?? { attempts: 0 };
 
   const updatedState = updateQuestionState(prev, isCorrect, now);
+  // ブックマーク状態を保持（updateQuestionState は SRS フィールドのみ返す）
+  if (prev.bookmarked) updatedState.bookmarked = true;
   appState.userState.questions[appState.currentQuestion.id] = updatedState;
 
   // マスター達成チェック（直近5回全正解の初達成時のみ通知）
@@ -402,6 +415,19 @@ function setupStudyListeners() {
     if (appState.currentQuestion) toggleExplanation(appState.currentQuestion.explanation);
   });
 
+  document.getElementById('btn-bookmark').addEventListener('click', () => {
+    if (!appState.currentQuestion) return;
+    const id = appState.currentQuestion.id;
+    const qState = appState.userState.questions[id] ?? { attempts: 0 };
+    qState.bookmarked = !qState.bookmarked;
+    appState.userState.questions[id] = qState;
+    saveState(appState.userState);
+    const btn = document.getElementById('btn-bookmark');
+    btn.textContent = qState.bookmarked ? '★' : '☆';
+    btn.classList.toggle('bookmarked', qState.bookmarked);
+    showToast(qState.bookmarked ? 'ブックマークしました' : 'ブックマーク解除', 'info');
+  });
+
   document.getElementById('next-btn').addEventListener('click', () => {
     // 複数選択問題・未回答: 次へボタンが提出ボタンを兼ねる
     if (!appState.answered && appState.currentQuestion?.answers.length > 1) {
@@ -442,7 +468,15 @@ function setupNavigationListeners() {
     settings.weakOnly = true;
     saveSetting('weak-only', true);
     document.getElementById('toggle-weak-only').checked = true;
+    appState.bookmarkMode = false;
     showToast('苦手問題モード ON', 'info');
+    appState._triggerNextQuestion = true;
+    history.back(); // 統計画面から問題画面に戻る
+  });
+
+  document.getElementById('btn-drill-bookmark').addEventListener('click', () => {
+    appState.bookmarkMode = true;
+    showToast('★ ブックマークモード ON', 'info');
     appState._triggerNextQuestion = true;
     history.back(); // 統計画面から問題画面に戻る
   });
@@ -608,6 +642,12 @@ function setupKeyboardShortcuts() {
     // S: 統計画面を開く
     if (key === 's' || key === 'S') {
       showStatsScreen();
+      return;
+    }
+
+    // B: ブックマークトグル
+    if (key === 'b' || key === 'B') {
+      document.getElementById('btn-bookmark')?.click();
       return;
     }
 

@@ -88,6 +88,9 @@
       <!-- 苦手問題モードバナー -->
       <div id="weak-only-banner" class="weak-only-banner hidden">🎯 苦手問題モード</div>
 
+      <!-- ブックマークモードバナー -->
+      <div id="bookmark-mode-banner" class="bookmark-mode-banner hidden">★ ブックマークモード</div>
+
       <!-- カテゴリフィルターバナー -->
       <div id="category-banner" class="category-banner hidden">
         <span>📂 <span id="category-banner-name"></span></span>
@@ -96,7 +99,10 @@
 
       <!-- 問題カード -->
       <div class="question-card">
-        <div id="question-meta"></div>
+        <div class="question-card-header">
+          <div id="question-meta"></div>
+          <button id="btn-bookmark" class="bookmark-btn" aria-label="ブックマーク" title="ブックマーク">☆</button>
+        </div>
         <div id="question-text">問題を読み込んでいます...</div>
       </div>
 
@@ -161,7 +167,8 @@
       </div>
 
       <div>
-        <button id="btn-drill-weak" class="btn-primary hidden" style="width:100%;margin-bottom:12px;">苦手問題を集中練習</button>
+        <button id="btn-drill-weak" class="btn-primary hidden" style="width:100%;margin-bottom:8px;">苦手問題を集中練習</button>
+        <button id="btn-drill-bookmark" class="btn-secondary hidden" style="width:100%;margin-bottom:12px;">★ ブックマーク問題を練習</button>
       </div>
 
       <div>
@@ -297,6 +304,13 @@
           <span class="settings-item-text">
             <span class="settings-item-label">S</span>
             <span class="settings-item-desc">統計画面を開く</span>
+          </span>
+        </div>
+        <div class="settings-item settings-item-static">
+          <span class="settings-item-icon">B</span>
+          <span class="settings-item-text">
+            <span class="settings-item-label">B</span>
+            <span class="settings-item-desc">現在の問題をブックマーク / 解除</span>
           </span>
         </div>
         <div class="settings-item settings-item-static">
