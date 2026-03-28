@@ -1059,6 +1059,12 @@ function setupKeyboardShortcuts() {
       return;
     }
 
+    // M: 模擬試験モーダルを開く
+    if (key === 'm' || key === 'M') {
+      document.getElementById('btn-exam-mode')?.click();
+      return;
+    }
+
     // Escape: カテゴリフィルター解除
     if (key === 'Escape' && appState.categoryFilter) {
       document.getElementById('btn-clear-category')?.click();
