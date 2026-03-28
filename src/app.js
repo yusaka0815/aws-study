@@ -242,7 +242,12 @@ function showNextQuestion() {
     .filter(s => s.attempts > 0).length;
 
   const qState = userState.questions[q.id] ?? null;
-  renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState);
+  const now = Date.now();
+  const dueCount = pool.filter(pq => {
+    const s = userState.questions[pq.id];
+    return s && s.attempts > 0 && s.nextReviewAt <= now;
+  }).length;
+  renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
 }
 
 // ============================================================
