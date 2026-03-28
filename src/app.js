@@ -867,8 +867,11 @@ function endExamMode(timeUp = false) {
     appState.examCorrect = 0;
     appState.examWrong = [];
     appState.examTimeLeft = wrongQs.length * 2 * 60;
+    appState._examTotalTime = appState.examTimeLeft;
     document.getElementById('session-badge').classList.add('hidden');
     document.getElementById('exam-mode-timer').classList.remove('hidden');
+    const retryTimeBar = document.getElementById('exam-time-bar');
+    if (retryTimeBar) { retryTimeBar.classList.remove('hidden'); retryTimeBar.style.width = '100%'; }
     appState.examTimerInterval = setInterval(() => {
       appState.examTimeLeft--;
       updateExamTimer();
