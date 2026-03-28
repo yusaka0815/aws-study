@@ -1363,6 +1363,10 @@ async function init() {
       requestWakeLock();
     }
   });
+
+  // オンライン/オフライン通知
+  window.addEventListener('offline', () => showToast('オフラインです。キャッシュから学習できます', 'info'));
+  window.addEventListener('online',  () => showToast('オンラインに戻りました', 'success'));
 }
 
 init();
