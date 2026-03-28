@@ -1224,6 +1224,7 @@ function buildProgressMap() {
   const correct = {};
   const due = {};
   const lastStudied = {};
+  const lastCorrect = {}; // 直近回答が正解の問題数（予測スコア用）
   const now = Date.now();
   for (const [id, state] of Object.entries(appState.userState?.questions ?? {})) {
     if (state.attempts > 0) {
@@ -1238,12 +1239,25 @@ function buildProgressMap() {
         lastStudied[prefix] = state.lastAnsweredAt;
       }
     }
+    // 直近回答の正誤（attempts=0の未回答問題も対象: 未回答=不正解として換算）
+    if ((state.recentResults?.length ?? 0) > 0 && state.recentResults.at(-1) === 1) {
+      const prefix = id.split('-')[0];
+      lastCorrect[prefix] = (lastCorrect[prefix] || 0) + 1;
+    }
   }
   const accuracyMap = {};
   for (const code of Object.keys(attempts)) {
     accuracyMap[code] = Math.round((correct[code] / attempts[code]) * 100);
   }
-  return { counts, accuracyMap, dueMap: due, lastStudied };
+  // 予測スコア: 直近正解数 / 試験全問数
+  const predictedMap = {};
+  for (const exam of EXAM_LIST) {
+    const lc = lastCorrect[exam.examCode] ?? 0;
+    if (exam.questionCount > 0) {
+      predictedMap[exam.examCode] = Math.round((lc / exam.questionCount) * 100);
+    }
+  }
+  return { counts, accuracyMap, dueMap: due, lastStudied, predictedMap };
 }
 
 // ============================================================
