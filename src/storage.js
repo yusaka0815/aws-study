@@ -15,6 +15,7 @@ export function createInitialState() {
     currentExam: null,
     questions: {},
     dailyLog: {}, // { 'YYYY-MM-DD': 回答数 }
+    examHistory: [], // [{ examCode, date, total, correct, wrong, pct, passed, timeUp }]
   };
 }
 
@@ -32,12 +33,13 @@ export function loadState() {
     if (!parsed || typeof parsed !== 'object') return createInitialState();
     if (parsed.version !== STATE_VERSION) return createInitialState();
 
-    // 必須フィールドの保証（dailyLog は後から追加されたので undefined でも正常）
+    // 必須フィールドの保証（dailyLog / examHistory は後から追加されたので undefined でも正常）
     return {
       version: parsed.version || STATE_VERSION,
       currentExam: parsed.currentExam || null,
       questions: parsed.questions || {},
       dailyLog: (parsed.dailyLog && typeof parsed.dailyLog === 'object') ? parsed.dailyLog : {},
+      examHistory: Array.isArray(parsed.examHistory) ? parsed.examHistory : [],
     };
   } catch {
     return createInitialState();
@@ -106,6 +108,7 @@ export function importBackup(jsonString) {
     currentExam: typeof parsed.currentExam === 'string' ? parsed.currentExam : null,
     questions: {},
     dailyLog: {},
+    examHistory: [],
   };
 
   for (const [qId, qData] of Object.entries(parsed.questions)) {
@@ -120,6 +123,7 @@ export function importBackup(jsonString) {
         : [],
       lastAnsweredAt: Number(qData.lastAnsweredAt) || 0,
       nextReviewAt: Number(qData.nextReviewAt) || 0,
+      ...(qData.bookmarked === true ? { bookmarked: true } : {}),
     };
   }
 
@@ -129,6 +133,24 @@ export function importBackup(jsonString) {
       if (/^\d{4}-\d{2}-\d{2}$/.test(date) && typeof count === 'number') {
         safeState.dailyLog[date] = count;
       }
+    }
+  }
+
+  // examHistory の復元
+  if (Array.isArray(parsed.examHistory)) {
+    for (const entry of parsed.examHistory) {
+      if (!entry || typeof entry !== 'object') continue;
+      if (typeof entry.examCode !== 'string') continue;
+      safeState.examHistory.push({
+        examCode: entry.examCode,
+        date: typeof entry.date === 'string' ? entry.date : '',
+        total: Number(entry.total) || 0,
+        correct: Number(entry.correct) || 0,
+        wrong: Number(entry.wrong) || 0,
+        pct: Number(entry.pct) || 0,
+        passed: entry.passed === true,
+        timeUp: entry.timeUp === true,
+      });
     }
   }
 
