@@ -291,6 +291,11 @@ body {
   color: var(--text-secondary);
 }
 
+.streak-risk {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
 .today-goal {
   display: flex;
   align-items: center;

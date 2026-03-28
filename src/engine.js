@@ -141,7 +141,23 @@ export function getTodayStats(userState) {
     }
   }
 
-  return { todayCount, streak };
+  // 昨日時点のストリーク（今日未回答の場合に「危機」を表示するため）
+  let prevStreak = 0;
+  if (todayCount === 0) {
+    const d2 = new Date();
+    d2.setDate(d2.getDate() - 1);
+    for (let i = 0; i < 365; i++) {
+      const dateStr = d2.toISOString().slice(0, 10);
+      if ((userState.dailyLog?.[dateStr] ?? 0) > 0) {
+        prevStreak++;
+        d2.setDate(d2.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  return { todayCount, streak, prevStreak };
 }
 
 /**
