@@ -278,6 +278,7 @@ export function getStats(questions, userState) {
     const dateStr = d.toISOString().slice(0, 10);
     calendarData.push({ date: dateStr, count: userState.dailyLog?.[dateStr] ?? 0, isToday: i === 0 });
   }
+  const activeDays = calendarData.filter(d => d.count > 0).length;
 
   return {
     total,
@@ -293,6 +294,7 @@ export function getStats(questions, userState) {
     categoryList,
     weeklyLog,
     calendarData,
+    activeDays,
     worstQuestions,
   };
 }
