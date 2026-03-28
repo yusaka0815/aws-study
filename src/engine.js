@@ -221,6 +221,21 @@ export function getStats(questions, userState) {
     return recent.length >= 5 && recent.slice(-5).every(r => r === 1);
   }).length;
 
+  // よく間違える問題 Top5（3回以上回答・正答率 60% 未満）
+  const worstQuestions = questions
+    .filter(q => {
+      const s = userState.questions[q.id];
+      return s && safeInt(s.attempts) >= 3;
+    })
+    .map(q => {
+      const s = userState.questions[q.id];
+      const acc = Math.round((safeInt(s.correct) / safeInt(s.attempts)) * 100);
+      return { id: q.id, text: q.question, category: q.category, accuracy: acc, attempts: safeInt(s.attempts) };
+    })
+    .filter(q => q.accuracy < 60)
+    .sort((a, b) => a.accuracy - b.accuracy)
+    .slice(0, 5);
+
   // 過去7日の回答数（週間チャート用）
   const weeklyLog = [];
   for (let i = 6; i >= 0; i--) {
@@ -243,6 +258,7 @@ export function getStats(questions, userState) {
     masteredCount,
     categoryList,
     weeklyLog,
+    worstQuestions,
   };
 }
 

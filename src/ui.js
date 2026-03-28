@@ -385,6 +385,26 @@ export function renderStats(examCode, examName, stats) {
     }
   }
 
+  // よく間違える問題 Top5
+  const worstEl = document.getElementById('worst-questions');
+  if (worstEl) {
+    if (stats.worstQuestions && stats.worstQuestions.length > 0) {
+      worstEl.innerHTML = stats.worstQuestions.map(q => `
+        <div class="worst-item">
+          <div class="worst-meta">
+            <span class="worst-category">${q.category}</span>
+            <span class="worst-accuracy acc-bad">${q.accuracy}% (${q.attempts}回)</span>
+          </div>
+          <div class="worst-text">${q.text}</div>
+        </div>
+      `).join('');
+      worstEl.previousElementSibling?.classList.remove('hidden');
+    } else {
+      worstEl.innerHTML = '';
+      worstEl.previousElementSibling?.classList.add('hidden');
+    }
+  }
+
   // カテゴリ別
   const catList = document.getElementById('category-stats');
   catList.innerHTML = '';
