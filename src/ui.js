@@ -239,6 +239,7 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   document.getElementById('explanation-toggle').classList.add('hidden');
   document.getElementById('explanation-text').classList.add('hidden');
   document.getElementById('multi-submit-area').classList.add('hidden');
+  document.getElementById('skip-btn-wrap')?.classList.remove('hidden');
   const nextReviewEl = document.getElementById('next-review');
   if (nextReviewEl) nextReviewEl.classList.add('hidden');
   const correctLabelsEl = document.getElementById('correct-labels');
@@ -274,7 +275,8 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
   const choicesEl = document.getElementById('choices-list');
   const buttons = choicesEl.querySelectorAll('.choice-btn');
 
-  // 複数選択提出エリアを隠す
+  // スキップボタン・複数選択提出エリアを隠す
+  document.getElementById('skip-btn-wrap')?.classList.add('hidden');
   document.getElementById('multi-submit-area').classList.add('hidden');
 
   buttons.forEach((btn, displayPos) => {

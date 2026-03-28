@@ -290,6 +290,8 @@ function showNextQuestion() {
     appState.questionStartTime = Date.now();
     // プログレステキストを上書き（試験用）
     document.getElementById('progress-text').textContent = `問 ${qNum} / ${total}`;
+    // 模擬試験ではスキップ不可
+    document.getElementById('skip-btn-wrap')?.classList.add('hidden');
     return;
   }
 
@@ -302,12 +304,14 @@ function showNextQuestion() {
   }
 
   // 苦手問題モード: 正答率 < 60% または未回答の問題に絞る
+  let weakPoolCount = 0;
   if (settings.weakOnly) {
     const weak = pool.filter(q => {
       const s = userState.questions[q.id];
       if (!s || s.attempts === 0) return true; // 未回答は含める
       return (s.correct / s.attempts) < 0.6;
     });
+    weakPoolCount = weak.length;
     pool = weak.length > 0 ? weak : pool; // 苦手問題ゼロなら現在のプールを維持
   }
 
@@ -389,6 +393,12 @@ function showNextQuestion() {
   }).length;
   appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
   appState.questionStartTime = Date.now();
+
+  // 苦手モードバナーに問題数を追加表示
+  if (settings.weakOnly && weakPoolCount > 0) {
+    const wb = document.getElementById('weak-only-banner');
+    if (wb) wb.textContent = `🎯 苦手問題モード (${weakPoolCount}問)`;
+  }
 }
 
 // ============================================================
@@ -834,6 +844,12 @@ function setupStudyListeners() {
       // 単一選択: 即回答
       handleAnswer([idx]);
     }
+  });
+
+  document.getElementById('btn-skip').addEventListener('click', () => {
+    // わからない: 空の選択で回答 = 不正解扱い・正解を即表示（通常モードのみ）
+    if (appState.answered || appState.examMode) return;
+    handleAnswer([]);
   });
 
   document.getElementById('explanation-toggle').addEventListener('click', () => {
