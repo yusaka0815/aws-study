@@ -510,9 +510,10 @@ function showStatsScreen() {
         const cls = r.passed ? 'exam-hist-pass' : 'exam-hist-fail';
         const wrongStr = r.wrong != null ? ` ×${r.wrong}` : '';
         const verdict = r.passed ? '✓' : '✗';
+        const timeUpStr = r.timeUp && r.answered != null && r.answered < r.total ? ` (${r.answered}問回答)` : '';
         return `<div class="exam-hist-item">
           <span class="exam-hist-date">${dateStr}</span>
-          <span class="exam-hist-detail">${r.correct}/${r.total}問${wrongStr}</span>
+          <span class="exam-hist-detail">${r.correct}/${r.total}問${wrongStr}${timeUpStr}</span>
           <span class="exam-hist-pct ${cls}">${verdict} ${r.pct}%</span>
         </div>`;
       }).join('');
@@ -655,13 +656,14 @@ function endExamMode(timeUp = false) {
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const passed = pct >= 72;
 
-  // 試験履歴を保存
+  // 試験履歴を保存（total は試験全問数で統一、pct も同じベースで計算済み）
   if (!timeUp || appState.examIndex > 0) {
     appState.userState.examHistory = appState.userState.examHistory ?? [];
     appState.userState.examHistory.push({
       date: new Date().toISOString(),
       examCode: appState.currentExam?.examCode ?? '?',
-      total: appState.examIndex, // 実際に回答した問題数
+      total,  // 試験全問数（pct の分母と一致させる）
+      answered: appState.examIndex, // 実際に回答した問題数（timeUp 時は total 未満）
       correct,
       wrong: appState.examWrong.length,
       pct,

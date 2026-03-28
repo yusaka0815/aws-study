@@ -145,6 +145,7 @@ export function importBackup(jsonString) {
         examCode: entry.examCode,
         date: typeof entry.date === 'string' ? entry.date : '',
         total: Number(entry.total) || 0,
+        answered: entry.answered != null ? Number(entry.answered) : undefined,
         correct: Number(entry.correct) || 0,
         wrong: Number(entry.wrong) || 0,
         pct: Number(entry.pct) || 0,
