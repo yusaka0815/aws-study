@@ -953,6 +953,37 @@ function setupKeyboardShortcuts() {
 }
 
 // ============================================================
+// スワイプジェスチャー（モバイル）
+// ============================================================
+function setupSwipeGestures() {
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  const studyContent = document.querySelector('.study-content');
+  if (!studyContent) return;
+
+  studyContent.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  studyContent.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+
+    // 横スワイプ（縦移動が横移動の半分未満）かつ一定距離以上
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+
+    // 左スワイプ = 次の問題（回答済みのみ）
+    if (dx < 0 && appState.answered) {
+      appState._autoNextCancelled = true;
+      showNextQuestion();
+      studyContent.scrollTo(0, 0);
+    }
+  }, { passive: true });
+}
+
+// ============================================================
 // 試験別進捗マップ（ホーム画面表示用）
 // ============================================================
 function buildProgressMap() {
@@ -1000,6 +1031,7 @@ async function init() {
   setupNavigationListeners();
   setupSettingsListeners();
   setupKeyboardShortcuts();
+  setupSwipeGestures();
   renderHomeScreen();
   showScreen('screen-select');
 
