@@ -1267,6 +1267,28 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   margin-top: 8px;
 }
 
+/* アクティビティカレンダー（35日間ヒートマップ） */
+.activity-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 12px;
+}
+.cal-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  cursor: default;
+  transition: transform 0.1s;
+}
+.cal-cell:hover { transform: scale(1.15); }
+.cal-int-1 { background: rgba(249, 115, 22, 0.25); border-color: rgba(249, 115, 22, 0.4); }
+.cal-int-2 { background: rgba(249, 115, 22, 0.50); border-color: rgba(249, 115, 22, 0.6); }
+.cal-int-3 { background: rgba(249, 115, 22, 0.75); border-color: rgba(249, 115, 22, 0.8); }
+.cal-int-4 { background: var(--primary); border-color: var(--primary-dark); }
+.cal-today { outline: 2px solid var(--primary); outline-offset: 1px; }
+
 /* ============================================================
    設定画面
    ============================================================ */

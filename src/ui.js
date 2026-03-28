@@ -423,6 +423,15 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
     }
   }
 
+  // 35日間アクティビティカレンダー
+  const calEl = document.getElementById('activity-calendar');
+  if (calEl && Array.isArray(stats.calendarData)) {
+    calEl.innerHTML = stats.calendarData.map(({ date, count, isToday }) => {
+      const intensity = count === 0 ? 0 : count < 5 ? 1 : count < 15 ? 2 : count < 30 ? 3 : 4;
+      return `<div class="cal-cell cal-int-${intensity}${isToday ? ' cal-today' : ''}" title="${date}: ${count}問"></div>`;
+    }).join('');
+  }
+
   // 苦手問題ドリルボタン
   const drillBtn = document.getElementById('btn-drill-weak');
   if (drillBtn) {

@@ -492,11 +492,12 @@ function showStatsScreen() {
         const d = new Date(r.date);
         const dateStr = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         const cls = r.passed ? 'exam-hist-pass' : 'exam-hist-fail';
-        const wrongStr = r.wrong != null ? ` (×${r.wrong})` : '';
+        const wrongStr = r.wrong != null ? ` ×${r.wrong}` : '';
+        const verdict = r.passed ? '✓' : '✗';
         return `<div class="exam-hist-item">
           <span class="exam-hist-date">${dateStr}</span>
           <span class="exam-hist-detail">${r.correct}/${r.total}問${wrongStr}</span>
-          <span class="exam-hist-pct ${cls}">${r.pct}%</span>
+          <span class="exam-hist-pct ${cls}">${verdict} ${r.pct}%</span>
         </div>`;
       }).join('');
     } else {

@@ -254,6 +254,15 @@ export function getStats(questions, userState) {
     weeklyLog.push({ date: dateStr, count: userState.dailyLog?.[dateStr] ?? 0, label });
   }
 
+  // 過去35日のアクティビティ（カレンダーヒートマップ用）
+  const calendarData = [];
+  for (let i = 34; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    calendarData.push({ date: dateStr, count: userState.dailyLog?.[dateStr] ?? 0, isToday: i === 0 });
+  }
+
   return {
     total,
     answered,
@@ -267,6 +276,7 @@ export function getStats(questions, userState) {
     bookmarkCount,
     categoryList,
     weeklyLog,
+    calendarData,
     worstQuestions,
   };
 }
