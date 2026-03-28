@@ -299,6 +299,9 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt)
 export function updateMultiSelectUI(selectedCount, requiredCount) {
   document.getElementById('multi-count').textContent = selectedCount;
   document.getElementById('multi-required').textContent = requiredCount;
+  const area = document.getElementById('multi-submit-area');
+  // 必要数ちょうど選択したとき「提出可能」スタイルを適用
+  area?.classList.toggle('multi-ready', selectedCount === requiredCount);
 }
 
 /**
@@ -323,7 +326,7 @@ export function toggleExplanation(explanation) {
 // 統計画面
 // ============================================================
 
-export function renderStats(examCode, examName, stats) {
+export function renderStats(examCode, examName, stats, onDrillCategory = null) {
   const nameEl = document.getElementById('stats-exam-name');
   nameEl.innerHTML = `<span class="exam-code" data-exam-badge="${examCode}">${examCode}</span> ${examName}`;
 
@@ -433,8 +436,13 @@ export function renderStats(examCode, examName, stats) {
       <div class="cat-bar-bg">
         <div class="cat-bar ${barClass}" style="width: ${barWidth}%"></div>
       </div>
-      <div class="cat-sub">${cat.answered} / ${cat.total} 問回答</div>
+      <div class="cat-sub">${cat.answered} / ${cat.total} 問回答　<span class="cat-drill-hint">タップして絞り込み →</span></div>
     `;
+
+    if (onDrillCategory) {
+      item.addEventListener('click', () => onDrillCategory(cat.name));
+    }
+
     catList.appendChild(item);
   });
 }

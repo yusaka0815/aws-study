@@ -90,6 +90,7 @@ const appState = {
   pendingSelections: new Set(), // 複数選択問題の選択中インデックス
   sessionAnswered: 0,       // 今セッションで回答した問題数
   sessionCorrect: 0,        // 今セッションで正解した問題数
+  categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
 };
 
 // ============================================================
@@ -180,9 +181,10 @@ async function selectExam(examCode) {
   const examMeta = EXAM_LIST.find(e => e.examCode === examCode);
   if (!examMeta) return;
 
-  // セッションカウンターをリセット
+  // セッションカウンターとカテゴリフィルターをリセット
   appState.sessionAnswered = 0;
   appState.sessionCorrect = 0;
+  appState.categoryFilter = null;
   updateSessionBadge();
 
   // 即座に画面遷移（ローディング感を排除）
@@ -218,15 +220,29 @@ function showNextQuestion() {
 
   appState.pendingSelections = new Set();
 
-  // 苦手問題モード: 正答率 < 60% または未回答の問題に絞る
+  // カテゴリフィルター
   let pool = currentExam.questions;
+  if (appState.categoryFilter) {
+    const filtered = pool.filter(q => q.category === appState.categoryFilter);
+    pool = filtered.length > 0 ? filtered : pool; // 一致なしはフォールバック
+  }
+
+  // 苦手問題モード: 正答率 < 60% または未回答の問題に絞る
   if (settings.weakOnly) {
-    const weak = currentExam.questions.filter(q => {
+    const weak = pool.filter(q => {
       const s = userState.questions[q.id];
       if (!s || s.attempts === 0) return true; // 未回答は含める
       return (s.correct / s.attempts) < 0.6;
     });
-    pool = weak.length > 0 ? weak : currentExam.questions; // 苦手問題ゼロなら全問
+    pool = weak.length > 0 ? weak : pool; // 苦手問題ゼロなら現在のプールを維持
+  }
+
+  // カテゴリバナーを更新
+  const catBanner = document.getElementById('category-banner');
+  const catBannerName = document.getElementById('category-banner-name');
+  if (catBanner && catBannerName) {
+    catBannerName.textContent = appState.categoryFilter ?? '';
+    catBanner.classList.toggle('hidden', !appState.categoryFilter);
   }
 
   const q = getNextQuestion(pool, userState, lastQuestionId);
@@ -338,7 +354,12 @@ function showStatsScreen() {
     return;
   }
   const stats = getStats(appState.currentExam.questions, appState.userState);
-  renderStats(appState.currentExam.examCode, appState.currentExam.examName, stats);
+  renderStats(appState.currentExam.examCode, appState.currentExam.examName, stats, (category) => {
+    appState.categoryFilter = category;
+    appState._triggerNextQuestion = true;
+    showToast(`📂 ${category} モード`, 'info');
+    history.back(); // 統計画面から問題画面に戻る
+  });
   navigateTo('screen-stats');
 }
 
@@ -415,6 +436,7 @@ function setupNavigationListeners() {
     saveSetting('weak-only', true);
     document.getElementById('toggle-weak-only').checked = true;
     showToast('苦手問題モード ON', 'info');
+    appState._triggerNextQuestion = true;
     history.back(); // 統計画面から問題画面に戻る
   });
 
@@ -430,6 +452,13 @@ function setupNavigationListeners() {
     if (code) selectExam(code);
   });
 
+  // カテゴリフィルター解除ボタン
+  document.getElementById('btn-clear-category').addEventListener('click', () => {
+    appState.categoryFilter = null;
+    showToast('カテゴリフィルター解除', 'info');
+    showNextQuestion();
+  });
+
   // ロゴタップ → ホーム画面
   document.querySelectorAll('.app-logo').forEach(el => {
     el.addEventListener('click', () => {
@@ -442,9 +471,13 @@ function setupNavigationListeners() {
   window.addEventListener('popstate', e => {
     const screenId = e.state?.screenId ?? 'screen-select';
     showScreen(screenId);
-    // 試験選択画面に戻る際は進捗バッジを最新状態に更新
     if (screenId === 'screen-select') {
+      // 試験選択画面に戻る際は進捗バッジを最新状態に更新
       renderHomeScreen();
+    } else if (screenId === 'screen-study' && appState.currentExam && appState._triggerNextQuestion) {
+      // カテゴリ絞り込みなどで次の問題を即座に出題
+      appState._triggerNextQuestion = false;
+      showNextQuestion();
     }
   });
 }
