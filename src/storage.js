@@ -14,6 +14,7 @@ export function createInitialState() {
     version: STATE_VERSION,
     currentExam: null,
     questions: {},
+    dailyLog: {}, // { 'YYYY-MM-DD': 回答数 }
   };
 }
 
@@ -31,11 +32,12 @@ export function loadState() {
     if (!parsed || typeof parsed !== 'object') return createInitialState();
     if (parsed.version !== STATE_VERSION) return createInitialState();
 
-    // 必須フィールドの保証
+    // 必須フィールドの保証（dailyLog は後から追加されたので undefined でも正常）
     return {
       version: parsed.version || STATE_VERSION,
       currentExam: parsed.currentExam || null,
       questions: parsed.questions || {},
+      dailyLog: (parsed.dailyLog && typeof parsed.dailyLog === 'object') ? parsed.dailyLog : {},
     };
   } catch {
     return createInitialState();
@@ -103,6 +105,7 @@ export function importBackup(jsonString) {
     version: STATE_VERSION,
     currentExam: typeof parsed.currentExam === 'string' ? parsed.currentExam : null,
     questions: {},
+    dailyLog: {},
   };
 
   for (const [qId, qData] of Object.entries(parsed.questions)) {
@@ -118,6 +121,15 @@ export function importBackup(jsonString) {
       lastAnsweredAt: Number(qData.lastAnsweredAt) || 0,
       nextReviewAt: Number(qData.nextReviewAt) || 0,
     };
+  }
+
+  // dailyLog の復元（文字列キー・数値バリューのみ）
+  if (parsed.dailyLog && typeof parsed.dailyLog === 'object') {
+    for (const [date, count] of Object.entries(parsed.dailyLog)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date) && typeof count === 'number') {
+        safeState.dailyLog[date] = count;
+      }
+    }
   }
 
   return safeState;

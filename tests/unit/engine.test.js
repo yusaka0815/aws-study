@@ -13,6 +13,7 @@ import {
   getNextQuestion,
   updateQuestionState,
   getStats,
+  getTodayStats,
   isAnswerCorrect,
 } from '../../src/engine.js';
 
@@ -351,6 +352,65 @@ describe('getStats', () => {
     const stats = getStats(questions, userState);
     expect(stats.answered).toBe(0); // NaN attempts はゼロ扱いで未回答
     expect(stats.accuracy).not.toBeNaN();
+  });
+});
+
+// ============================================================
+// getTodayStats: 今日の統計とストリーク
+// ============================================================
+describe('getTodayStats', () => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  it('dailyLog が未定義でも todayCount=0, streak=0 を返す', () => {
+    const result = getTodayStats({ questions: {} });
+    expect(result).toEqual({ todayCount: 0, streak: 0 });
+  });
+
+  it('今日の回答数を正しく返す', () => {
+    const state = { dailyLog: { [today]: 7 } };
+    expect(getTodayStats(state).todayCount).toBe(7);
+  });
+
+  it('今日だけ回答: streak=1', () => {
+    const state = { dailyLog: { [today]: 3 } };
+    expect(getTodayStats(state).streak).toBe(1);
+  });
+
+  it('dailyLog が空: streak=0', () => {
+    expect(getTodayStats({ dailyLog: {} }).streak).toBe(0);
+  });
+
+  it('連続2日: streak=2', () => {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const state = { dailyLog: { [today]: 5, [yesterday]: 3 } };
+    expect(getTodayStats(state).streak).toBe(2);
+  });
+});
+
+// ============================================================
+// getStats: weeklyLog
+// ============================================================
+describe('getStats / weeklyLog', () => {
+  const questions = [makeQuestion('Q-001', 'S3')];
+
+  it('weeklyLog は7件のエントリを返す', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.weeklyLog).toHaveLength(7);
+  });
+
+  it('今日のエントリのラベルは「今日」', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.weeklyLog.at(-1).label).toBe('今日');
+  });
+
+  it('dailyLog の値が weeklyLog に反映される', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const stats = getStats(questions, { questions: {}, dailyLog: { [today]: 12 } });
+    expect(stats.weeklyLog.at(-1).count).toBe(12);
+  });
+
+  it('dailyLog が undefined でもクラッシュしない', () => {
+    expect(() => getStats(questions, { questions: {} })).not.toThrow();
   });
 });
 

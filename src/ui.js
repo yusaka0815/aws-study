@@ -17,11 +17,11 @@ export function showScreen(screenId) {
 // 試験選択画面
 // ============================================================
 
-export function renderExamSelect(exams, onSelect, progressMap = {}) {
+export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats = null) {
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
-  // progressMap は { counts, accuracyMap } 形式を想定（後方互換で plain object も受け付ける）
+  // progressMap は { counts, accuracyMap } 形式を想定
   const counts = progressMap.counts ?? progressMap;
   const accuracyMap = progressMap.accuracyMap ?? {};
 
@@ -30,6 +30,12 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
     const total = exam.questionCount ?? 0;
     const pct = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
     const accuracy = accuracyMap[exam.examCode] ?? null;
+
+    // 正答率に応じたカラークラス
+    let accuracyClass = '';
+    if (accuracy !== null) {
+      accuracyClass = accuracy >= 80 ? 'acc-good' : accuracy >= 60 ? 'acc-mid' : 'acc-bad';
+    }
 
     const btn = document.createElement('button');
     btn.className = 'exam-card';
@@ -40,7 +46,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
       </div>
       <div class="exam-card-meta">
         ${answered > 0
-          ? `<span class="exam-progress">${answered}問 (${pct}%) <span class="exam-accuracy">${accuracy}%正解</span></span>`
+          ? `<span class="exam-progress">${answered}問 (${pct}%)<span class="exam-accuracy ${accuracyClass}"> ${accuracy}%正解</span></span>`
           : '<span class="exam-arrow">→</span>'}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
@@ -51,11 +57,18 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
     container.appendChild(btn);
   });
 
-  // 全体進捗サマリー更新
-  const total = Object.values(progressMap).reduce((s, n) => s + n, 0);
+  // 全体進捗サマリー
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const statsEl = document.getElementById('select-stats');
   if (statsEl) {
-    statsEl.textContent = total > 0 ? `🎯 累計 ${total} 問回答済み` : 'さあ、学習を始めよう！';
+    if (todayStats && (todayStats.todayCount > 0 || todayStats.streak > 0)) {
+      const streakText = todayStats.streak > 1 ? ` 🔥 ${todayStats.streak}日連続` : '';
+      statsEl.innerHTML = `今日 <strong>${todayStats.todayCount}</strong> 問回答${streakText}　累計 ${total} 問`;
+    } else if (total > 0) {
+      statsEl.textContent = `累計 ${total} 問回答済み`;
+    } else {
+      statsEl.textContent = 'さあ、学習を始めよう！';
+    }
   }
 }
 
@@ -65,8 +78,13 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
 
 /**
  * 問題を表示（回答前の状態）
+ * @param {object} question
+ * @param {number} questionIndex - 回答済み問題数
+ * @param {number} totalQuestions
+ * @param {boolean} weakOnly
+ * @param {object|null} qState - この問題の過去の回答履歴
  */
-export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false) {
+export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false, qState = null) {
   // プログレスバー
   const pct = totalQuestions > 0 ? Math.round((questionIndex / totalQuestions) * 100) : 0;
   document.getElementById('progress-fill').style.width = `${pct}%`;
@@ -76,13 +94,21 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   const weakBanner = document.getElementById('weak-only-banner');
   if (weakBanner) weakBanner.classList.toggle('hidden', !weakOnly);
 
-  // カテゴリ・難易度・問題タイプ
+  // カテゴリ・難易度・問題タイプ・個人成績チップ
   const diffStars = '★'.repeat(question.difficulty) + '☆'.repeat(3 - question.difficulty);
   const typeTag = question.answers.length > 1
     ? `<span class="multi-badge">${question.answers.length}つ選択</span>`
     : '';
+
+  let historyChip = '';
+  if (qState && qState.attempts > 0) {
+    const acc = Math.round((qState.correct / qState.attempts) * 100);
+    const chipClass = acc >= 80 ? 'chip-good' : acc >= 60 ? 'chip-mid' : 'chip-bad';
+    historyChip = `<span class="history-chip ${chipClass}">${qState.attempts}回 ${acc}%</span>`;
+  }
+
   document.getElementById('question-meta').innerHTML =
-    `<span>${question.category}  ${diffStars}</span>${typeTag}`;
+    `<span>${question.category}  ${diffStars}</span>${typeTag}${historyChip}`;
 
   // 問題文
   document.getElementById('question-text').textContent = question.question;
@@ -234,6 +260,25 @@ export function renderStats(examCode, examName, stats) {
       <div class="stat-label">苦手問題数</div>
     </div>
   `;
+
+  // 週間チャート
+  const weeklyEl = document.getElementById('weekly-chart');
+  if (weeklyEl && stats.weeklyLog) {
+    const maxCount = Math.max(...stats.weeklyLog.map(d => d.count), 1);
+    weeklyEl.innerHTML = stats.weeklyLog.map(day => {
+      const barH = Math.round((day.count / maxCount) * 100);
+      const isToday = day.label === '今日';
+      return `
+        <div class="weekly-col">
+          <div class="weekly-bar-wrap">
+            <div class="weekly-bar ${isToday ? 'weekly-bar-today' : ''}" style="height:${barH}%"></div>
+          </div>
+          <div class="weekly-count">${day.count > 0 ? day.count : ''}</div>
+          <div class="weekly-label ${isToday ? 'weekly-label-today' : ''}">${day.label}</div>
+        </div>
+      `;
+    }).join('');
+  }
 
   // 苦手問題ドリルボタン
   const drillBtn = document.getElementById('btn-drill-weak');

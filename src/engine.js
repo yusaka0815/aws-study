@@ -122,6 +122,29 @@ export function updateQuestionState(qState, isCorrect, now) {
 }
 
 /**
+ * 今日の学習統計とストリーク
+ */
+export function getTodayStats(userState) {
+  const today = new Date().toISOString().slice(0, 10);
+  const todayCount = userState.dailyLog?.[today] ?? 0;
+
+  // 連続学習日数（今日から遡る）
+  let streak = 0;
+  const d = new Date();
+  for (let i = 0; i < 365; i++) {
+    const dateStr = d.toISOString().slice(0, 10);
+    if ((userState.dailyLog?.[dateStr] ?? 0) > 0) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return { todayCount, streak };
+}
+
+/**
  * 学習統計の計算
  */
 export function getStats(questions, userState) {
@@ -152,7 +175,7 @@ export function getStats(questions, userState) {
 
   const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
 
-  // カテゴリ別正答率（降順でソート）
+  // カテゴリ別正答率（正答率昇順でソート）
   const categoryList = Object.entries(categoryStats)
     .map(([name, stat]) => ({
       name,
@@ -169,6 +192,16 @@ export function getStats(questions, userState) {
     return (safeInt(s.correct) / safeInt(s.attempts)) < 0.6;
   }).length;
 
+  // 過去7日の回答数（週間チャート用）
+  const weeklyLog = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const label = i === 0 ? '今日' : `${d.getMonth() + 1}/${d.getDate()}`;
+    weeklyLog.push({ date: dateStr, count: userState.dailyLog?.[dateStr] ?? 0, label });
+  }
+
   return {
     total,
     answered,
@@ -178,6 +211,7 @@ export function getStats(questions, userState) {
     accuracy,
     weakCount,
     categoryList,
+    weeklyLog,
   };
 }
 

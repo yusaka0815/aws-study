@@ -257,10 +257,13 @@ body {
 }
 
 .exam-accuracy {
-  color: var(--text-sub);
-  font-weight: 500;
-  margin-left: 6px;
+  font-weight: 600;
+  margin-left: 4px;
 }
+
+.exam-accuracy.acc-good { color: var(--success); }
+.exam-accuracy.acc-mid  { color: #f59e0b; }
+.exam-accuracy.acc-bad  { color: var(--danger); }
 
 .exam-progress {
   font-size: 12px;
@@ -367,6 +370,19 @@ body {
   border-radius: 6px;
   letter-spacing: 0;
 }
+
+/* この問題の個人成績チップ */
+.history-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: auto;
+}
+
+.chip-good { color: var(--success); background: var(--success-dim); }
+.chip-mid  { color: #f59e0b;        background: rgba(245,158,11,0.15); }
+.chip-bad  { color: var(--danger);  background: var(--danger-dim); }
 
 #question-text {
   font-size: 16px;
@@ -710,6 +726,66 @@ body {
   font-size: 14px;
   text-align: center;
   padding: 20px;
+}
+
+/* 週間チャート */
+.weekly-chart {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 12px 10px;
+  margin-bottom: 4px;
+  height: 100px;
+}
+
+.weekly-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: 2px;
+}
+
+.weekly-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.weekly-bar {
+  width: 100%;
+  background: var(--border);
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+  transition: height 0.4s ease;
+}
+
+.weekly-bar-today {
+  background: var(--primary);
+}
+
+.weekly-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  min-height: 14px;
+  line-height: 14px;
+}
+
+.weekly-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.weekly-label-today {
+  color: var(--primary);
+  font-weight: 700;
 }
 
 /* ============================================================

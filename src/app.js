@@ -8,7 +8,7 @@
  * - appState は実行時のみ存在するミュータブルな状態オブジェクト
  */
 
-import { getNextQuestion, updateQuestionState, getStats, isAnswerCorrect } from './engine.js';
+import { getNextQuestion, updateQuestionState, getStats, isAnswerCorrect, getTodayStats } from './engine.js';
 import { loadState, saveState, exportBackup, importBackup, resetState } from './storage.js';
 import {
   showScreen, renderExamSelect, renderQuestion, renderResult,
@@ -237,7 +237,8 @@ function showNextQuestion() {
   const answeredCount = Object.values(userState.questions)
     .filter(s => s.attempts > 0).length;
 
-  renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly);
+  const qState = userState.questions[q.id] ?? null;
+  renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState);
 }
 
 // ============================================================
@@ -258,6 +259,12 @@ function handleAnswer(selectedIndices) {
 
   appState.userState.questions[appState.currentQuestion.id] =
     updateQuestionState(prev, isCorrect, now);
+
+  // デイリーログを更新
+  const today = new Date().toISOString().slice(0, 10);
+  appState.userState.dailyLog = appState.userState.dailyLog ?? {};
+  appState.userState.dailyLog[today] = (appState.userState.dailyLog[today] ?? 0) + 1;
+
   saveState(appState.userState);
 
   if (settings.sound) {
@@ -349,7 +356,7 @@ function setupStudyListeners() {
 /** 画面間ナビゲーション（試験変更・統計・設定・戻る） */
 function setupNavigationListeners() {
   document.getElementById('btn-change-exam').addEventListener('click', () => {
-    renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
+    renderHomeScreen();
     navigateTo('screen-select');
   });
 
@@ -378,7 +385,7 @@ function setupNavigationListeners() {
   // ロゴタップ → ホーム画面
   document.querySelectorAll('.app-logo').forEach(el => {
     el.addEventListener('click', () => {
-      renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
+      renderHomeScreen();
       navigateTo('screen-select');
     });
   });
@@ -389,7 +396,7 @@ function setupNavigationListeners() {
     showScreen(screenId);
     // 試験選択画面に戻る際は進捗バッジを最新状態に更新
     if (screenId === 'screen-select') {
-      renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
+      renderHomeScreen();
     }
   });
 }
@@ -527,6 +534,15 @@ function buildProgressMap() {
 }
 
 // ============================================================
+// ホーム画面の描画（試験一覧 + 今日の統計）
+// ============================================================
+function renderHomeScreen() {
+  const pm = buildProgressMap();
+  const ts = getTodayStats(appState.userState);
+  renderExamSelect(EXAM_LIST, selectExam, pm, ts);
+}
+
+// ============================================================
 // 初期化
 // ============================================================
 async function init() {
@@ -537,7 +553,7 @@ async function init() {
   setupNavigationListeners();
   setupSettingsListeners();
   setupKeyboardShortcuts();
-  renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
+  renderHomeScreen();
   showScreen('screen-select');
 
   // スリープ防止: 設定が有効なら起動時に取得、ページ再表示時に再取得
