@@ -527,6 +527,31 @@ function showExamModeModal() {
   const overlay = document.getElementById('exam-modal-overlay');
   const content = document.getElementById('exam-modal-content');
 
+  // 試験中: 継続 or 終了を選べるメニューを表示
+  if (appState.examMode) {
+    const answered = appState.examIndex;
+    const total = appState.examQuestions.length;
+    const min = Math.floor(appState.examTimeLeft / 60).toString().padStart(2, '0');
+    const sec = (appState.examTimeLeft % 60).toString().padStart(2, '0');
+    content.innerHTML = `
+      <h3>📝 試験中 (問${answered}/${total})</h3>
+      <p style="margin-bottom:8px;">残り時間: ${min}:${sec}</p>
+      <div class="exam-modal-actions">
+        <button class="btn-primary" id="exam-modal-resume">試験を続ける</button>
+        <button class="btn-secondary" id="exam-modal-end" style="color:var(--danger);border-color:var(--danger);">終了して結果を見る</button>
+      </div>
+    `;
+    overlay.classList.remove('hidden');
+    document.getElementById('exam-modal-resume').addEventListener('click', () => {
+      overlay.classList.add('hidden');
+    });
+    document.getElementById('exam-modal-end').addEventListener('click', () => {
+      overlay.classList.add('hidden');
+      endExamMode(false);
+    });
+    return;
+  }
+
   let selectedCount = 20;
   const options = [10, 20, 30, 65];
 
@@ -541,7 +566,7 @@ function showExamModeModal() {
       <p style="margin-bottom:8px;font-size:13px;">目安時間: ${timeMins}分　合格ライン: 72%</p>
       <div class="exam-modal-actions">
         <button class="btn-primary" id="exam-modal-start">開始する</button>
-        <button class="btn-secondary" id="exam-modal-cancel" style="color:var(--text-sub);background:transparent;border-color:var(--border);">キャンセル</button>
+        <button class="btn-secondary" id="exam-modal-cancel" style="color:var(--text-secondary);background:transparent;border-color:var(--border);">キャンセル</button>
       </div>
     `;
 
