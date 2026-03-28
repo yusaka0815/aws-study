@@ -61,11 +61,15 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
 /**
  * 問題を表示（回答前の状態）
  */
-export function renderQuestion(question, questionIndex, totalQuestions) {
+export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false) {
   // プログレスバー
   const pct = totalQuestions > 0 ? Math.round((questionIndex / totalQuestions) * 100) : 0;
   document.getElementById('progress-fill').style.width = `${pct}%`;
   document.getElementById('progress-text').textContent = `${questionIndex} / ${totalQuestions}`;
+
+  // 苦手問題モードバナー
+  const weakBanner = document.getElementById('weak-only-banner');
+  if (weakBanner) weakBanner.classList.toggle('hidden', !weakOnly);
 
   // カテゴリ・難易度・問題タイプ
   const diffStars = '★'.repeat(question.difficulty) + '☆'.repeat(3 - question.difficulty);

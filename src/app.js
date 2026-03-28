@@ -107,6 +107,7 @@ function saveSetting(key, value) {
 const settings = {
   sound: loadSetting('sound', false),
   wakeLock: loadSetting('wake-lock', false),
+  weakOnly: loadSetting('weak-only', false),
 };
 
 // ============================================================
@@ -213,7 +214,18 @@ function showNextQuestion() {
 
   appState.pendingSelections = new Set();
 
-  const q = getNextQuestion(currentExam.questions, userState, lastQuestionId);
+  // 苦手問題モード: 正答率 < 60% または未回答の問題に絞る
+  let pool = currentExam.questions;
+  if (settings.weakOnly) {
+    const weak = currentExam.questions.filter(q => {
+      const s = userState.questions[q.id];
+      if (!s || s.attempts === 0) return true; // 未回答は含める
+      return (s.correct / s.attempts) < 0.6;
+    });
+    pool = weak.length > 0 ? weak : currentExam.questions; // 苦手問題ゼロなら全問
+  }
+
+  const q = getNextQuestion(pool, userState, lastQuestionId);
   if (!q) {
     showToast('問題がありません', 'error');
     return;
@@ -225,7 +237,7 @@ function showNextQuestion() {
   const answeredCount = Object.values(userState.questions)
     .filter(s => s.attempts > 0).length;
 
-  renderQuestion(q, answeredCount, currentExam.questions.length);
+  renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly);
 }
 
 // ============================================================
@@ -395,6 +407,16 @@ function setupSettingsListeners() {
   toggleSound.addEventListener('change', () => {
     settings.sound = toggleSound.checked;
     saveSetting('sound', settings.sound);
+  });
+
+  // 苦手問題モードトグル
+  const toggleWeakOnly = document.getElementById('toggle-weak-only');
+  toggleWeakOnly.checked = settings.weakOnly;
+  toggleWeakOnly.addEventListener('change', () => {
+    settings.weakOnly = toggleWeakOnly.checked;
+    saveSetting('weak-only', settings.weakOnly);
+    const msg = settings.weakOnly ? '苦手問題モード ON' : '苦手問題モード OFF';
+    showToast(msg, 'info');
   });
 
   document.getElementById('btn-export').addEventListener('click', () => {
