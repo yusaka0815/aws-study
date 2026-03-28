@@ -268,7 +268,39 @@ body {
 
 .exam-result-detail {
   font-size: 13px;
-  color: var(--text-sub);
+  color: var(--text-secondary);
+}
+
+.exam-cat-breakdown {
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.exam-cat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.exam-cat-name {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.exam-cat-pct {
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 /* ============================================================

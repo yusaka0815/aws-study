@@ -309,7 +309,12 @@ function showNextQuestion() {
   const catBanner = document.getElementById('category-banner');
   const catBannerName = document.getElementById('category-banner-name');
   if (catBanner && catBannerName) {
-    catBannerName.textContent = appState.categoryFilter ?? '';
+    if (appState.categoryFilter) {
+      const catTotal = currentExam.questions.filter(q => q.category === appState.categoryFilter).length;
+      catBannerName.textContent = `${appState.categoryFilter} (${catTotal}問)`;
+    } else {
+      catBannerName.textContent = '';
+    }
     catBanner.classList.toggle('hidden', !appState.categoryFilter);
   }
 
@@ -673,6 +678,26 @@ function endExamMode(timeUp = false) {
     ? `<button class="btn-secondary" id="exam-result-retry">× 間違えた ${wrongCount} 問を再挑戦</button>`
     : '';
 
+  // カテゴリ別正誤集計（回答済みのみ）
+  const wrongIds = new Set(appState.examWrong.map(q => q.id));
+  const catStats = {};
+  for (let i = 0; i < appState.examIndex; i++) {
+    const q = appState.examQuestions[i];
+    if (!catStats[q.category]) catStats[q.category] = { correct: 0, wrong: 0 };
+    if (wrongIds.has(q.id)) catStats[q.category].wrong++;
+    else catStats[q.category].correct++;
+  }
+  const catRows = Object.entries(catStats)
+    .map(([name, s]) => ({ name, correct: s.correct, total: s.correct + s.wrong, pct: Math.round(s.correct / (s.correct + s.wrong) * 100) }))
+    .sort((a, b) => a.pct - b.pct)
+    .map(c => `<div class="exam-cat-row">
+      <span class="exam-cat-name">${c.name}</span>
+      <span class="exam-cat-pct ${c.pct >= 72 ? 'acc-good' : 'acc-bad'}">${c.correct}/${c.total}　${c.pct}%</span>
+    </div>`).join('');
+  const catSection = catRows
+    ? `<div class="exam-cat-breakdown">${catRows}</div>`
+    : '';
+
   content.innerHTML = `
     <h3>📝 試験結果</h3>
     ${timeUp ? '<p style="color:var(--danger);font-weight:700;">⏰ 時間切れ</p>' : ''}
@@ -681,6 +706,7 @@ function endExamMode(timeUp = false) {
       <div class="exam-result-verdict ${passed ? 'pass' : 'fail'}">${passed ? '✓ 合格ライン達成' : '✗ 不合格'}</div>
       <div class="exam-result-detail">${correct} / ${total} 問正解　合格ライン: 72%</div>
     </div>
+    ${catSection}
     <div class="exam-modal-actions">
       <button class="btn-primary" id="exam-result-close">学習を続ける</button>
       ${wrongBtn}
