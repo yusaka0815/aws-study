@@ -362,9 +362,9 @@ describe('getStats', () => {
 describe('getTodayStats', () => {
   const today = new Date().toISOString().slice(0, 10);
 
-  it('dailyLog が未定義でも todayCount=0, streak=0 を返す', () => {
+  it('dailyLog が未定義でも todayCount=0, streak=0, prevStreak=0 を返す', () => {
     const result = getTodayStats({ questions: {} });
-    expect(result).toEqual({ todayCount: 0, streak: 0 });
+    expect(result).toMatchObject({ todayCount: 0, streak: 0, prevStreak: 0 });
   });
 
   it('今日の回答数を正しく返す', () => {
@@ -385,6 +385,20 @@ describe('getTodayStats', () => {
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     const state = { dailyLog: { [today]: 5, [yesterday]: 3 } };
     expect(getTodayStats(state).streak).toBe(2);
+  });
+
+  it('今日未回答・昨日回答済みの場合 prevStreak=1 (ストリーク危機)', () => {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const state = { dailyLog: { [yesterday]: 5 } };
+    const result = getTodayStats(state);
+    expect(result.todayCount).toBe(0);
+    expect(result.streak).toBe(0);
+    expect(result.prevStreak).toBe(1);
+  });
+
+  it('今日回答済みの場合 prevStreak=0', () => {
+    const state = { dailyLog: { [today]: 3 } };
+    expect(getTodayStats(state).prevStreak).toBe(0);
   });
 });
 
@@ -412,6 +426,22 @@ describe('getStats / weeklyLog', () => {
 
   it('dailyLog が undefined でもクラッシュしない', () => {
     expect(() => getStats(questions, { questions: {} })).not.toThrow();
+  });
+
+  it('calendarData は35件のエントリを返す', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.calendarData).toHaveLength(35);
+  });
+
+  it('calendarData の最後のエントリ isToday=true', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.calendarData.at(-1).isToday).toBe(true);
+  });
+
+  it('calendarData に dailyLog の値が反映される', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const stats = getStats(questions, { questions: {}, dailyLog: { [today]: 42 } });
+    expect(stats.calendarData.at(-1).count).toBe(42);
   });
 });
 
