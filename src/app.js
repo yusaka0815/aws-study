@@ -472,6 +472,34 @@ function showStatsScreen() {
     showToast(`📂 ${category} モード`, 'info');
     history.back(); // 統計画面から問題画面に戻る
   });
+
+  // 模擬試験履歴（現在の試験コードのみ絞り込み）
+  const examCode = appState.currentExam.examCode;
+  const history = (appState.userState.examHistory ?? [])
+    .filter(r => r.examCode === examCode)
+    .slice(-10)  // 最新10件
+    .reverse();  // 新しい順
+
+  const historySection = document.getElementById('exam-history-section');
+  const historyList = document.getElementById('exam-history-list');
+  if (historySection && historyList) {
+    if (history.length > 0) {
+      historySection.classList.remove('hidden');
+      historyList.innerHTML = history.map(r => {
+        const d = new Date(r.date);
+        const dateStr = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const cls = r.passed ? 'exam-hist-pass' : 'exam-hist-fail';
+        return `<div class="exam-hist-item">
+          <span class="exam-hist-date">${dateStr}</span>
+          <span class="exam-hist-detail">${r.correct}/${r.total}問</span>
+          <span class="exam-hist-pct ${cls}">${r.pct}%</span>
+        </div>`;
+      }).join('');
+    } else {
+      historySection.classList.add('hidden');
+    }
+  }
+
   navigateTo('screen-stats');
 }
 
@@ -580,6 +608,24 @@ function endExamMode(timeUp = false) {
   const correct = appState.examCorrect;
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const passed = pct >= 72;
+
+  // 試験履歴を保存
+  if (!timeUp || appState.examIndex > 0) {
+    appState.userState.examHistory = appState.userState.examHistory ?? [];
+    appState.userState.examHistory.push({
+      date: new Date().toISOString(),
+      examCode: appState.currentExam?.examCode ?? '?',
+      total: appState.examIndex, // 実際に回答した問題数
+      correct,
+      pct,
+      passed,
+    });
+    // 最新50件まで保持
+    if (appState.userState.examHistory.length > 50) {
+      appState.userState.examHistory = appState.userState.examHistory.slice(-50);
+    }
+    saveState(appState.userState);
+  }
 
   const overlay = document.getElementById('exam-modal-overlay');
   const content = document.getElementById('exam-modal-content');

@@ -1160,6 +1160,45 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   overflow: hidden;
 }
 
+/* 模擬試験履歴 */
+#exam-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.exam-hist-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.exam-hist-date {
+  color: var(--text-muted);
+  font-size: 11px;
+  flex-shrink: 0;
+  width: 72px;
+}
+
+.exam-hist-detail {
+  color: var(--text-sub);
+  flex: 1;
+}
+
+.exam-hist-pct {
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.exam-hist-pass { color: var(--success); }
+.exam-hist-fail { color: var(--danger); }
+
 /* 週間チャート */
 .weekly-chart {
   display: flex;
