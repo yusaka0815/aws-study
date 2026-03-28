@@ -1215,8 +1215,8 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 
 .readiness-high { color: var(--success); }
 .readiness-high.readiness-bar { background: var(--success); }
-.readiness-mid  { color: #22c55e; }
-.readiness-mid.readiness-bar  { background: #22c55e; }
+.readiness-mid  { color: #4ade80; }
+.readiness-mid.readiness-bar  { background: #4ade80; }
 .readiness-low  { color: #f59e0b; }
 .readiness-low.readiness-bar  { background: #f59e0b; }
 .readiness-start { color: var(--text-muted); }
@@ -2082,7 +2082,7 @@ button.settings-item {
     top: calc(56px + env(safe-area-inset-top));
   }
   .study-content {
-    padding-bottom: max(88px, calc(68px + env(safe-area-inset-bottom)));
+    padding-bottom: max(88px, calc(74px + env(safe-area-inset-bottom)));
   }
 }
 
