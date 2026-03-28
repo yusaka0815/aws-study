@@ -406,10 +406,13 @@ body {
    ============================================================ */
 .study-content {
   flex: 1;
+  min-height: 0; /* iOS Safari: flex子要素のスクロール修正 */
   padding: 16px 16px 88px; /* 下部はFABが被らないよう余白確保 */
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* プログレスバー */
@@ -756,11 +759,13 @@ body {
    ============================================================ */
 .stats-content {
   flex: 1;
+  min-height: 0; /* iOS Safari: flex子要素のスクロール修正 */
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 #stats-exam-name {
@@ -1025,16 +1030,26 @@ body {
   font-weight: 700;
 }
 
+.weekly-streak-text {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 8px;
+}
+
 /* ============================================================
    設定画面
    ============================================================ */
 .settings-content {
   flex: 1;
+  min-height: 0; /* iOS Safari: flex子要素のスクロール修正 */
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .settings-section {

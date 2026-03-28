@@ -354,7 +354,8 @@ function showStatsScreen() {
     return;
   }
   const stats = getStats(appState.currentExam.questions, appState.userState);
-  renderStats(appState.currentExam.examCode, appState.currentExam.examName, stats, (category) => {
+  const { streak } = getTodayStats(appState.userState);
+  renderStats(appState.currentExam.examCode, appState.currentExam.examName, { ...stats, streak }, (category) => {
     appState.categoryFilter = category;
     appState._triggerNextQuestion = true;
     showToast(`📂 ${category} モード`, 'info');
@@ -407,7 +408,8 @@ function setupStudyListeners() {
     // 回答済み（または単一選択回答後）: 次の問題へ
     if (!appState.answered) return;
     showNextQuestion();
-    document.getElementById('screen-study').scrollTop = 0;
+    // study-content が独自スクロールコンテナになったので両方リセット
+    document.querySelector('.study-content')?.scrollTo(0, 0);
     window.scrollTo(0, 0);
   });
 }
@@ -595,6 +597,18 @@ function setupKeyboardShortcuts() {
     if ((key === 'e' || key === 'E') && appState.answered) {
       const toggleBtn = document.getElementById('explanation-toggle');
       if (!toggleBtn.classList.contains('hidden')) toggleBtn.click();
+      return;
+    }
+
+    // S: 統計画面を開く
+    if (key === 's' || key === 'S') {
+      showStatsScreen();
+      return;
+    }
+
+    // Escape: カテゴリフィルター解除
+    if (key === 'Escape' && appState.categoryFilter) {
+      document.getElementById('btn-clear-category')?.click();
     }
   });
 }

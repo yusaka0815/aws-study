@@ -379,6 +379,17 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
     }).join('');
   }
 
+  // ストリーク表示
+  const streakEl = document.getElementById('weekly-streak');
+  if (streakEl) {
+    if (stats.streak > 0) {
+      streakEl.textContent = `🔥 ${stats.streak}日連続学習中！`;
+      streakEl.classList.remove('hidden');
+    } else {
+      streakEl.classList.add('hidden');
+    }
+  }
+
   // 苦手問題ドリルボタン
   const drillBtn = document.getElementById('btn-drill-weak');
   if (drillBtn) {
