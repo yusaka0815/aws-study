@@ -122,7 +122,12 @@ const settings = {
   wakeLock: loadSetting('wake-lock', false),
   weakOnly: loadSetting('weak-only', false),
   autoNext: loadSetting('auto-next', false),
+  dailyGoal: Number(loadSetting('daily-goal', 30)),
+  fontSize: loadSetting('font-size', 'medium'),
 };
+
+// 文字サイズを即時反映
+document.documentElement.dataset.fontSize = settings.fontSize;
 
 // ============================================================
 // Service Worker 登録・PWA自動更新
@@ -381,15 +386,14 @@ function handleAnswer(selectedIndices) {
   }
 
   // デイリーログを更新
-  const DAILY_GOAL = 30;
   const today = new Date().toISOString().slice(0, 10);
   appState.userState.dailyLog = appState.userState.dailyLog ?? {};
   const prevCount = appState.userState.dailyLog[today] ?? 0;
   appState.userState.dailyLog[today] = prevCount + 1;
 
-  // 今日の目標達成トースト（ちょうど30問目に表示）
-  if (prevCount + 1 === DAILY_GOAL) {
-    setTimeout(() => showToast('🎉 今日の目標 30問 達成！', 'success'), 300);
+  // 今日の目標達成トースト（目標数に達したタイミングで表示）
+  if (prevCount + 1 === settings.dailyGoal) {
+    setTimeout(() => showToast(`🎉 今日の目標 ${settings.dailyGoal}問 達成！`, 'success'), 300);
   }
 
   saveState(appState.userState);
@@ -819,6 +823,33 @@ function setupSettingsListeners() {
     showToast(settings.autoNext ? '自動次へ ON' : '自動次へ OFF', 'info');
   });
 
+  // 1日の目標問題数セグメント
+  function setupSeg(containerId, currentVal, onChange) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.querySelectorAll('.seg-btn').forEach(btn => {
+      if (btn.dataset.val === String(currentVal)) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        onChange(btn.dataset.val);
+      });
+    });
+  }
+
+  setupSeg('seg-daily-goal', settings.dailyGoal, val => {
+    settings.dailyGoal = Number(val);
+    saveSetting('daily-goal', val);
+    showToast(`目標: ${val}問/日`, 'info');
+  });
+
+  setupSeg('seg-font-size', settings.fontSize, val => {
+    settings.fontSize = val;
+    saveSetting('font-size', val);
+    document.documentElement.dataset.fontSize = val;
+    showToast('文字サイズを変更しました', 'info');
+  });
+
   document.getElementById('btn-export').addEventListener('click', () => {
     exportBackup(appState.userState);
     showToast('バックアップをダウンロードしました', 'success');
@@ -955,7 +986,7 @@ function renderHomeScreen() {
   const pm = buildProgressMap();
   const ts = getTodayStats(appState.userState);
   const currentCode = appState.currentExam?.examCode ?? null;
-  renderExamSelect(EXAM_LIST, selectExam, pm, ts, currentCode);
+  renderExamSelect(EXAM_LIST, selectExam, pm, ts, currentCode, settings.dailyGoal);
 }
 
 // ============================================================

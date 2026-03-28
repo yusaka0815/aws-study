@@ -17,7 +17,7 @@ export function showScreen(screenId) {
 // 試験選択画面
 // ============================================================
 
-export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats = null, currentExamCode = null) {
+export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats = null, currentExamCode = null, dailyGoal = 30) {
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
@@ -80,7 +80,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const statsEl = document.getElementById('select-stats');
   const goalEl = document.getElementById('select-today-goal');
-  const DAILY_GOAL = 30;
+  const DAILY_GOAL = dailyGoal;
 
   if (statsEl) {
     if (todayStats && (todayStats.todayCount > 0 || todayStats.streak > 0)) {

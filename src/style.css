@@ -682,7 +682,6 @@ body {
 .chip-bad  { color: var(--danger);  background: var(--danger-dim); }
 
 .question-id {
-  margin-left: auto;
   font-size: 10px;
   font-weight: 500;
   color: var(--text-muted);
@@ -698,6 +697,14 @@ body {
   color: var(--text);
   letter-spacing: 0.01em;
 }
+
+/* 文字サイズ設定（html[data-font-size="*"]） */
+html[data-font-size="small"]  #question-text { font-size: 13px; }
+html[data-font-size="large"]  #question-text { font-size: 18px; }
+html[data-font-size="small"]  .choice-text   { font-size: 13px; }
+html[data-font-size="large"]  .choice-text   { font-size: 16px; }
+html[data-font-size="small"]  #explanation-text { font-size: 12px; }
+html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 
 /* 選択肢 */
 #choices-list {
@@ -1287,6 +1294,41 @@ button.settings-item {
 }
 .settings-item-static:hover, .settings-item-static:active {
   background: transparent;
+}
+
+/* セグメントコントロール（settings内） */
+.settings-item-row {
+  align-items: center;
+  cursor: default;
+}
+.settings-item-row:hover, .settings-item-row:active {
+  background: transparent;
+}
+
+.settings-seg {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.seg-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-sub);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.seg-btn:hover { background: var(--bg-card-hover); color: var(--text); }
+
+.seg-btn.active {
+  border-color: var(--primary);
+  background: var(--primary-dim);
+  color: var(--primary);
 }
 
 .settings-item-icon {
