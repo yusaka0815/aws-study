@@ -447,7 +447,7 @@ body {
   border-radius: var(--radius);
   padding: 16px 20px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
   cursor: pointer;
   text-align: left;
@@ -577,11 +577,6 @@ body {
   min-width: 0;
 }
 
-.exam-arrow {
-  color: var(--text-muted);
-  font-size: 18px;
-  flex-shrink: 0;
-}
 
 .exam-new-label {
   color: var(--primary);
@@ -592,7 +587,6 @@ body {
 .exam-last-studied {
   font-size: 11px;
   color: var(--text-muted);
-  margin-top: 1px;
 }
 
 .exam-accuracy {
