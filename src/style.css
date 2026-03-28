@@ -478,6 +478,18 @@ body {
   flex-shrink: 0;
 }
 
+.exam-new-label {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.exam-last-studied {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
 .exam-accuracy {
   font-weight: 600;
   margin-left: 4px;

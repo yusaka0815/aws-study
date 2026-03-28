@@ -1047,6 +1047,7 @@ function buildProgressMap() {
   const attempts = {};
   const correct = {};
   const due = {};
+  const lastStudied = {};
   const now = Date.now();
   for (const [id, state] of Object.entries(appState.userState?.questions ?? {})) {
     if (state.attempts > 0) {
@@ -1057,13 +1058,16 @@ function buildProgressMap() {
       if (state.nextReviewAt <= now) {
         due[prefix] = (due[prefix] || 0) + 1;
       }
+      if (state.lastAnsweredAt > (lastStudied[prefix] || 0)) {
+        lastStudied[prefix] = state.lastAnsweredAt;
+      }
     }
   }
   const accuracyMap = {};
   for (const code of Object.keys(attempts)) {
     accuracyMap[code] = Math.round((correct[code] / attempts[code]) * 100);
   }
-  return { counts, accuracyMap, dueMap: due };
+  return { counts, accuracyMap, dueMap: due, lastStudied };
 }
 
 // ============================================================

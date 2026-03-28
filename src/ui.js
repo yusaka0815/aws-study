@@ -17,14 +17,29 @@ export function showScreen(screenId) {
 // 試験選択画面
 // ============================================================
 
+function fmtLastStudied(ts) {
+  if (!ts) return null;
+  const ms = Date.now() - ts;
+  const min = Math.floor(ms / 60_000);
+  if (min < 2) return 'たった今';
+  if (min < 60) return `${min}分前`;
+  const hr = Math.floor(ms / 3_600_000);
+  if (hr < 24) return `${hr}時間前`;
+  const days = Math.floor(ms / 86_400_000);
+  if (days === 1) return '昨日';
+  if (days < 7) return `${days}日前`;
+  return `${Math.floor(days / 7)}週間前`;
+}
+
 export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats = null, currentExamCode = null, dailyGoal = 30) {
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
-  // progressMap は { counts, accuracyMap, dueMap } 形式を想定
+  // progressMap は { counts, accuracyMap, dueMap, lastStudied } 形式を想定
   const counts = progressMap.counts ?? progressMap;
   const accuracyMap = progressMap.accuracyMap ?? {};
   const dueMap = progressMap.dueMap ?? {};
+  const lastStudiedMap = progressMap.lastStudied ?? {};
 
   // 復習待ち数が多い順 → 進捗あり順 → 未開始（元の順序）
   const sorted = [...exams].sort((a, b) => {
@@ -42,6 +57,8 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
     const pct = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
     const accuracy = accuracyMap[exam.examCode] ?? null;
     const due = dueMap[exam.examCode] ?? 0;
+    const lastAt = lastStudiedMap[exam.examCode] ?? 0;
+    const lastText = lastAt ? fmtLastStudied(lastAt) : null;
 
     // 正答率に応じたカラークラス
     let accuracyClass = '';
@@ -62,11 +79,12 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       <div class="exam-card-main">
         <span class="exam-code">${exam.examCode}</span>
         <span class="exam-name">${exam.examName}</span>
+        ${lastText ? `<span class="exam-last-studied">${lastText}</span>` : ''}
       </div>
       <div class="exam-card-meta">
         ${answered > 0
           ? `<div class="exam-card-badges">${dueBadge}<span class="exam-progress">${pct}%カバー<span class="exam-accuracy ${accuracyClass}"> ${accuracy}%正解</span></span></div>`
-          : `<div class="exam-card-badges">${dueBadge}<span class="exam-arrow">→</span></div>`}
+          : `<div class="exam-card-badges">${dueBadge}<span class="exam-new-label">はじめる →</span></div>`}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
           : ''}
