@@ -280,6 +280,13 @@ export function getStats(questions, userState) {
   }
   const activeDays = calendarData.filter(d => d.count > 0).length;
 
+  // 予測スコア: 全問題のうち直近の回答が正解だった割合（未回答=不正解として換算）
+  const lastCorrectCount = questions.filter(q => {
+    const s = userState.questions[q.id];
+    return s && (s.recentResults?.length ?? 0) > 0 && s.recentResults.at(-1) === 1;
+  }).length;
+  const predictedScore = total > 0 ? Math.round((lastCorrectCount / total) * 100) : 0;
+
   return {
     total,
     answered,
@@ -296,6 +303,8 @@ export function getStats(questions, userState) {
     calendarData,
     activeDays,
     worstQuestions,
+    predictedScore,
+    lastCorrectCount,
   };
 }
 

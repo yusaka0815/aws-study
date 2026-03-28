@@ -1022,6 +1022,86 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   -webkit-overflow-scrolling: touch;
 }
 
+/* 予測スコアバー */
+.stats-readiness {
+  margin: 8px 0 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.readiness-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.readiness-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.readiness-score {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.readiness-bar-bg {
+  position: relative;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: visible;
+  margin-bottom: 8px;
+}
+
+.readiness-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* 合格ライン（72%）マーカー */
+.readiness-pass-line {
+  position: absolute;
+  top: -3px;
+  left: 72%;
+  width: 2px;
+  height: 14px;
+  background: var(--text-secondary);
+  border-radius: 1px;
+  opacity: 0.6;
+}
+
+.readiness-pass-line::after {
+  content: '72%';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.readiness-msg {
+  font-size: 12px;
+}
+
+.readiness-high { color: var(--success); }
+.readiness-high.readiness-bar { background: var(--success); }
+.readiness-mid  { color: #22c55e; }
+.readiness-mid.readiness-bar  { background: #22c55e; }
+.readiness-low  { color: #f59e0b; }
+.readiness-low.readiness-bar  { background: #f59e0b; }
+.readiness-start { color: var(--text-muted); }
+.readiness-start.readiness-bar { background: var(--text-muted); }
+
 .stats-danger-section {
   padding-top: 8px;
   border-top: 1px solid var(--border);

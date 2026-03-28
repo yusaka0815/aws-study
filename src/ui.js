@@ -401,6 +401,35 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
   const nameEl = document.getElementById('stats-exam-name');
   nameEl.innerHTML = `<span class="exam-code" data-exam-badge="${examCode}">${examCode}</span> ${examName}`;
 
+  // 予測スコア（直近の回答ベースの合格確率バー）
+  const readinessEl = document.getElementById('stats-readiness');
+  if (readinessEl && stats.answered > 0 && stats.predictedScore != null) {
+    const score = stats.predictedScore;
+    const passed = score >= 72;
+    const levelClass = score >= 80 ? 'readiness-high' : score >= 72 ? 'readiness-mid' : score >= 50 ? 'readiness-low' : 'readiness-start';
+    const msg = score >= 80
+      ? '合格圏内！この調子を維持しましょう'
+      : score >= 72
+        ? '合格ライン達成！さらに伸ばしましょう'
+        : score >= 50
+          ? `あと ${72 - score}% で合格ライン (72%)`
+          : '学習を続けると実力がついてきます';
+    readinessEl.innerHTML = `
+      <div class="readiness-header">
+        <span class="readiness-title">予測スコア</span>
+        <span class="readiness-score ${levelClass}">${score}% ${passed ? '✓' : ''}</span>
+      </div>
+      <div class="readiness-bar-bg">
+        <div class="readiness-bar ${levelClass}" style="width:${score}%"></div>
+        <div class="readiness-pass-line" title="合格ライン 72%"></div>
+      </div>
+      <div class="readiness-msg ${levelClass}">${msg}</div>
+    `;
+    readinessEl.className = 'stats-readiness';
+  } else if (readinessEl) {
+    readinessEl.innerHTML = '';
+  }
+
   const coverage = stats.total > 0 ? Math.round((stats.answered / stats.total) * 100) : 0;
 
   const overview = document.getElementById('stats-overview');
