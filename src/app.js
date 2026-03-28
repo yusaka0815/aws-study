@@ -100,6 +100,7 @@ const appState = {
   examQuestions: [],        // 今回の試験問題（ランダム選択済み）
   examIndex: 0,             // 現在の問題インデックス
   examCorrect: 0,           // 正解数
+  examWrong: [],            // 不正解問題リスト
   examTimerInterval: null,  // タイマーintervalID
   examTimeLeft: 0,          // 残り秒数
 };
@@ -345,7 +346,11 @@ function handleAnswer(selectedIndices) {
 
   // 模擬試験モード: 正解数とインデックスのみ追跡、SRS更新なし
   if (appState.examMode) {
-    if (isCorrect) appState.examCorrect++;
+    if (isCorrect) {
+      appState.examCorrect++;
+    } else {
+      appState.examWrong.push(appState.currentQuestion);
+    }
     appState.examIndex++;
     renderResult(appState.currentQuestion, selectedIndices, isCorrect, null, appState.shuffleMap);
     setTimeout(() => {
@@ -523,6 +528,7 @@ function startExamMode(count) {
   appState.examQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
   appState.examIndex = 0;
   appState.examCorrect = 0;
+  appState.examWrong = [];
   appState.examTimeLeft = count * 2 * 60; // 2分/問
 
   // セッションバッジを隠してタイマーを表示
@@ -573,6 +579,11 @@ function endExamMode(timeUp = false) {
 
   const overlay = document.getElementById('exam-modal-overlay');
   const content = document.getElementById('exam-modal-content');
+  const wrongCount = appState.examWrong.length;
+  const wrongBtn = wrongCount > 0
+    ? `<button class="btn-secondary" id="exam-result-retry">× 間違えた ${wrongCount} 問を再挑戦</button>`
+    : '';
+
   content.innerHTML = `
     <h3>📝 試験結果</h3>
     ${timeUp ? '<p style="color:var(--danger);font-weight:700;">⏰ 時間切れ</p>' : ''}
@@ -583,12 +594,34 @@ function endExamMode(timeUp = false) {
     </div>
     <div class="exam-modal-actions">
       <button class="btn-primary" id="exam-result-close">学習を続ける</button>
+      ${wrongBtn}
     </div>
   `;
   overlay.classList.remove('hidden');
   document.getElementById('exam-result-close').addEventListener('click', () => {
     overlay.classList.add('hidden');
     showNextQuestion(); // 通常学習に戻る
+  });
+  document.getElementById('exam-result-retry')?.addEventListener('click', () => {
+    overlay.classList.add('hidden');
+    // 不正解問題でミニ試験を再開
+    const wrongQs = appState.examWrong;
+    appState.examMode = true;
+    appState.examQuestions = wrongQs;
+    appState.examIndex = 0;
+    appState.examCorrect = 0;
+    appState.examWrong = [];
+    appState.examTimeLeft = wrongQs.length * 2 * 60;
+    document.getElementById('session-badge').classList.add('hidden');
+    document.getElementById('exam-mode-timer').classList.remove('hidden');
+    appState.examTimerInterval = setInterval(() => {
+      appState.examTimeLeft--;
+      updateExamTimer();
+      if (appState.examTimeLeft <= 0) endExamMode(true);
+    }, 1000);
+    updateExamTimer();
+    showToast(`📝 復習試験開始！ ${wrongQs.length}問`, 'info');
+    showNextQuestion();
   });
 }
 
