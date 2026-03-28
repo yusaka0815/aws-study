@@ -669,7 +669,7 @@ body {
   min-height: 60px;
 }
 
-.settings-item:first-of-type {
+.settings-section-title + .settings-item {
   border-top: none;
 }
 

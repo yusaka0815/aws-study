@@ -31,12 +31,10 @@ async function answerQuestion(page) {
   const multiArea = page.locator('#multi-submit-area');
   const isMulti = await multiArea.isVisible();
   if (isMulti) {
-    const requiredText = await page.locator('#multi-required').textContent();
-    const required = parseInt(requiredText, 10);
-    for (let i = 0; i < required; i++) {
-      await page.locator('.choice-btn').nth(i).click();
-    }
-    await page.locator('#multi-submit-btn').click();
+    // 複数選択: 1つ以上選択して「次の問題へ」ボタンで提出
+    await page.locator('.choice-btn').first().click();
+    await expect(page.locator('#next-btn')).toBeEnabled();
+    await page.locator('#next-btn').click();
   } else {
     await page.locator('.choice-btn').first().click();
   }
@@ -472,6 +470,29 @@ test.describe('設定画面', () => {
     await page.locator('#settings-back-btn').click();
     await expect(page.locator('#screen-select')).toBeVisible();
   });
+
+  test('設定画面: 各セクション最初の項目にborder-topがない', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('.exam-card');
+    await page.locator('#btn-settings-from-select').click();
+    await expect(page.locator('#screen-settings')).toBeVisible();
+
+    // settings-section-title の直後の .settings-item は border-top が 0px であること
+    const firstItemBorders = await page.evaluate(() => {
+      const sections = document.querySelectorAll('.settings-section');
+      return Array.from(sections).map(section => {
+        const title = section.querySelector('.settings-section-title');
+        if (!title) return null;
+        const firstItem = title.nextElementSibling;
+        if (!firstItem) return null;
+        return getComputedStyle(firstItem).borderTopWidth;
+      });
+    });
+    // 全セクションの最初のアイテムは border-top: 0px
+    firstItemBorders.forEach(border => {
+      if (border !== null) expect(border).toBe('0px');
+    });
+  });
 });
 
 // ============================================================
@@ -578,5 +599,48 @@ test.describe('DOP試験', () => {
     await selectExam(page, 'DOP');
     await expect(page.locator('#question-text')).not.toHaveText('問題を読み込んでいます...');
     await expect(page.locator('.choice-btn').first()).toBeVisible();
+  });
+
+  test('複数選択問題: 未選択時は次へボタンがdisabled', async ({ page }) => {
+    await selectExam(page, 'DOP');
+    await expect(page.locator('#multi-submit-area')).toBeVisible();
+    await expect(page.locator('#next-btn')).toBeDisabled();
+  });
+
+  test('複数選択問題: 1つ選択で次へボタンが有効化される', async ({ page }) => {
+    await selectExam(page, 'DOP');
+    await expect(page.locator('#multi-submit-area')).toBeVisible();
+    await page.locator('.choice-btn').first().click();
+    await expect(page.locator('#next-btn')).toBeEnabled();
+  });
+
+  test('複数選択問題: 次へボタンで回答・結果表示・次問題へ進める', async ({ page }) => {
+    await selectExam(page, 'DOP');
+    // 選択→提出（次へボタン）
+    await page.locator('.choice-btn').first().click();
+    await page.locator('#next-btn').click();
+    // 結果表示される
+    await expect(page.locator('#answer-area')).toBeVisible();
+    const icon = await page.locator('#answer-icon').textContent();
+    expect(['○', '×']).toContain(icon);
+    // 次へボタンで次問題へ
+    const firstQuestion = await page.locator('#question-text').textContent();
+    await page.locator('#next-btn').click();
+    await page.waitForFunction(
+      () => document.getElementById('answer-area')?.classList.contains('hidden')
+    );
+    const secondQuestion = await page.locator('#question-text').textContent();
+    expect(secondQuestion).not.toBe(firstQuestion);
+  });
+
+  test('複数選択問題: 選択解除で次へボタンが再度disabledになる', async ({ page }) => {
+    await selectExam(page, 'DOP');
+    const btn = page.locator('.choice-btn').first();
+    // 選択
+    await btn.click();
+    await expect(page.locator('#next-btn')).toBeEnabled();
+    // 選択解除
+    await btn.click();
+    await expect(page.locator('#next-btn')).toBeDisabled();
   });
 });

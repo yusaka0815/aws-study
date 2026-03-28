@@ -255,9 +255,9 @@ function setupStudyListeners() {
     const btn = e.target.closest('.choice-btn');
     if (!btn || appState.answered) return;
     const idx = Number(btn.dataset.index);
-    const isMulti = appState.currentQuestion?.answers.length > 1;
 
-    if (isMulti) {
+    if (appState.currentQuestion?.answers.length > 1) {
+      // 複数選択: トグル選択
       if (appState.pendingSelections.has(idx)) {
         appState.pendingSelections.delete(idx);
         btn.classList.remove('pending-selected');
@@ -266,15 +266,11 @@ function setupStudyListeners() {
         btn.classList.add('pending-selected');
       }
       updateMultiSelectUI(appState.pendingSelections.size, appState.currentQuestion.answers.length);
+      // 1つ以上選択したら次へボタンを有効化
+      document.getElementById('next-btn').disabled = appState.pendingSelections.size === 0;
     } else {
+      // 単一選択: 即回答
       handleAnswer([idx]);
-    }
-  });
-
-  document.getElementById('multi-submit-btn').addEventListener('click', () => {
-    if (appState.currentQuestion &&
-        appState.pendingSelections.size === appState.currentQuestion.answers.length) {
-      handleAnswer([...appState.pendingSelections]);
     }
   });
 
@@ -283,6 +279,15 @@ function setupStudyListeners() {
   });
 
   document.getElementById('next-btn').addEventListener('click', () => {
+    // 複数選択問題・未回答: 次へボタンが提出ボタンを兼ねる
+    if (!appState.answered && appState.currentQuestion?.answers.length > 1) {
+      if (appState.pendingSelections.size > 0) {
+        handleAnswer([...appState.pendingSelections]);
+      }
+      return;
+    }
+    // 回答済み（または単一選択回答後）: 次の問題へ
+    if (!appState.answered) return;
     showNextQuestion();
     document.getElementById('screen-study').scrollTop = 0;
     window.scrollTo(0, 0);

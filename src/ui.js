@@ -85,9 +85,8 @@ export function renderQuestion(question, questionIndex, totalQuestions) {
 
   // 複数選択問題の場合: ヒントと提出エリアを表示
   if (question.answers.length > 1) {
-    document.getElementById('multi-count').textContent = `0 / ${question.answers.length}`;
+    document.getElementById('multi-count').textContent = '0';
     document.getElementById('multi-required').textContent = question.answers.length;
-    document.getElementById('multi-submit-btn').disabled = true;
     document.getElementById('multi-submit-area').classList.remove('hidden');
   }
 
@@ -115,6 +114,7 @@ export function renderResult(question, selectedIndices, isCorrect) {
 
   buttons.forEach((btn, idx) => {
     btn.disabled = true;
+    btn.classList.remove('pending-selected');
     if (selectedIndices.includes(idx)) {
       btn.classList.add('selected');
     }
@@ -161,8 +161,8 @@ export function renderResult(question, selectedIndices, isCorrect) {
  * @param {number} requiredCount - 必要選択数
  */
 export function updateMultiSelectUI(selectedCount, requiredCount) {
-  document.getElementById('multi-count').textContent = `${selectedCount} / ${requiredCount}`;
-  document.getElementById('multi-submit-btn').disabled = selectedCount !== requiredCount;
+  document.getElementById('multi-count').textContent = selectedCount;
+  document.getElementById('multi-required').textContent = requiredCount;
 }
 
 /**
