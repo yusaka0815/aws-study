@@ -91,6 +91,7 @@ const appState = {
   shuffleMap: null,         // number[] | null: 表示位置→元インデックスのマッピング
   sessionAnswered: 0,       // 今セッションで回答した問題数
   sessionCorrect: 0,        // 今セッションで正解した問題数
+  sessionStartTime: null,   // セッション開始タイムスタンプ
   categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
   bookmarkMode: false,      // boolean: ブックマーク問題のみ出題
   _autoNextTimer: null,     // タイマーID（自動次へ）
@@ -205,6 +206,7 @@ async function selectExam(examCode) {
   // セッションカウンターとフィルターをリセット
   appState.sessionAnswered = 0;
   appState.sessionCorrect = 0;
+  appState.sessionStartTime = Date.now();
   appState.categoryFilter = null;
   appState.bookmarkMode = false;
   // 模擬試験モードをリセット
@@ -454,7 +456,12 @@ function updateSessionBadge() {
     return;
   }
   const pct = Math.round((appState.sessionCorrect / appState.sessionAnswered) * 100);
-  el.textContent = `${appState.sessionAnswered}問 ${pct}%`;
+  let timeStr = '';
+  if (appState.sessionStartTime) {
+    const elapsed = Math.floor((Date.now() - appState.sessionStartTime) / 60_000);
+    if (elapsed > 0) timeStr = ` · ${elapsed}分`;
+  }
+  el.textContent = `${appState.sessionAnswered}問 ${pct}%${timeStr}`;
   el.classList.remove('hidden', 'badge-good', 'badge-mid', 'badge-bad');
   el.classList.add(pct >= 80 ? 'badge-good' : pct >= 60 ? 'badge-mid' : 'badge-bad');
 }
