@@ -289,6 +289,11 @@ function handleAnswer(selectedIndices) {
   }
 
   renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt);
+
+  // 回答エリアへスムーズスクロール（問題文が長い場合に結果が見えるように）
+  setTimeout(() => {
+    document.getElementById('answer-area')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 80);
 }
 
 // ============================================================
@@ -383,6 +388,10 @@ function setupNavigationListeners() {
   });
 
   document.getElementById('stats-back-btn').addEventListener('click', () => history.back());
+
+  document.getElementById('btn-resume-study').addEventListener('click', () => {
+    history.back(); // 統計画面から問題画面に戻る
+  });
 
   document.getElementById('btn-drill-weak').addEventListener('click', () => {
     settings.weakOnly = true;
