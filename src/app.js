@@ -353,8 +353,15 @@ function showNextQuestion() {
         const s = userState.questions[q.id];
         return s && s.attempts > 0 && s.nextReviewAt <= nowTs;
       }).length;
-      revCountEl.textContent = `復習モード (${dueRemaining}問)`;
-      revBanner.classList.remove('hidden');
+      if (dueRemaining === 0) {
+        // 全復習完了: 自動解除
+        appState.reviewMode = false;
+        revBanner.classList.add('hidden');
+        setTimeout(() => showToast('🎉 復習完了！次の問題へどうぞ', 'success'), 100);
+      } else {
+        revCountEl.textContent = `復習モード (${dueRemaining}問)`;
+        revBanner.classList.remove('hidden');
+      }
     } else {
       revBanner.classList.add('hidden');
     }
@@ -1163,9 +1170,16 @@ function setupKeyboardShortcuts() {
       return;
     }
 
-    // Escape: カテゴリフィルター解除
-    if (key === 'Escape' && appState.categoryFilter) {
-      document.getElementById('btn-clear-category')?.click();
+    // Escape: アクティブなフィルター・モードを全解除
+    if (key === 'Escape') {
+      const hasFilter = appState.categoryFilter || appState.reviewMode || appState.bookmarkMode;
+      if (hasFilter) {
+        appState.categoryFilter = null;
+        appState.reviewMode = false;
+        appState.bookmarkMode = false;
+        showToast('フィルター解除', 'info');
+        showNextQuestion();
+      }
     }
   });
 }
