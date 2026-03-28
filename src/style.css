@@ -610,6 +610,15 @@ body {
   text-align: center;
 }
 
+.stat-card-warn {
+  border-color: var(--danger);
+  background: var(--danger-dim);
+}
+
+.stat-card-warn .stat-value {
+  color: var(--danger);
+}
+
 .stat-value {
   font-size: 32px;
   font-weight: 800;

@@ -208,6 +208,8 @@ export function toggleExplanation(explanation) {
 export function renderStats(examCode, examName, stats) {
   document.getElementById('stats-exam-name').textContent = examName;
 
+  const coverage = stats.total > 0 ? Math.round((stats.answered / stats.total) * 100) : 0;
+
   const overview = document.getElementById('stats-overview');
   overview.innerHTML = `
     <div class="stat-card">
@@ -215,16 +217,16 @@ export function renderStats(examCode, examName, stats) {
       <div class="stat-label">正答率</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">${stats.answered}<span class="stat-unit"> / ${stats.total}</span></div>
-      <div class="stat-label">解答済み問題</div>
+      <div class="stat-value">${coverage}<span class="stat-unit">%</span></div>
+      <div class="stat-label">カバー率 (${stats.answered}/${stats.total})</div>
     </div>
     <div class="stat-card">
       <div class="stat-value">${stats.totalAttempts}</div>
       <div class="stat-label">総回答数</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value">${stats.unanswered}</div>
-      <div class="stat-label">未解答</div>
+    <div class="stat-card ${stats.weakCount > 0 ? 'stat-card-warn' : ''}">
+      <div class="stat-value">${stats.weakCount}</div>
+      <div class="stat-label">苦手問題数</div>
     </div>
   `;
 

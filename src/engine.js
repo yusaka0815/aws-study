@@ -162,6 +162,13 @@ export function getStats(questions, userState) {
     }))
     .sort((a, b) => (a.accuracy ?? 101) - (b.accuracy ?? 101));
 
+  // 苦手問題数（正答率 < 60%）
+  const weakCount = questions.filter(q => {
+    const s = userState.questions[q.id];
+    if (!s || safeInt(s.attempts) === 0) return false;
+    return (safeInt(s.correct) / safeInt(s.attempts)) < 0.6;
+  }).length;
+
   return {
     total,
     answered,
@@ -169,6 +176,7 @@ export function getStats(questions, userState) {
     totalAttempts,
     totalCorrect,
     accuracy,
+    weakCount,
     categoryList,
   };
 }
