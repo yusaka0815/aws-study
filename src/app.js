@@ -461,6 +461,13 @@ function handleAnswer(selectedIndices) {
     setTimeout(() => showToast(`🎉 今日の目標 ${settings.dailyGoal}問 達成！`, 'success'), 300);
   }
 
+  // 通算マイルストーン（全日合計）
+  const totalEver = Object.values(appState.userState.dailyLog).reduce((s, n) => s + n, 0);
+  const MILESTONES = [10, 50, 100, 300, 500, 1000, 2000, 5000];
+  if (MILESTONES.includes(totalEver)) {
+    setTimeout(() => showToast(`🎊 通算 ${totalEver} 問達成！`, 'success'), 400);
+  }
+
   saveState(appState.userState);
 
   if (settings.sound) {

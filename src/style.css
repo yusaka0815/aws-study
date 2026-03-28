@@ -753,6 +753,24 @@ body {
 .chip-new     { color: var(--primary); background: var(--primary-dim); }
 .chip-nemesis { color: #ef4444; background: rgba(239,68,68,0.15); font-weight: 700; }
 
+/* 直近回答履歴ドット（直近5問の正誤を視覚的に表示） */
+.result-dots {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.result-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.dot-correct { background: #22c55e; }
+.dot-wrong   { background: #ef4444; }
+.dot-empty   { background: var(--border); }
+
 .question-id {
   font-size: 10px;
   font-weight: 500;
@@ -1501,6 +1519,23 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 .weekly-label-today {
   color: var(--primary);
   font-weight: 700;
+}
+
+.weekly-legend {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.weekly-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 3px;
+  vertical-align: middle;
 }
 
 .weekly-streak-text {

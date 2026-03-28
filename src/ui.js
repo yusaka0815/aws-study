@@ -182,13 +182,17 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   if (qState && qState.attempts > 0) {
     const acc = Math.round((qState.correct / qState.attempts) * 100);
     const chipClass = acc >= 80 ? 'chip-good' : acc >= 60 ? 'chip-mid' : 'chip-bad';
-    const lastResult = qState.recentResults?.at(-1);
-    const lastIcon = lastResult === 1 ? ' ✓' : lastResult === 0 ? ' ✗' : '';
     const recent = qState.recentResults ?? [];
     const isNemesis = recent.length >= 3 && recent.slice(-3).every(r => r === 0);
+    // Last 5 results as colored dots (oldest→newest, left→right)
+    const lastFive = recent.slice(-5);
+    const dots = lastFive.map(r =>
+      `<span class="result-dot ${r === 1 ? 'dot-correct' : 'dot-wrong'}"></span>`
+    ).join('');
+    const dotsHtml = lastFive.length > 0 ? `<span class="result-dots">${dots}</span>` : '';
     historyChip = isNemesis
-      ? `<span class="history-chip chip-nemesis">🔥 ${qState.attempts}回 ${acc}%</span>`
-      : `<span class="history-chip ${chipClass}">${qState.attempts}回 ${acc}%${lastIcon}</span>`;
+      ? `<span class="history-chip chip-nemesis">🔥 ${qState.attempts}回 ${acc}%${dotsHtml}</span>`
+      : `<span class="history-chip ${chipClass}">${qState.attempts}回 ${acc}%${dotsHtml}</span>`;
   } else {
     historyChip = `<span class="history-chip chip-new">NEW</span>`;
   }
@@ -500,6 +504,15 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
 
   // 週間チャート
   const weeklyEl = document.getElementById('weekly-chart');
+  // 週間チャート凡例
+  const weeklyLegendEl = document.getElementById('weekly-legend');
+  if (weeklyLegendEl) {
+    weeklyLegendEl.innerHTML = `
+      <span><span class="weekly-legend-dot" style="background:#22c55e"></span>正解</span>
+      <span><span class="weekly-legend-dot" style="background:#ef4444"></span>不正解</span>
+    `;
+  }
+
   if (weeklyEl && stats.weeklyLog) {
     const maxCount = Math.max(...stats.weeklyLog.map(d => d.count), 1);
     weeklyEl.innerHTML = stats.weeklyLog.map(day => {
