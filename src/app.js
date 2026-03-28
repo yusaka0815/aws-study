@@ -91,6 +91,7 @@ const appState = {
   shuffleMap: null,         // number[] | null: 表示位置→元インデックスのマッピング
   sessionAnswered: 0,       // 今セッションで回答した問題数
   sessionCorrect: 0,        // 今セッションで正解した問題数
+  sessionStreak: 0,         // 今セッションで連続正解した問題数
   sessionStartTime: null,   // セッション開始タイムスタンプ
   questionStartTime: null,  // 問題表示開始タイムスタンプ（回答時間計測用）
   categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
@@ -215,6 +216,7 @@ async function selectExam(examCode) {
   // セッションカウンターとフィルターをリセット
   appState.sessionAnswered = 0;
   appState.sessionCorrect = 0;
+  appState.sessionStreak = 0;
   appState.sessionStartTime = Date.now();
   appState.categoryFilter = null;
   appState.bookmarkMode = false;
@@ -437,7 +439,16 @@ function handleAnswer(selectedIndices) {
   }
 
   appState.sessionAnswered++;
-  if (isCorrect) appState.sessionCorrect++;
+  if (isCorrect) {
+    appState.sessionCorrect++;
+    appState.sessionStreak++;
+    const HOT_STREAKS = [5, 10, 15, 20];
+    if (HOT_STREAKS.includes(appState.sessionStreak)) {
+      setTimeout(() => showToast(`🔥 ${appState.sessionStreak}問連続正解！`, 'success'), 500);
+    }
+  } else {
+    appState.sessionStreak = 0;
+  }
   updateSessionBadge();
   const now = Date.now();
   const prev = appState.userState.questions[appState.currentQuestion.id] ?? { attempts: 0 };

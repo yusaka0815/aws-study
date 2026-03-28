@@ -793,6 +793,11 @@ html[data-font-size="small"]  #question-text { font-size: 13px; }
 html[data-font-size="large"]  #question-text { font-size: 18px; }
 html[data-font-size="small"]  .choice-text   { font-size: 13px; }
 html[data-font-size="large"]  .choice-text   { font-size: 16px; }
+
+/* 問題文が長い場合に自動縮小（180文字超） */
+#question-text.question-text-long { font-size: 13px; }
+html[data-font-size="small"] #question-text.question-text-long { font-size: 12px; }
+html[data-font-size="large"] #question-text.question-text-long { font-size: 15px; }
 html[data-font-size="small"]  #explanation-text { font-size: 12px; }
 html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 

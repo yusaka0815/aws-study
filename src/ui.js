@@ -86,7 +86,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       </div>
       <div class="exam-card-meta">
         ${answered > 0
-          ? `<div class="exam-card-badges">${dueBadge}<span class="exam-progress">${pct}%カバー<span class="exam-accuracy ${scoreClass}"> 予測${displayScore}%</span></span></div>`
+          ? `<div class="exam-card-badges">${dueBadge}<span class="exam-progress">${answered}/${total}問<span class="exam-accuracy ${scoreClass}"> 予測${displayScore}%</span></span></div>`
           : `<div class="exam-card-badges">${dueBadge}<span class="exam-new-label">はじめる →</span></div>`}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
@@ -208,8 +208,10 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
     bookmarkBtn.classList.toggle('bookmarked', isBookmarked);
   }
 
-  // 問題文
-  document.getElementById('question-text').textContent = question.question;
+  // 問題文（長い場合はフォントサイズを縮小）
+  const qTextEl = document.getElementById('question-text');
+  qTextEl.textContent = question.question;
+  qTextEl.classList.toggle('question-text-long', question.question.length > 180);
 
   // 選択肢（シャッフルして表示順 → 元インデックスのマッピングを返す）
   const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E'];
