@@ -26,46 +26,55 @@ export const EXAM_LIST = [
     examCode: 'CLF',
     examName: 'AWS Certified Cloud Practitioner',
     file: 'data/clf.json',
+    questionCount: 160,
   },
   {
     examCode: 'AIF',
     examName: 'AWS Certified AI Practitioner',
     file: 'data/aif.json',
+    questionCount: 160,
   },
   {
     examCode: 'SAA',
     examName: 'AWS Certified Solutions Architect - Associate',
     file: 'data/saa.json',
+    questionCount: 160,
   },
   {
     examCode: 'MLA',
     examName: 'AWS Certified Machine Learning Engineer - Associate',
     file: 'data/mla.json',
+    questionCount: 160,
   },
   {
     examCode: 'DVA',
     examName: 'AWS Certified Developer - Associate',
     file: 'data/dva.json',
+    questionCount: 160,
   },
   {
     examCode: 'SOA',
     examName: 'AWS Certified SysOps Administrator - Associate',
     file: 'data/soa.json',
+    questionCount: 160,
   },
   {
     examCode: 'DEA',
     examName: 'AWS Certified Data Engineer - Associate',
     file: 'data/dea.json',
+    questionCount: 160,
   },
   {
     examCode: 'SAP',
     examName: 'AWS Certified Solutions Architect - Professional',
     file: 'data/sap.json',
+    questionCount: 160,
   },
   {
     examCode: 'DOP',
     examName: 'AWS Certified DevOps Engineer - Professional',
     file: 'data/dop.json',
+    questionCount: 160,
   },
 ];
 
@@ -168,15 +177,20 @@ async function selectExam(examCode) {
   const examMeta = EXAM_LIST.find(e => e.examCode === examCode);
   if (!examMeta) return;
 
+  // 即座に画面遷移（ローディング感を排除）
+  document.getElementById('header-exam-name').textContent = examMeta.examName;
+  document.getElementById('question-text').textContent = '問題を読み込んでいます...';
+  document.getElementById('choices-list').innerHTML = '';
+  document.getElementById('answer-area').classList.add('hidden');
+  document.getElementById('next-btn').disabled = true;
+  navigateTo('screen-study');
+
   try {
     appState.currentExam = await loadExamData(examMeta);
     appState.userState.currentExam = examCode;
     appState.lastQuestionId = null;
     saveState(appState.userState);
-
-    document.getElementById('header-exam-name').textContent = examMeta.examName;
     showNextQuestion();
-    navigateTo('screen-study');
   } catch (e) {
     showToast('問題データの読み込みに失敗しました', 'error');
     console.error(e);
@@ -327,6 +341,10 @@ function setupNavigationListeners() {
   window.addEventListener('popstate', e => {
     const screenId = e.state?.screenId ?? 'screen-select';
     showScreen(screenId);
+    // 試験選択画面に戻る際は進捗バッジを最新状態に更新
+    if (screenId === 'screen-select') {
+      renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
+    }
   });
 }
 
@@ -403,6 +421,33 @@ function setupSettingsListeners() {
   });
 }
 
+/** キーボードショートカット（デスクトップ・スタディ画面のみ有効） */
+function setupKeyboardShortcuts() {
+  window.addEventListener('keydown', e => {
+    // 入力欄フォーカス中は無効
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    // 問題画面以外は無効
+    if (!document.getElementById('screen-study').classList.contains('active')) return;
+
+    const key = e.key;
+
+    // 1〜5: 選択肢を選ぶ / トグル
+    if (/^[1-5]$/.test(key)) {
+      const idx = Number(key) - 1;
+      const btn = document.querySelector(`#choices-list .choice-btn[data-index="${idx}"]`);
+      if (btn && !appState.answered) btn.click();
+      return;
+    }
+
+    // Enter / Space: 次へボタンを押す
+    if (key === 'Enter' || key === ' ') {
+      e.preventDefault();
+      const nextBtn = document.getElementById('next-btn');
+      if (!nextBtn.disabled) nextBtn.click();
+    }
+  });
+}
+
 // ============================================================
 // 試験別進捗マップ（ホーム画面表示用）
 // ============================================================
@@ -427,6 +472,7 @@ async function init() {
   setupStudyListeners();
   setupNavigationListeners();
   setupSettingsListeners();
+  setupKeyboardShortcuts();
   renderExamSelect(EXAM_LIST, selectExam, buildProgressMap());
   showScreen('screen-select');
 

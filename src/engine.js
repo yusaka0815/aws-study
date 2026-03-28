@@ -6,6 +6,23 @@
 /** localStorageの破損データ（NaN・undefined・null）をゼロに変換 */
 const safeInt = v => Number.isFinite(v) ? v : 0;
 
+// ============================================================
+// SRS インターバル定数
+// ============================================================
+const MINUTE = 60 * 1000;
+const HOUR   = 60 * MINUTE;
+const DAY    = 24 * HOUR;
+
+/** SRS復習インターバルテーブル（連続正解数→待機時間ms） */
+export const SRS_INTERVALS = [
+  0,           // 0連続正解: 即出題
+  10 * MINUTE, // 1連続正解: 10分後
+  HOUR,        // 2連続正解: 1時間後
+  6 * HOUR,    // 3連続正解: 6時間後
+  DAY,         // 4連続正解: 1日後
+  3 * DAY,     // 5連続正解以上: 3日後
+];
+
 /**
  * 連続正解数に基づく次回復習インターバル（ms）
  */
@@ -19,18 +36,7 @@ export function getIntervalMs(recentResults) {
     else break;
   }
 
-  const MINUTE = 60 * 1000;
-  const HOUR = 60 * MINUTE;
-  const DAY = 24 * HOUR;
-
-  const intervals = [
-    0,           // 0連続正解: 即出題
-    10 * MINUTE, // 1連続正解: 10分後
-    HOUR,        // 2連続正解: 1時間後
-    6 * HOUR,    // 3連続正解: 6時間後
-    DAY,         // 4連続正解: 1日後
-    3 * DAY,     // 5連続正解以上: 3日後
-  ];
+  const intervals = SRS_INTERVALS;
 
   const idx = Math.min(consecutive, intervals.length - 1);
   return intervals[idx];

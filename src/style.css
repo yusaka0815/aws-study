@@ -166,7 +166,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 20px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -174,6 +174,37 @@ body {
   text-align: left;
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
   color: var(--text);
+}
+
+.exam-card-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.exam-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.exam-progress-bar {
+  width: 80px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.exam-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 0.4s ease;
 }
 
 .exam-card:hover {
@@ -203,6 +234,7 @@ body {
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
+  min-width: 0;
 }
 
 .exam-arrow {
@@ -906,3 +938,13 @@ body {
 .question-card.entering, #choices-list.entering {
   animation: fadeSlideIn 0.25s ease;
 }
+
+/* 選択肢の段階的表示（各ボタンに遅延をかける） */
+#choices-list.entering .choice-btn {
+  animation: fadeSlideIn 0.2s ease both;
+}
+#choices-list.entering .choice-btn:nth-child(1) { animation-delay: 0.03s; }
+#choices-list.entering .choice-btn:nth-child(2) { animation-delay: 0.08s; }
+#choices-list.entering .choice-btn:nth-child(3) { animation-delay: 0.13s; }
+#choices-list.entering .choice-btn:nth-child(4) { animation-delay: 0.18s; }
+#choices-list.entering .choice-btn:nth-child(5) { animation-delay: 0.23s; }

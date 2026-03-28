@@ -23,14 +23,24 @@ export function renderExamSelect(exams, onSelect, progressMap = {}) {
 
   exams.forEach(exam => {
     const answered = progressMap[exam.examCode] ?? 0;
+    const total = exam.questionCount ?? 0;
+    const pct = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
+
     const btn = document.createElement('button');
     btn.className = 'exam-card';
     btn.innerHTML = `
-      <span class="exam-code">${exam.examCode}</span>
-      <span class="exam-name">${exam.examName}</span>
-      ${answered > 0
-        ? `<span class="exam-progress">${answered}問</span>`
-        : '<span class="exam-arrow">→</span>'}
+      <div class="exam-card-main">
+        <span class="exam-code">${exam.examCode}</span>
+        <span class="exam-name">${exam.examName}</span>
+      </div>
+      <div class="exam-card-meta">
+        ${answered > 0
+          ? `<span class="exam-progress">${answered}問 (${pct}%)</span>`
+          : '<span class="exam-arrow">→</span>'}
+        ${answered > 0
+          ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
+          : ''}
+      </div>
     `;
     btn.addEventListener('click', () => onSelect(exam.examCode));
     container.appendChild(btn);
