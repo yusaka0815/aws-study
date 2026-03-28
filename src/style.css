@@ -989,6 +989,11 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   -webkit-overflow-scrolling: touch;
 }
 
+.stats-danger-section {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
 #stats-exam-name {
   font-size: 13px;
   color: var(--text-secondary);

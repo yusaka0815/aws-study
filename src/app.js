@@ -832,6 +832,20 @@ function setupNavigationListeners() {
 
   document.getElementById('stats-back-btn').addEventListener('click', () => history.back());
 
+  document.getElementById('btn-reset-exam').addEventListener('click', () => {
+    const code = appState.currentExam?.examCode;
+    if (!code) return;
+    if (!confirm(`${code} の全回答履歴・模擬試験履歴を削除します。\nこの操作は取り消せません。よろしいですか？`)) return;
+    const prefix = `${code}-`;
+    for (const key of Object.keys(appState.userState.questions)) {
+      if (key.startsWith(prefix)) delete appState.userState.questions[key];
+    }
+    appState.userState.examHistory = (appState.userState.examHistory ?? []).filter(r => r.examCode !== code);
+    saveState(appState.userState);
+    showToast(`${code} をリセットしました`, 'success');
+    showStatsScreen(); // 統計画面を再描画
+  });
+
   document.getElementById('btn-resume-study').addEventListener('click', () => {
     history.back(); // 統計画面から問題画面に戻る
   });
