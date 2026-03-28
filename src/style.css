@@ -562,6 +562,16 @@ body {
 .chip-mid  { color: #f59e0b;        background: rgba(245,158,11,0.15); }
 .chip-bad  { color: var(--danger);  background: var(--danger-dim); }
 
+.question-id {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  opacity: 0.6;
+  font-family: monospace;
+  letter-spacing: 0;
+}
+
 #question-text {
   font-size: 15px;
   font-weight: 500;

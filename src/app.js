@@ -93,6 +93,8 @@ const appState = {
   sessionCorrect: 0,        // 今セッションで正解した問題数
   categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
   bookmarkMode: false,      // boolean: ブックマーク問題のみ出題
+  _autoNextTimer: null,     // タイマーID（自動次へ）
+  _autoNextCancelled: false,// 手動でキャンセルしたか
 };
 
 // ============================================================
@@ -111,6 +113,7 @@ const settings = {
   sound: loadSetting('sound', false),
   wakeLock: loadSetting('wake-lock', false),
   weakOnly: loadSetting('weak-only', false),
+  autoNext: loadSetting('auto-next', false),
 };
 
 // ============================================================
@@ -220,6 +223,12 @@ async function selectExam(examCode) {
 function showNextQuestion() {
   const { currentExam, userState, lastQuestionId } = appState;
   if (!currentExam) return;
+
+  // 自動次へタイマーをキャンセル
+  if (appState._autoNextTimer) {
+    clearInterval(appState._autoNextTimer);
+    appState._autoNextTimer = null;
+  }
 
   appState.pendingSelections = new Set();
 
@@ -344,6 +353,29 @@ function handleAnswer(selectedIndices) {
   setTimeout(() => {
     document.getElementById('answer-area')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 80);
+
+  // 自動次へ: 正解時のみ、1.5秒後に自動進行
+  if (isCorrect && settings.autoNext) {
+    const nextBtn = document.getElementById('next-btn');
+    const AUTO_NEXT_MS = 1500;
+    const start = Date.now();
+    appState._autoNextTimer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const remaining = Math.ceil((AUTO_NEXT_MS - elapsed) / 1000);
+      if (nextBtn && !appState._autoNextCancelled) {
+        nextBtn.textContent = `次の問題へ → (${remaining})`;
+      }
+      if (elapsed >= AUTO_NEXT_MS) {
+        clearInterval(appState._autoNextTimer);
+        if (!appState._autoNextCancelled) {
+          showNextQuestion();
+          document.querySelector('.study-content')?.scrollTo(0, 0);
+          window.scrollTo(0, 0);
+        }
+      }
+    }, 100);
+    appState._autoNextCancelled = false;
+  }
 }
 
 // ============================================================
@@ -438,6 +470,8 @@ function setupStudyListeners() {
     }
     // 回答済み（または単一選択回答後）: 次の問題へ
     if (!appState.answered) return;
+    // 自動次へタイマーをキャンセルして即進行
+    appState._autoNextCancelled = true;
     showNextQuestion();
     // study-content が独自スクロールコンテナになったので両方リセット
     document.querySelector('.study-content')?.scrollTo(0, 0);
@@ -554,6 +588,15 @@ function setupSettingsListeners() {
     saveSetting('weak-only', settings.weakOnly);
     const msg = settings.weakOnly ? '苦手問題モード ON' : '苦手問題モード OFF';
     showToast(msg, 'info');
+  });
+
+  // 自動次へトグル
+  const toggleAutoNext = document.getElementById('toggle-auto-next');
+  toggleAutoNext.checked = settings.autoNext;
+  toggleAutoNext.addEventListener('change', () => {
+    settings.autoNext = toggleAutoNext.checked;
+    saveSetting('auto-next', settings.autoNext);
+    showToast(settings.autoNext ? '自動次へ ON' : '自動次へ OFF', 'info');
   });
 
   document.getElementById('btn-export').addEventListener('click', () => {
