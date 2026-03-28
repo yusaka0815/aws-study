@@ -91,8 +91,10 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
     btn.dataset.exam = exam.examCode;
     btn.innerHTML = `
       <div class="exam-card-main">
-        <span class="exam-code">${exam.examCode}</span>
-        <span class="exam-name">${exam.examName}</span>
+        <div class="exam-card-top-row">
+          <span class="exam-code">${exam.examCode}</span>
+          <span class="exam-name">${exam.examName}</span>
+        </div>
         ${lastText ? `<span class="exam-last-studied">${lastText}</span>` : ''}
       </div>
       <div class="exam-card-meta">
