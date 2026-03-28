@@ -110,7 +110,10 @@ const appState = {
 // ============================================================
 function loadSetting(key, defaultValue) {
   const v = localStorage.getItem(`aws-study-${key}`);
-  return v === null ? defaultValue : v === 'true';
+  if (v === null) return defaultValue;
+  if (typeof defaultValue === 'boolean') return v === 'true';
+  if (typeof defaultValue === 'number') return Number(v) || defaultValue;
+  return v; // string
 }
 
 function saveSetting(key, value) {
@@ -122,7 +125,7 @@ const settings = {
   wakeLock: loadSetting('wake-lock', false),
   weakOnly: loadSetting('weak-only', false),
   autoNext: loadSetting('auto-next', false),
-  dailyGoal: Number(loadSetting('daily-goal', 30)),
+  dailyGoal: loadSetting('daily-goal', 30),
   fontSize: loadSetting('font-size', 'medium'),
 };
 
@@ -475,7 +478,7 @@ function showStatsScreen() {
 
   // 模擬試験履歴（現在の試験コードのみ絞り込み）
   const examCode = appState.currentExam.examCode;
-  const history = (appState.userState.examHistory ?? [])
+  const examHistoryRecords = (appState.userState.examHistory ?? [])
     .filter(r => r.examCode === examCode)
     .slice(-10)  // 最新10件
     .reverse();  // 新しい順
@@ -483,15 +486,16 @@ function showStatsScreen() {
   const historySection = document.getElementById('exam-history-section');
   const historyList = document.getElementById('exam-history-list');
   if (historySection && historyList) {
-    if (history.length > 0) {
+    if (examHistoryRecords.length > 0) {
       historySection.classList.remove('hidden');
-      historyList.innerHTML = history.map(r => {
+      historyList.innerHTML = examHistoryRecords.map(r => {
         const d = new Date(r.date);
-        const dateStr = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const dateStr = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         const cls = r.passed ? 'exam-hist-pass' : 'exam-hist-fail';
+        const wrongStr = r.wrong != null ? ` (×${r.wrong})` : '';
         return `<div class="exam-hist-item">
           <span class="exam-hist-date">${dateStr}</span>
-          <span class="exam-hist-detail">${r.correct}/${r.total}問</span>
+          <span class="exam-hist-detail">${r.correct}/${r.total}問${wrongStr}</span>
           <span class="exam-hist-pct ${cls}">${r.pct}%</span>
         </div>`;
       }).join('');
@@ -617,8 +621,10 @@ function endExamMode(timeUp = false) {
       examCode: appState.currentExam?.examCode ?? '?',
       total: appState.examIndex, // 実際に回答した問題数
       correct,
+      wrong: appState.examWrong.length,
       pct,
       passed,
+      timeUp,
     });
     // 最新50件まで保持
     if (appState.userState.examHistory.length > 50) {
