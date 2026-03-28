@@ -178,7 +178,11 @@ async function registerServiceWorker() {
 // ============================================================
 
 function navigateTo(screenId) {
-  history.pushState({ screenId }, '');
+  if (history.state?.screenId === screenId) {
+    history.replaceState({ screenId }, '');
+  } else {
+    history.pushState({ screenId }, '');
+  }
   showScreen(screenId);
 }
 
