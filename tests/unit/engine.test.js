@@ -545,6 +545,71 @@ describe('getStats / dueCount', () => {
 });
 
 // ============================================================
+// getStats: predictedScore
+// ============================================================
+describe('getStats / predictedScore', () => {
+  const questions = [
+    makeQuestion('Q-001', 'S3'),
+    makeQuestion('Q-002', 'S3'),
+    makeQuestion('Q-003', 'EC2'),
+    makeQuestion('Q-004', 'EC2'),
+  ];
+  const now = Date.now();
+
+  it('未回答のみ: predictedScore=0', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.predictedScore).toBe(0);
+    expect(stats.lastCorrectCount).toBe(0);
+  });
+
+  it('2/4問の直近回答が正解: predictedScore=50', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 2, correct: 2, wrong: 0, recentResults: [1, 1], lastAnsweredAt: now, nextReviewAt: now },
+        'Q-002': { attempts: 1, correct: 0, wrong: 1, recentResults: [0],    lastAnsweredAt: now, nextReviewAt: now },
+      },
+      dailyLog: {},
+    };
+    const stats = getStats(questions, state);
+    expect(stats.predictedScore).toBe(50);
+    expect(stats.lastCorrectCount).toBe(1);
+  });
+
+  it('全問の直近回答が正解: predictedScore=100', () => {
+    const state = {
+      questions: Object.fromEntries(
+        questions.map(q => [q.id, { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now }])
+      ),
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).predictedScore).toBe(100);
+  });
+
+  it('直近回答が不正解（recentResults.at(-1)===0）は含まれない', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 3, correct: 2, wrong: 1, recentResults: [1, 1, 0], lastAnsweredAt: now, nextReviewAt: now },
+      },
+      dailyLog: {},
+    };
+    const stats = getStats(questions, state);
+    expect(stats.lastCorrectCount).toBe(0);
+    expect(stats.predictedScore).toBe(0);
+  });
+
+  it('recentResults が空配列の問題はカウントされない', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [], lastAnsweredAt: now, nextReviewAt: now },
+      },
+      dailyLog: {},
+    };
+    const stats = getStats(questions, state);
+    expect(stats.lastCorrectCount).toBe(0);
+  });
+});
+
+// ============================================================
 // isAnswerCorrect: 回答正誤判定
 // ============================================================
 describe('isAnswerCorrect', () => {
