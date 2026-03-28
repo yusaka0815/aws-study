@@ -505,10 +505,23 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
     weeklyEl.innerHTML = stats.weeklyLog.map(day => {
       const barH = Math.round((day.count / maxCount) * 100);
       const isToday = day.label === '今日';
+      // Gradient: correct (green) bottom portion, wrong (red) top portion
+      let barStyle = `height:${barH}%`;
+      if (day.count > 0) {
+        const correctPct = Math.round((day.correct / day.count) * 100);
+        const wrongPct = 100 - correctPct;
+        if (wrongPct > 0 && correctPct > 0) {
+          barStyle += `;background:linear-gradient(to top, #22c55e 0% ${correctPct}%, #ef4444 ${correctPct}% 100%)`;
+        } else if (correctPct === 100) {
+          barStyle += ';background:#22c55e';
+        } else {
+          barStyle += ';background:#ef4444';
+        }
+      }
       return `
         <div class="weekly-col">
           <div class="weekly-bar-wrap">
-            <div class="weekly-bar ${isToday ? 'weekly-bar-today' : ''}" style="height:${barH}%"></div>
+            <div class="weekly-bar ${isToday ? 'weekly-bar-today' : ''}" style="${barStyle}"></div>
           </div>
           <div class="weekly-count">${day.count > 0 ? day.count : ''}</div>
           <div class="weekly-label ${isToday ? 'weekly-label-today' : ''}">${day.label}</div>

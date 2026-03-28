@@ -269,7 +269,9 @@ export function getStats(questions, userState) {
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().slice(0, 10);
     const label = i === 0 ? '今日' : `${d.getMonth() + 1}/${d.getDate()}`;
-    weeklyLog.push({ date: dateStr, count: userState.dailyLog?.[dateStr] ?? 0, label });
+    const count = userState.dailyLog?.[dateStr] ?? 0;
+    const correct = userState.dailyCorrectLog?.[dateStr] ?? 0;
+    weeklyLog.push({ date: dateStr, count, correct, wrong: count - correct, label });
   }
 
   // 過去35日のアクティビティ（カレンダーヒートマップ用）
