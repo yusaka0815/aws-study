@@ -431,10 +431,11 @@ body {
 .chip-bad  { color: var(--danger);  background: var(--danger-dim); }
 
 #question-text {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.7;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.75;
   color: var(--text);
+  letter-spacing: 0.01em;
 }
 
 /* 選択肢 */
@@ -545,9 +546,11 @@ body {
 }
 
 #answer-icon {
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 900;
   line-height: 1;
+  min-width: 44px;
+  text-align: center;
 }
 
 .result-correct #answer-icon { color: var(--success); }
@@ -570,6 +573,17 @@ body {
 }
 
 .next-review.hidden { display: none; }
+
+.correct-labels {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--success);
+  background: var(--success-dim);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+}
+
+.correct-labels.hidden { display: none; }
 
 #explanation-toggle {
   width: 100%;

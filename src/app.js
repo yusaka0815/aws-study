@@ -272,6 +272,11 @@ function handleAnswer(selectedIndices) {
     else playWrongSound();
   }
 
+  // バイブレーションフィードバック（対応デバイスのみ）
+  if (navigator.vibrate) {
+    navigator.vibrate(isCorrect ? 40 : [60, 30, 60]);
+  }
+
   renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt);
 }
 

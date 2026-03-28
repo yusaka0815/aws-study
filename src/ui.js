@@ -170,6 +170,8 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   document.getElementById('multi-submit-area').classList.add('hidden');
   const nextReviewEl = document.getElementById('next-review');
   if (nextReviewEl) nextReviewEl.classList.add('hidden');
+  const correctLabelsEl = document.getElementById('correct-labels');
+  if (correctLabelsEl) correctLabelsEl.classList.add('hidden');
 
   // 複数選択問題の場合: ヒントと提出エリアを表示
   if (question.answers.length > 1) {
@@ -243,6 +245,19 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt)
   // 解説ボタンと次へボタンを表示・有効化
   document.getElementById('explanation-toggle').classList.remove('hidden');
   document.getElementById('next-btn').disabled = false;
+
+  // 複数選択・不正解時: 正解の選択肢を明示
+  const correctLabels = document.getElementById('correct-labels');
+  if (correctLabels) {
+    if (!isCorrect && question.answers.length > 1) {
+      const LABELS = ['A', 'B', 'C', 'D', 'E'];
+      const labelStr = question.answers.map(i => LABELS[i] ?? (i + 1)).join('・');
+      correctLabels.textContent = `正解: ${labelStr}`;
+      correctLabels.classList.remove('hidden');
+    } else {
+      correctLabels.classList.add('hidden');
+    }
+  }
 
   const expEl = document.getElementById('explanation-text');
   const toggleBtn = document.getElementById('explanation-toggle');
