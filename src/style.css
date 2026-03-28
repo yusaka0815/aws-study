@@ -1227,6 +1227,10 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   border-top: 1px solid var(--border);
 }
 
+.stats-danger-section .settings-item {
+  border-top: none;
+}
+
 #stats-exam-name {
   font-size: 13px;
   color: var(--text-secondary);
@@ -1397,6 +1401,11 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cat-accuracy {
@@ -1853,7 +1862,7 @@ button.settings-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 12px;
+  padding: 0;
 }
 
 .back-btn {
@@ -2061,7 +2070,7 @@ button.settings-item {
 /* Safe area対応（iPhone等のノッチ） */
 @supports (padding: max(0px)) {
   .next-btn-wrap {
-    bottom: max(20px, env(safe-area-inset-bottom));
+    bottom: calc(20px + env(safe-area-inset-bottom));
   }
   .app-header {
     padding-top: env(safe-area-inset-top);
