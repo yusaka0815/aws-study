@@ -573,7 +573,9 @@ describe('getStats / predictedScore', () => {
     expect(stats.lastCorrectCount).toBe(0);
   });
 
-  it('2/4問の直近回答が正解: predictedScore=50', () => {
+  it('4問中1問の直近回答が正解: predictedScore=25（未回答は不正解換算）', () => {
+    // predictedScore = lastCorrectCount / total (全問数で割る、未回答=不正解扱い)
+    // Q-001: last=1(正解), Q-002: last=0(不正解), Q-003/Q-004: 未回答 → 1/4=25%
     const state = {
       questions: {
         'Q-001': { attempts: 2, correct: 2, wrong: 0, recentResults: [1, 1], lastAnsweredAt: now, nextReviewAt: now },
@@ -582,8 +584,23 @@ describe('getStats / predictedScore', () => {
       dailyLog: {},
     };
     const stats = getStats(questions, state);
-    expect(stats.predictedScore).toBe(50);
+    expect(stats.predictedScore).toBe(25);
     expect(stats.lastCorrectCount).toBe(1);
+  });
+
+  it('4問中2問の直近回答が正解: predictedScore=50', () => {
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now },
+        'Q-002': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now },
+        'Q-003': { attempts: 1, correct: 0, wrong: 1, recentResults: [0], lastAnsweredAt: now, nextReviewAt: now },
+        'Q-004': { attempts: 1, correct: 0, wrong: 1, recentResults: [0], lastAnsweredAt: now, nextReviewAt: now },
+      },
+      dailyLog: {},
+    };
+    const stats = getStats(questions, state);
+    expect(stats.predictedScore).toBe(50);
+    expect(stats.lastCorrectCount).toBe(2);
   });
 
   it('全問の直近回答が正解: predictedScore=100', () => {
