@@ -1212,6 +1212,11 @@ function setupSwipeGestures() {
       showNextQuestion();
       studyContent.scrollTo(0, 0);
     }
+
+    // 右スワイプ = ブックマークトグル（距離80px以上で誤操作防止）
+    if (dx > 80 && appState.currentQuestion) {
+      document.getElementById('btn-bookmark')?.click();
+    }
   }, { passive: true });
 }
 
@@ -1266,7 +1271,8 @@ function buildProgressMap() {
 function renderHomeScreen() {
   const pm = buildProgressMap();
   const ts = getTodayStats(appState.userState);
-  const currentCode = appState.currentExam?.examCode ?? null;
+  // userState.currentExam を使い、アプリ再起動後も「続きから」ボタンを表示する
+  const currentCode = appState.currentExam?.examCode ?? appState.userState.currentExam ?? null;
   renderExamSelect(EXAM_LIST, selectExam, pm, ts, currentCode, settings.dailyGoal);
 }
 
