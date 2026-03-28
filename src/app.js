@@ -238,8 +238,10 @@ function showNextQuestion() {
   appState.currentQuestion = q;
   appState.answered = false;
 
-  const answeredCount = Object.values(userState.questions)
-    .filter(s => s.attempts > 0).length;
+  const answeredCount = currentExam.questions.filter(q => {
+    const s = userState.questions[q.id];
+    return s && s.attempts > 0;
+  }).length;
 
   const qState = userState.questions[q.id] ?? null;
   const now = Date.now();

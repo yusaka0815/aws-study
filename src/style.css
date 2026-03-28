@@ -662,6 +662,7 @@ body {
   border-radius: var(--radius-sm);
   padding: 14px;
   border: 1px solid var(--border);
+  white-space: pre-wrap;
   scrollbar-width: none; /* Firefox */
 }
 
@@ -1014,6 +1015,7 @@ body {
   text-align: left;
   transition: background 0.15s;
   min-height: 60px;
+  font: inherit;
 }
 
 .settings-section-title + .settings-item {
@@ -1022,6 +1024,19 @@ body {
 
 .settings-item:hover, .settings-item:active {
   background: var(--bg-card-hover);
+}
+
+button.settings-item {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 非インタラクティブな情報アイテムはホバー効果なし */
+.settings-item-static {
+  cursor: default;
+}
+.settings-item-static:hover, .settings-item-static:active {
+  background: transparent;
 }
 
 .settings-item-icon {

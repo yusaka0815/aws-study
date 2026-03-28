@@ -135,12 +135,14 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
  * @param {number} totalQuestions
  * @param {boolean} weakOnly
  * @param {object|null} qState - この問題の過去の回答履歴
+ * @param {number} dueCount - 今すぐ復習が必要な問題数
  */
-export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false, qState = null) {
+export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false, qState = null, dueCount = 0) {
   // プログレスバー
   const pct = totalQuestions > 0 ? Math.round((questionIndex / totalQuestions) * 100) : 0;
   document.getElementById('progress-fill').style.width = `${pct}%`;
-  document.getElementById('progress-text').textContent = `${questionIndex} / ${totalQuestions}`;
+  const dueLabel = dueCount > 0 && !weakOnly ? ` (復習 ${dueCount})` : '';
+  document.getElementById('progress-text').textContent = `${questionIndex} / ${totalQuestions}${dueLabel}`;
 
   // 苦手問題モードバナー
   const weakBanner = document.getElementById('weak-only-banner');
@@ -264,7 +266,7 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt)
   // 複数選択・不正解時: 正解の選択肢を明示
   const correctLabels = document.getElementById('correct-labels');
   if (correctLabels) {
-    if (!isCorrect && question.answers.length > 1) {
+    if (!isCorrect) {
       const LABELS = ['A', 'B', 'C', 'D', 'E'];
       const labelStr = question.answers.map(i => LABELS[i] ?? (i + 1)).join('・');
       correctLabels.textContent = `正解: ${labelStr}`;
