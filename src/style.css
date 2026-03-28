@@ -729,6 +729,7 @@ body {
 .chip-good { color: var(--success); background: var(--success-dim); }
 .chip-mid  { color: #f59e0b;        background: rgba(245,158,11,0.15); }
 .chip-bad  { color: var(--danger);  background: var(--danger-dim); }
+.chip-new  { color: var(--primary); background: var(--primary-dim); }
 
 .question-id {
   font-size: 10px;

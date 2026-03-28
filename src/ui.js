@@ -178,7 +178,11 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   if (qState && qState.attempts > 0) {
     const acc = Math.round((qState.correct / qState.attempts) * 100);
     const chipClass = acc >= 80 ? 'chip-good' : acc >= 60 ? 'chip-mid' : 'chip-bad';
-    historyChip = `<span class="history-chip ${chipClass}">${qState.attempts}回 ${acc}%</span>`;
+    const lastResult = qState.recentResults?.at(-1);
+    const lastIcon = lastResult === 1 ? ' ✓' : lastResult === 0 ? ' ✗' : '';
+    historyChip = `<span class="history-chip ${chipClass}">${qState.attempts}回 ${acc}%${lastIcon}</span>`;
+  } else {
+    historyChip = `<span class="history-chip chip-new">NEW</span>`;
   }
 
   document.getElementById('question-meta').innerHTML =
