@@ -142,6 +142,62 @@ describe('importBackup', () => {
     };
     expect(() => importBackup(JSON.stringify(withBadEntry))).not.toThrow();
   });
+
+  it('examHistory がない場合は空配列を返す', () => {
+    const result = importBackup(JSON.stringify(VALID_BACKUP));
+    expect(Array.isArray(result.examHistory)).toBe(true);
+    expect(result.examHistory.length).toBe(0);
+  });
+
+  it('examHistory を正しく復元する', () => {
+    const backup = {
+      ...VALID_BACKUP,
+      examHistory: [
+        { examCode: 'SAA', date: '2024-01-01T00:00:00Z', total: 20, correct: 15, wrong: 5, pct: 75, passed: true, timeUp: false },
+      ],
+    };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.examHistory.length).toBe(1);
+    expect(result.examHistory[0].examCode).toBe('SAA');
+    expect(result.examHistory[0].correct).toBe(15);
+    expect(result.examHistory[0].passed).toBe(true);
+  });
+
+  it('examHistory の不正エントリは無視される', () => {
+    const backup = {
+      ...VALID_BACKUP,
+      examHistory: [
+        { examCode: 'SAA', date: '2024-01-01T00:00:00Z', total: 20, correct: 15, wrong: 5, pct: 75, passed: true, timeUp: false },
+        { /* no examCode */ date: '2024-01-02T00:00:00Z', total: 10, correct: 5 },
+        null,
+        'invalid',
+      ],
+    };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.examHistory.length).toBe(1); // only valid entry
+  });
+
+  it('bookmarked フィールドを問題データから復元する', () => {
+    const backup = {
+      ...VALID_BACKUP,
+      questions: {
+        'SAA-001': { ...VALID_BACKUP.questions['SAA-001'], bookmarked: true },
+      },
+    };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.questions['SAA-001'].bookmarked).toBe(true);
+  });
+
+  it('bookmarked が false の場合は保存しない', () => {
+    const backup = {
+      ...VALID_BACKUP,
+      questions: {
+        'SAA-001': { ...VALID_BACKUP.questions['SAA-001'], bookmarked: false },
+      },
+    };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.questions['SAA-001'].bookmarked).toBeUndefined();
+  });
 });
 
 // ============================================================
