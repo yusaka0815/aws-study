@@ -396,10 +396,14 @@ function showNextQuestion() {
   appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
   appState.questionStartTime = Date.now();
 
-  // 苦手モードバナーに問題数を追加表示
-  if (settings.weakOnly && weakPoolCount > 0) {
+  // 苦手モードバナーに問題数を追加表示（0件の場合は全問フォールバック中と表示）
+  if (settings.weakOnly) {
     const wb = document.getElementById('weak-only-banner');
-    if (wb) wb.textContent = `🎯 苦手問題モード (${weakPoolCount}問)`;
+    if (wb) {
+      wb.textContent = weakPoolCount > 0
+        ? `🎯 苦手問題モード (${weakPoolCount}問)`
+        : '🎯 苦手問題なし！全問から出題中';
+    }
   }
 }
 
@@ -464,7 +468,19 @@ function handleAnswer(selectedIndices) {
   const isMastered = updatedState.recentResults.length >= 5
     && updatedState.recentResults.slice(-5).every(r => r === 1);
   if (!wasMastered && isMastered) {
-    setTimeout(() => showToast('⭐ マスター達成！', 'success'), 600);
+    // 今この試験で何問マスターしたか確認（マイルストーン通知）
+    const examMasteredCount = appState.currentExam.questions.filter(q => {
+      const s = appState.userState.questions[q.id];
+      if (!s) return false;
+      const r = s.recentResults ?? [];
+      return r.length >= 5 && r.slice(-5).every(v => v === 1);
+    }).length;
+    const MASTERY_MILESTONES = [5, 10, 25, 50, 100];
+    if (MASTERY_MILESTONES.includes(examMasteredCount)) {
+      setTimeout(() => showToast(`🌟 ${examMasteredCount}問マスター達成！`, 'success'), 600);
+    } else {
+      setTimeout(() => showToast('⭐ マスター達成！', 'success'), 600);
+    }
   }
 
   // デイリーログを更新
