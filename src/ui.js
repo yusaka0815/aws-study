@@ -197,7 +197,9 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
 
   // 解説エリア・複数選択提出エリアを隠す・次へボタンをdisabledに
   document.getElementById('answer-area').classList.add('hidden');
-  document.getElementById('next-btn').disabled = true;
+  const nextBtnEl = document.getElementById('next-btn');
+  nextBtnEl.disabled = true;
+  nextBtnEl.textContent = '次の問題へ →';
   document.getElementById('explanation-toggle').classList.add('hidden');
   document.getElementById('explanation-text').classList.add('hidden');
   document.getElementById('multi-submit-area').classList.add('hidden');
@@ -484,23 +486,25 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
   }
 
   stats.categoryList.forEach(cat => {
-    const item = document.createElement('div');
-    item.className = 'category-item';
-
     const accuracy = cat.accuracy !== null ? cat.accuracy : null;
     const barWidth = accuracy !== null ? accuracy : 0;
     const barClass = accuracy === null ? 'bar-neutral' : accuracy >= 80 ? 'bar-good' : accuracy >= 60 ? 'bar-mid' : 'bar-bad';
     const accuracyText = accuracy !== null ? `${accuracy}%` : '未回答';
+    const coveragePct = cat.total > 0 ? Math.round((cat.answered / cat.total) * 100) : 0;
+    const allMastered = accuracy === 100 && cat.answered === cat.total && cat.total > 0;
+
+    const item = document.createElement('div');
+    item.className = `category-item${allMastered ? ' cat-perfect' : ''}`;
 
     item.innerHTML = `
       <div class="cat-header">
-        <span class="cat-name">${cat.name}</span>
+        <span class="cat-name">${cat.name}${allMastered ? ' ⭐' : ''}</span>
         <span class="cat-accuracy ${barClass.replace('bar-', 'acc-')}">${accuracyText}</span>
       </div>
       <div class="cat-bar-bg">
         <div class="cat-bar ${barClass}" style="width: ${barWidth}%"></div>
       </div>
-      <div class="cat-sub">${cat.answered} / ${cat.total} 問回答${cat.due > 0 ? `　<span class="due-badge">復習 ${cat.due}</span>` : ''}　<span class="cat-drill-hint">タップして絞り込み →</span></div>
+      <div class="cat-sub">${cat.answered} / ${cat.total} 問回答 (${coveragePct}%カバー)${cat.due > 0 ? `　<span class="due-badge">復習 ${cat.due}</span>` : ''}　<span class="cat-drill-hint">タップして絞り込み →</span></div>
     `;
 
     if (onDrillCategory) {

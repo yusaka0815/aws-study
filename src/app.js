@@ -702,9 +702,12 @@ function setupStudyListeners() {
         appState.pendingSelections.add(idx);
         btn.classList.add('pending-selected');
       }
-      updateMultiSelectUI(appState.pendingSelections.size, appState.currentQuestion.answers.length);
-      // 1つ以上選択したら次へボタンを有効化
-      document.getElementById('next-btn').disabled = appState.pendingSelections.size === 0;
+      const sel = appState.pendingSelections.size;
+      const req = appState.currentQuestion.answers.length;
+      updateMultiSelectUI(sel, req);
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.disabled = sel === 0;
+      nextBtn.textContent = sel > 0 ? `回答を提出する (${sel}/${req}) →` : '次の問題へ →';
     } else {
       // 単一選択: 即回答
       handleAnswer([idx]);

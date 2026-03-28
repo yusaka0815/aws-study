@@ -1050,6 +1050,10 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   border-color: #2dd4bf;
 }
 
+.cat-perfect {
+  border-color: var(--success);
+}
+
 .cat-header {
   display: flex;
   justify-content: space-between;
@@ -1610,30 +1614,6 @@ button.settings-item {
 
 .multi-ready #multi-count {
   color: var(--success);
-}
-
-#multi-submit-btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: var(--radius);
-  background: var(--primary);
-  color: white;
-  border: none;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.2s;
-}
-
-#multi-submit-btn:not(:disabled):active {
-  background: var(--primary-dark);
-}
-
-#multi-submit-btn:disabled {
-  background: var(--border);
-  color: var(--text-muted);
-  cursor: not-allowed;
-  opacity: 0.5;
 }
 
 /* 複数選択問題：選択中のボタン */
