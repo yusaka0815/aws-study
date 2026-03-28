@@ -121,13 +121,16 @@ function saveSetting(key, value) {
   localStorage.setItem(`aws-study-${key}`, value);
 }
 
+const VALID_FONT_SIZES = ['small', 'medium', 'large'];
+const VALID_DAILY_GOALS = [10, 20, 30, 50];
+
 const settings = {
   sound: loadSetting('sound', false),
   wakeLock: loadSetting('wake-lock', false),
   weakOnly: loadSetting('weak-only', false),
   autoNext: loadSetting('auto-next', false),
-  dailyGoal: loadSetting('daily-goal', 30),
-  fontSize: loadSetting('font-size', 'medium'),
+  dailyGoal: (() => { const v = loadSetting('daily-goal', 30); return VALID_DAILY_GOALS.includes(v) ? v : 30; })(),
+  fontSize: (() => { const v = loadSetting('font-size', 'medium'); return VALID_FONT_SIZES.includes(v) ? v : 'medium'; })(),
 };
 
 // 文字サイズを即時反映
