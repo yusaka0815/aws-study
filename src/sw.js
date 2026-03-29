@@ -3,7 +3,7 @@
  * Service Worker - オフラインキャッシュ
  */
 
-const CACHE_NAME = 'aws-study-v77';
+const CACHE_NAME = 'aws-study-v78';
 
 // アプリシェル: 常にネットワーク優先で更新を即座に反映
 const APP_SHELL = new Set([
@@ -32,6 +32,7 @@ const PRECACHE_URLS = [
   './wake-lock.js',
   './manifest.json',
   './icons/icon.svg',
+  './icons/icon-192.png',
   './data/saa.json',
   './data/mla.json',
 ];

@@ -364,6 +364,7 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
   buttons.forEach((btn, displayPos) => {
     btn.disabled = true;
     btn.classList.remove('pending-selected');
+    btn.removeAttribute('aria-pressed');
     const originalIdx = shuffleMap ? shuffleMap[displayPos] : displayPos;
     if (selectedIndices.includes(displayPos)) {
       btn.classList.add('selected');
