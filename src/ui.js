@@ -691,7 +691,8 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
   if (calEl && Array.isArray(stats.calendarData)) {
     calEl.innerHTML = stats.calendarData.map(({ date, count, isToday }) => {
       const intensity = count === 0 ? 0 : count < 5 ? 1 : count < 15 ? 2 : count < 30 ? 3 : 4;
-      return `<div class="cal-cell cal-int-${intensity}${isToday ? ' cal-today' : ''}" title="${date}: ${count}問"></div>`;
+      const label = count > 0 ? `${date}: ${count}問` : `${date}: 未学習`;
+      return `<div class="cal-cell cal-int-${intensity}${isToday ? ' cal-today' : ''}" title="${label}" aria-label="${label}"></div>`;
     }).join('');
   }
 
