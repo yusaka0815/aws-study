@@ -119,6 +119,18 @@ const appState = {
 };
 
 // ============================================================
+// localStorage 保存（失敗時に1回だけ警告）
+// ============================================================
+let _saveWarnShown = false;
+function persistState() {
+  const ok = saveState(appState.userState);
+  if (!ok && !_saveWarnShown) {
+    _saveWarnShown = true;
+    showToast('⚠️ データ保存に失敗しました。ストレージ容量を確認してください', 'error');
+  }
+}
+
+// ============================================================
 // 設定（localStorage永続化）
 // ============================================================
 function loadSetting(key, defaultValue) {
@@ -254,7 +266,7 @@ async function selectExam(examCode) {
     appState.currentExam = await loadExamData(examMeta);
     appState.userState.currentExam = examCode;
     appState.lastQuestionId = null;
-    saveState(appState.userState);
+    persistState();
     showNextQuestion();
   } catch (e) {
     console.error(e);
@@ -547,7 +559,7 @@ function handleAnswer(selectedIndices) {
     if (nudgeEl) nudgeEl.classList.remove('hidden');
   }
 
-  saveState(appState.userState);
+  persistState();
 
   if (settings.sound) {
     if (isCorrect) playCorrectSound();
@@ -856,7 +868,7 @@ function endExamMode(timeUp = false) {
     if (appState.userState.examHistory.length > 50) {
       appState.userState.examHistory = appState.userState.examHistory.slice(-50);
     }
-    saveState(appState.userState);
+    persistState();
   }
 
   const overlay = document.getElementById('exam-modal-overlay');
@@ -986,7 +998,7 @@ function setupStudyListeners() {
     const qState = appState.userState.questions[id] ?? { attempts: 0 };
     qState.bookmarked = !qState.bookmarked;
     appState.userState.questions[id] = qState;
-    saveState(appState.userState);
+    persistState();
     const btn = document.getElementById('btn-bookmark');
     btn.textContent = qState.bookmarked ? '★' : '☆';
     btn.classList.toggle('bookmarked', qState.bookmarked);
@@ -1051,7 +1063,7 @@ function setupNavigationListeners() {
       if (key.startsWith(prefix)) delete appState.userState.questions[key];
     }
     appState.userState.examHistory = (appState.userState.examHistory ?? []).filter(r => r.examCode !== code);
-    saveState(appState.userState);
+    persistState();
     showToast(`${code} をリセットしました`, 'success');
     showStatsScreen(); // 統計画面を再描画
   });
