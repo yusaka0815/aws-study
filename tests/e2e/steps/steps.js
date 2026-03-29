@@ -52,6 +52,8 @@ Given('SAA試験で学習中', async ({ page }) => {
   await page.waitForLoadState('load');
   await page.waitForSelector('.exam-card');
   await page.locator('.exam-card').filter({ hasText: 'SAA' }).click();
+  // study screen がアクティブになるまで待機（SW再読込との競合を防ぐ）
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
   await waitForQuestion(page);
 });
 
@@ -60,6 +62,7 @@ Given('SAA試験で1問回答済み', async ({ page }) => {
   await page.waitForLoadState('load');
   await page.waitForSelector('.exam-card');
   await page.locator('.exam-card').filter({ hasText: 'SAA' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
   await waitForQuestion(page);
   await answerCurrentQuestion(page);
 });
@@ -70,11 +73,13 @@ Given('SAA試験で1問回答済み', async ({ page }) => {
 
 When('SAA試験カードをタップする', async ({ page }) => {
   await page.locator('.exam-card').filter({ hasText: 'SAA' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
   await waitForQuestion(page);
 });
 
 When('MLA試験カードをタップする', async ({ page }) => {
   await page.locator('.exam-card').filter({ hasText: 'MLA' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
   await waitForQuestion(page);
 });
 

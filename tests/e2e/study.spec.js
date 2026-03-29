@@ -13,9 +13,11 @@ import { test, expect } from '@playwright/test';
 /** 試験選択画面でSAAを選んで問題画面に移動 */
 async function selectExam(page, examCode = 'SAA') {
   await page.goto('/');
-  // exam-card が描画されるまで待機（networkidle より信頼性が高い）
+  // exam-card が描画されるまで待機
   await page.waitForSelector('.exam-card');
   await page.locator('.exam-card').filter({ hasText: examCode }).click();
+  // study screen がアクティブになるまで待機（SW再読込との競合を防ぐ）
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
   // 問題が読み込まれ、選択肢ボタンが描画されるまで待機
   await page.waitForFunction(
     () => document.getElementById('question-text')?.textContent !== '問題を読み込んでいます...'
