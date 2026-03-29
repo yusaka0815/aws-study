@@ -122,6 +122,12 @@ test.describe('問題表示（SAA）', () => {
     await expect(page.locator('#screen-select')).not.toBeVisible();
   });
 
+  test('ドキュメントタイトルに試験名と学習中が含まれる', async ({ page }) => {
+    const title = await page.title();
+    expect(title).toContain('Solutions Architect');
+    expect(title).toContain('学習中');
+  });
+
   test('問題文が表示される', async ({ page }) => {
     const questionText = page.locator('#question-text');
     await expect(questionText).toBeVisible();
