@@ -236,7 +236,8 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   if (weakBanner) weakBanner.classList.toggle('hidden', !weakOnly);
 
   // カテゴリ・難易度・問題タイプ・個人成績チップ
-  const diffStars = '★'.repeat(question.difficulty) + '☆'.repeat(3 - question.difficulty);
+  const diff = question.difficulty ?? 2;
+  const diffStars = '★'.repeat(diff) + '☆'.repeat(3 - diff);
   const typeTag = question.answers.length > 1
     ? `<span class="multi-badge">${question.answers.length}つ選択</span>`
     : '';
