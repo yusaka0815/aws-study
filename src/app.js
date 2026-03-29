@@ -1349,6 +1349,18 @@ function setupKeyboardShortcuts() {
       return;
     }
 
+    // G: 設定画面を開く
+    if (key === 'g' || key === 'G') {
+      document.getElementById('btn-settings')?.click();
+      return;
+    }
+
+    // H: ホーム（試験選択画面）に戻る
+    if (key === 'h' || key === 'H') {
+      document.getElementById('btn-change-exam')?.click();
+      return;
+    }
+
     // Escape: アクティブなフィルター・モードを全解除
     if (key === 'Escape') {
       const hasFilter = appState.categoryFilter || appState.reviewMode || appState.bookmarkMode;
