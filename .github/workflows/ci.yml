@@ -69,7 +69,10 @@ jobs:
       - name: Install Playwright browsers (Chromium only for CI)
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
+      - name: Generate BDD test files from feature files
+        run: npx bddgen
+
+      - name: Run E2E tests (spec + BDD)
         run: |
           set -o pipefail
           npx playwright test 2>&1 | tee /tmp/pw-output.txt || {
