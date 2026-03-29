@@ -310,6 +310,9 @@ export function getStats(questions, userState) {
   }).length;
   const predictedScore = total > 0 ? Math.round((lastCorrectCount / total) * 100) : 0;
 
+  // 過去7日間のうちアクティブだった日数（North Star Metric）
+  const weeklyActiveDays = weeklyLog.filter(d => d.count > 0).length;
+
   return {
     total,
     answered,
@@ -325,6 +328,7 @@ export function getStats(questions, userState) {
     bookmarkCount,
     categoryList,
     weeklyLog,
+    weeklyActiveDays,
     calendarData,
     activeDays,
     worstQuestions,

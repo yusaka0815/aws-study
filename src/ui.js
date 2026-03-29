@@ -614,6 +614,10 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       <div class="stat-value">${stats.activeDays ?? 0}<span class="stat-unit">日</span></div>
       <div class="stat-label">学習日数</div>
     </div>
+    <div class="stat-card ${(stats.weeklyActiveDays ?? 0) >= 5 ? 'stat-card-master' : (stats.weeklyActiveDays ?? 0) >= 3 ? 'stat-card-bookmark' : ''}">
+      <div class="stat-value">${stats.weeklyActiveDays ?? 0}<span class="stat-unit">/7日</span></div>
+      <div class="stat-label">今週の継続</div>
+    </div>
   `;
 
   // 週間チャート
