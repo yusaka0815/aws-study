@@ -173,13 +173,14 @@ async function registerServiceWorker() {
     });
 
     // SWが切り替わったら自動リロード（localStorageは保持）
+    // navigator.webdriver = true の自動テスト環境ではリロードをスキップ
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
+      if (!navigator.webdriver) window.location.reload();
     });
 
     // SWのactivateから更新通知が届いた場合もリロード
     navigator.serviceWorker.addEventListener('message', event => {
-      if (event.data?.type === 'SW_UPDATED') {
+      if (event.data?.type === 'SW_UPDATED' && !navigator.webdriver) {
         window.location.reload();
       }
     });
