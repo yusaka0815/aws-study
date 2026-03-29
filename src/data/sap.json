@@ -1971,7 +1971,7 @@
     },
     {
       "id": "SAP-121",
-      "category": "セキュリティ・コンプライアンス",
+      "category": "セキュリティ",
       "question": "大規模なマルチアカウント環境でAWS CloudTrailのログを一元管理し、ログの改ざん検知とコンプライアンス要件を満たす構成として正しいものをすべて選べ。",
       "choices": [
         "Organizations全体に組織証跡を有効化し、専用のセキュリティアカウントのS3バケットにログを集約する",
@@ -2024,7 +2024,7 @@
     },
     {
       "id": "SAP-124",
-      "category": "マイグレーション",
+      "category": "移行",
       "question": "大規模なOracle Data Warehouseをクラウドネイティブなデータプラットフォームへ移行する際の段階的アプローチとして正しいものをすべて選べ。",
       "choices": [
         "AWS Schema Conversion Tool（SCT）でOracle→Redshiftへのスキーマ・コード変換を評価し、自動変換率を確認する",
@@ -2061,7 +2061,7 @@
     },
     {
       "id": "SAP-126",
-      "category": "セキュリティ・コンプライアンス",
+      "category": "セキュリティ",
       "question": "AWS Organizations環境でゼロトラストセキュリティモデルを実装する際のコントロールとして最も適切なものをすべて選べ。",
       "choices": [
         "IAM Identity Center（SSO）でフェデレーション認証を集約し、最小権限の一時的認証情報を発行する",
@@ -2098,7 +2098,7 @@
     },
     {
       "id": "SAP-128",
-      "category": "アーキテクチャパターン",
+      "category": "アーキテクチャ設計",
       "question": "イベント駆動アーキテクチャにおいて、複数のマイクロサービスにまたがるデータの結果整合性を保証する設計パターンとして正しいものをすべて選べ。",
       "choices": [
         "Transactional Outboxパターンを使用してDBへの書き込みとイベント発行をアトミックに処理する",
@@ -2117,7 +2117,7 @@
     },
     {
       "id": "SAP-129",
-      "category": "ストレージ・データベース",
+      "category": "データベース",
       "question": "ペタバイト規模のデータレイクをAWS上に構築する際のアクセスコントロールとガバナンス設計として正しいものをすべて選べ。",
       "choices": [
         "AWS Lake Formationで列レベル・行レベルのセキュリティを実装しAthena/Glue/EMRへのデータアクセスを制御する",
@@ -2136,7 +2136,7 @@
     },
     {
       "id": "SAP-130",
-      "category": "コンプライアンス・ガバナンス",
+      "category": "セキュリティ",
       "question": "金融機関がAWS上でPCI DSS準拠のカード決済システムを構築する際の必須要件として正しいものをすべて選べ。",
       "choices": [
         "カード会員データ（CHD）を保存するDBにはAWS KMS CMKで暗号化し、キーポリシーでアクセスを最小権限に制限する",
@@ -2172,7 +2172,7 @@
     },
     {
       "id": "SAP-132",
-      "category": "アーキテクチャパターン",
+      "category": "アーキテクチャ設計",
       "question": "大規模なマルチテナントSaaSアプリケーションのテナント分離戦略として、セキュリティと運用効率のバランスが最も取れているものはどれか？",
       "choices": [
         "テナントごとに完全に独立したAWSアカウントを作成するアカウントレベル分離（サイロモデル）",
@@ -2188,7 +2188,7 @@
     },
     {
       "id": "SAP-133",
-      "category": "マイグレーション",
+      "category": "移行",
       "question": "物理サーバー上のWindows Server 2012（EOL済み）ワークロードをAWSへ移行する際の戦略として正しいものをすべて選べ。",
       "choices": [
         "AWS MGN（Application Migration Service）でエージェントベースのリフト&シフトを実行し、移行後にOS更新を計画する",
@@ -2206,7 +2206,7 @@
     },
     {
       "id": "SAP-134",
-      "category": "セキュリティ・コンプライアンス",
+      "category": "セキュリティ",
       "question": "内部脅威（Insider Threat）対策としてAWS環境の異常な操作を検知・対応するためのアーキテクチャとして正しいものをすべて選べ。",
       "choices": [
         "GuardDutyの脅威インテリジェンスフィードとML異常検知で通常と異なるAPIコール、認証情報漏洩を検知する",
@@ -2225,7 +2225,7 @@
     },
     {
       "id": "SAP-135",
-      "category": "ストレージ・データベース",
+      "category": "データベース",
       "question": "グローバルECサイトで商品カタログ（読み取り多、更新少）と注文管理（強整合性必須）を同一DynamoDBテーブルで扱う際の設計として正しいものをすべて選べ。",
       "choices": [
         "商品カタログ読み取りにDAX（DynamoDB Accelerator）クラスターを追加してマイクロ秒レスポンスを実現する",
@@ -2320,7 +2320,7 @@
     },
     {
       "id": "SAP-140",
-      "category": "マイグレーション",
+      "category": "移行",
       "question": "500TBのオンプレミスNASストレージをAWS S3へ移行する最も効率的な方法として正しいものをすべて選べ。",
       "choices": [
         "AWS Snowball Edgeを複数台使用してオフラインでデータをS3に転送する",
@@ -2338,7 +2338,7 @@
     },
     {
       "id": "SAP-141",
-      "category": "セキュリティ・コンプライアンス",
+      "category": "セキュリティ",
       "question": "AWSでSOC 2 Type II準拠を達成するために必要なコントロールの実装として正しいものをすべて選べ。",
       "choices": [
         "AWS CloudTrailで全APIコールを記録しS3に90日以上保存するアクセスログ管理を実装する",
@@ -2357,7 +2357,7 @@
     },
     {
       "id": "SAP-142",
-      "category": "アーキテクチャパターン",
+      "category": "アーキテクチャ設計",
       "question": "サーバーレスアーキテクチャのコールドスタート問題を軽減する戦略として正しいものをすべて選べ。",
       "choices": [
         "Lambda Provisioned Concurrencyを使用して事前初期化済みインスタンスを常時維持する",
@@ -2376,7 +2376,7 @@
     },
     {
       "id": "SAP-143",
-      "category": "ストレージ・データベース",
+      "category": "データベース",
       "question": "金融システムでAurora PostgreSQLの高可用性と性能を最大化する構成として正しいものをすべて選べ。",
       "choices": [
         "Aurora Multi-AZで最大15のリードレプリカを配置しアプリケーションがCluster Reader Endpointで読み取り負荷を分散する",
@@ -2429,7 +2429,7 @@
     },
     {
       "id": "SAP-146",
-      "category": "セキュリティ・コンプライアンス",
+      "category": "セキュリティ",
       "question": "AWS Control TowerでLanding Zoneを展開後にOrganizations全体に適用するセキュリティベースラインとして正しいものをすべて選べ。",
       "choices": [
         "必須コントロール（Mandatory Guardrails）として全組織でCloudTrailとConfig記録を強制的に有効化する",
@@ -2448,7 +2448,7 @@
     },
     {
       "id": "SAP-147",
-      "category": "アーキテクチャパターン",
+      "category": "アーキテクチャ設計",
       "question": "イベントドリブンアーキテクチャにおけるAmazon EventBridgeのルールとパターンマッチングの特性として正しいものをすべて選べ。",
       "choices": [
         "イベントパターンは最大5層のネストされたJSONフィールドに対してコンテンツベースフィルタリングが可能",
@@ -2467,7 +2467,7 @@
     },
     {
       "id": "SAP-148",
-      "category": "コンプライアンス・ガバナンス",
+      "category": "セキュリティ",
       "question": "GDPRの「忘れられる権利（Right to be Forgotten）」に対応するAWSアーキテクチャとして正しいものをすべて選べ。",
       "choices": [
         "個人データをS3に保存し削除リクエスト時にS3 Object Deletionと全バックアップからの削除を確実に実行する",
@@ -2561,7 +2561,7 @@
     },
     {
       "id": "SAP-153",
-      "category": "セキュリティ・コンプライアンス",
+      "category": "セキュリティ",
       "question": "AWSのデータ主権（Data Sovereignty）要件に対応するためのサービスとコントロールとして正しいものをすべて選べ。",
       "choices": [
         "AWS Dedicated Hostsで特定のEC2物理サーバーを占有し他テナントとのハードウェア共有を排除する",
@@ -2580,7 +2580,7 @@
     },
     {
       "id": "SAP-154",
-      "category": "ストレージ・データベース",
+      "category": "データベース",
       "question": "Amazon ElastiCacheのRedisとMemcachedの使い分けと高度な機能として正しいものをすべて選べ。",
       "choices": [
         "RedisのSorted SetsでリアルタイムランキングボードをO(log N)の時間複雑度で実装する",
@@ -2599,7 +2599,7 @@
     },
     {
       "id": "SAP-155",
-      "category": "アーキテクチャパターン",
+      "category": "アーキテクチャ設計",
       "question": "大規模分散システムのAPI設計においてbackward/forward compatibilityを維持するバージョニング戦略として正しいものをすべて選べ。",
       "choices": [
         "APIのバージョンをURIパスに含める（/v1/users, /v2/users）Semantic Versioningアプローチを採用する",
@@ -2637,7 +2637,7 @@
     },
     {
       "id": "SAP-157",
-      "category": "マイグレーション",
+      "category": "移行",
       "question": "モノリシックJavaアプリケーションをAWSマイクロサービスに段階的に移行するためのDecomposition戦略として正しいものをすべて選べ。",
       "choices": [
         "Strangler Fig PatternでAPI GatewayをFacadeとして使用し新機能は新サービスに、既存機能はモノリスにルーティングする",
@@ -2675,7 +2675,7 @@
     },
     {
       "id": "SAP-159",
-      "category": "セキュリティ・コンプライアンス",
+      "category": "セキュリティ",
       "question": "AWSのシークレット管理と証明書ライフサイクル管理の自動化として正しいものをすべて選べ。",
       "choices": [
         "Secrets Managerのシークレットローテーションで30〜90日ごとに自動的に認証情報を更新してLambdaで新旧値を管理する",
@@ -2694,7 +2694,7 @@
     },
     {
       "id": "SAP-160",
-      "category": "Well-Architected",
+      "category": "アーキテクチャ設計",
       "question": "AWS Well-Architected Framework のSustainability（持続可能性）柱のベストプラクティスとして正しいものをすべて選べ。",
       "choices": [
         "Graviton（ARM64）プロセッサへの移行でx86比最大60%のエネルギー効率向上を実現する",
