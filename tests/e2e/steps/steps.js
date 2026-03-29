@@ -261,11 +261,12 @@ Then('バックアップセクションが表示される', async ({ page }) => 
 });
 
 Then('コンテンツがスクロール可能である', async ({ page }) => {
-  const scrollable = await page.evaluate(() => {
+  // scrollHeight > clientHeight はビューポートサイズに依存するため overflow-y を確認
+  const overflowY = await page.evaluate(() => {
     const el = document.querySelector('.settings-content');
-    return el.scrollHeight > el.clientHeight;
+    return getComputedStyle(el).overflowY;
   });
-  expect(scrollable).toBe(true);
+  expect(overflowY).toBe('auto');
 });
 
 Then('問題文のフォントサイズが大きくなる', async ({ page }) => {
