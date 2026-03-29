@@ -212,6 +212,14 @@ function navigateTo(screenId) {
     history.pushState({ screenId }, '');
   }
   showScreen(screenId);
+  const examName = document.getElementById('header-exam-name')?.textContent || '';
+  const titles = {
+    'screen-select': 'AWS Certification Study',
+    'screen-study': examName ? `${examName} 学習中 — AWS Study` : 'AWS Certification Study',
+    'screen-stats': examName ? `${examName} 統計 — AWS Study` : '統計 — AWS Study',
+    'screen-settings': '設定 — AWS Study',
+  };
+  document.title = titles[screenId] ?? 'AWS Certification Study';
 }
 
 // ============================================================
