@@ -110,7 +110,7 @@ async function startServer() {
 
     // ── 6. 次の問題へ（2問目）──
     await mpage.locator('#next-btn').click();
-    await mpage.waitForFunction(() => document.getElementById('answer-area')?.classList.contains('hidden'));
+    await waitForQuestion(mpage);
     await capture(mpage, '06_study_mobile_q2', '2問目（モバイル）');
 
     // ── 7. スキップ ──
@@ -120,7 +120,7 @@ async function startServer() {
 
     // ── 8. 試験選択に戻る ──
     await mpage.locator('#next-btn').click();
-    await mpage.waitForFunction(() => document.getElementById('answer-area')?.classList.contains('hidden'));
+    await waitForQuestion(mpage);
     // 試験変更
     const changeBtn = mpage.locator('#btn-change-exam');
     if (await changeBtn.isVisible()) {

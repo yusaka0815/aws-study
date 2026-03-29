@@ -1356,7 +1356,10 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   gap: 10px;
 }
 
-/* 6カードは2列3行で自然にレイアウト */
+/* 奇数枚時: 末尾の孤立カードを全幅に */
+#stats-overview > .stat-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
 
 .stat-card {
   background: var(--bg-card);
