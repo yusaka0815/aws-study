@@ -3,7 +3,7 @@
  * Service Worker - オフラインキャッシュ
  */
 
-const CACHE_NAME = 'aws-study-v92';
+const CACHE_NAME = 'aws-study-v93';
 
 // アプリシェル: 常にネットワーク優先で更新を即座に反映
 const APP_SHELL = new Set([
@@ -33,8 +33,16 @@ const PRECACHE_URLS = [
   './manifest.json',
   './icons/icon.svg',
   './icons/icon-192.png',
-  './data/saa.json',
+  './icons/icon-512.png',
+  './data/aif.json',
+  './data/clf.json',
+  './data/dea.json',
+  './data/dop.json',
+  './data/dva.json',
   './data/mla.json',
+  './data/saa.json',
+  './data/sap.json',
+  './data/soa.json',
 ];
 
 // ============================================================
