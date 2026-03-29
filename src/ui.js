@@ -306,7 +306,14 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.index = displayPos;
-    btn.innerHTML = `<span class="choice-label">${CHOICE_LABELS[displayPos] ?? displayPos + 1}</span><span class="choice-text">${question.choices[originalIdx]}</span>`;
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'choice-label';
+    labelSpan.textContent = CHOICE_LABELS[displayPos] ?? String(displayPos + 1);
+    const textSpan = document.createElement('span');
+    textSpan.className = 'choice-text';
+    textSpan.textContent = question.choices[originalIdx];
+    btn.appendChild(labelSpan);
+    btn.appendChild(textSpan);
     if (isMulti) btn.setAttribute('aria-pressed', 'false');
     choicesEl.appendChild(btn);
   });
