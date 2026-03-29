@@ -733,7 +733,7 @@ function showExamModeModal() {
       ? `<p style="margin-bottom:8px;">現在のスコア: <span class="${scoreClass}" style="font-weight:700;">${appState.examCorrect}/${answered}問正解 (${scorePct}%)</span></p>`
       : '';
     content.innerHTML = `
-      <h3>📝 試験中 (問${answered}/${total})</h3>
+      <h3 id="exam-modal-title">📝 試験中 (問${answered}/${total})</h3>
       <p style="margin-bottom:8px;">残り時間: ${min}:${sec}</p>
       ${scoreStr}
       <div class="exam-modal-actions">
@@ -758,7 +758,7 @@ function showExamModeModal() {
   function renderStart() {
     const timeMins = selectedCount * 2;
     content.innerHTML = `
-      <h3>📝 模擬試験モード</h3>
+      <h3 id="exam-modal-title">📝 模擬試験モード</h3>
       <p>実際の試験を想定したランダム出題です。SRS記録は更新されません。</p>
       <div class="exam-modal-count-row">
         ${options.map(n => `<button class="exam-count-btn${n === selectedCount ? ' selected' : ''}" data-count="${n}">${n}問</button>`).join('')}
@@ -787,6 +787,11 @@ function showExamModeModal() {
 
   renderStart();
   overlay.classList.remove('hidden');
+  // フォーカスをモーダル内の最初のボタンに移動（ARIA dialog ベストプラクティス）
+  setTimeout(() => {
+    const firstBtn = content.querySelector('button');
+    if (firstBtn) firstBtn.focus();
+  }, 50);
 }
 
 function startExamMode(count) {
