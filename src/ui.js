@@ -299,11 +299,13 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
     [shuffleMap[i], shuffleMap[j]] = [shuffleMap[j], shuffleMap[i]];
   }
 
+  const isMulti = question.answers.length > 1;
   shuffleMap.forEach((originalIdx, displayPos) => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.index = displayPos;
     btn.innerHTML = `<span class="choice-label">${CHOICE_LABELS[displayPos] ?? displayPos + 1}</span><span class="choice-text">${question.choices[originalIdx]}</span>`;
+    if (isMulti) btn.setAttribute('aria-pressed', 'false');
     choicesEl.appendChild(btn);
   });
 
@@ -336,6 +338,10 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   void card.offsetHeight; // reflow を強制してアニメーションをリセット
   card.classList.add('entering');
   choicesEl.classList.add('entering');
+
+  // スクリーンリーダー向けフォーカス管理: アニメーション後に問題文へ移動
+  const qtEl = document.getElementById('question-text');
+  if (qtEl) setTimeout(() => qtEl.focus({ preventScroll: true }), 200);
 
   return shuffleMap;
 }

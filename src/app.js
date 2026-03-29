@@ -974,9 +974,11 @@ function setupStudyListeners() {
       if (appState.pendingSelections.has(idx)) {
         appState.pendingSelections.delete(idx);
         btn.classList.remove('pending-selected');
+        btn.setAttribute('aria-pressed', 'false');
       } else {
         appState.pendingSelections.add(idx);
         btn.classList.add('pending-selected');
+        btn.setAttribute('aria-pressed', 'true');
       }
       const sel = appState.pendingSelections.size;
       const req = appState.currentQuestion.answers.length;
