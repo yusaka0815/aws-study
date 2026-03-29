@@ -91,12 +91,14 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
     const lastAt = lastStudiedMap[exam.examCode] ?? 0;
     const lastText = lastAt ? fmtLastStudied(lastAt) : null;
 
-    // 予測スコア（またはフォールバックで正答率）に応じたカラークラス
-    const displayScore = predicted !== null ? predicted : accuracy;
+    // カバー率20%未満は予測スコアが統計的に無意味 → 正答率のみ表示（B-01と整合）
+    const coverageReady = total > 0 && (answered / total) >= 0.2;
+    const displayScore = coverageReady ? (predicted !== null ? predicted : accuracy) : accuracy;
     let scoreClass = '';
     if (displayScore !== null) {
       scoreClass = displayScore >= 72 ? 'acc-good' : displayScore >= 50 ? 'acc-mid' : 'acc-bad';
     }
+    const scoreLabel = coverageReady && predicted !== null ? `予測${displayScore}%` : (displayScore !== null ? `正答率${displayScore}%` : '');
 
     const dueBadge = due > 0
       ? `<span class="due-badge">復習 ${due}</span>`
@@ -117,7 +119,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       </div>
       <div class="exam-card-meta">
         ${answered > 0
-          ? `<div class="exam-card-badges">${dueBadge}${masteredCount > 0 ? `<span class="exam-mastered-badge">⭐${masteredCount}</span>` : ''}<span class="exam-progress">${answered}/${total}問<span class="exam-accuracy ${scoreClass}"> 予測${displayScore}%</span></span></div>`
+          ? `<div class="exam-card-badges">${dueBadge}${masteredCount > 0 ? `<span class="exam-mastered-badge">⭐${masteredCount}</span>` : ''}<span class="exam-progress">${answered}/${total}問${scoreLabel ? `<span class="exam-accuracy ${scoreClass}"> ${scoreLabel}</span>` : ''}</span></div>`
           : `<div class="exam-card-badges">${dueBadge}<span class="exam-new-label">はじめる →</span>${exam.estimatedDays ? `<span class="exam-estimated-days">📅 目安 ${exam.estimatedDays}日</span>` : ''}</div>`}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
