@@ -229,6 +229,8 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   // プログレスバー
   const pct = totalQuestions > 0 ? Math.round((questionIndex / totalQuestions) * 100) : 0;
   document.getElementById('progress-fill').style.width = `${pct}%`;
+  const progressBar = document.getElementById('progress-bar');
+  if (progressBar) progressBar.setAttribute('aria-valuenow', pct);
   const dueLabel = dueCount > 0 && !weakOnly ? ` (復習 ${dueCount})` : '';
   const todayLabel = todayCount > 0 || dailyGoal > 0 ? `　今日 ${todayCount}/${dailyGoal}問` : '';
   document.getElementById('progress-text').textContent = `${questionIndex} / ${totalQuestions}${dueLabel}${todayLabel}`;
