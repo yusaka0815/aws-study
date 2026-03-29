@@ -66,10 +66,9 @@ test.describe('起動・試験選択画面', () => {
 
   test('exam-cardにhover CSSルールが定義されている', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.exam-card');
-    // SW が controllerchange → reload を起こす場合があるので安定を待つ
-    await page.waitForLoadState('load');
-    const hasHoverRule = await page.evaluate(() => {
+    // SW が controllerchange → reload を起こす場合があるので、
+    // styleSheet が読み込まれるまでポーリングして安定させる
+    const hasHoverRule = await page.waitForFunction(() => {
       for (const sheet of document.styleSheets) {
         try {
           for (const rule of sheet.cssRules) {
@@ -78,8 +77,8 @@ test.describe('起動・試験選択画面', () => {
         } catch (_) { /* cross-origin sheet */ }
       }
       return false;
-    });
-    expect(hasHoverRule).toBe(true);
+    }, { timeout: 15000 });
+    expect(await hasHoverRule.jsonValue()).toBe(true);
   });
 
   test('試験名が正しく表示される', async ({ page }) => {
