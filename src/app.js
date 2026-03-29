@@ -393,7 +393,8 @@ function showNextQuestion() {
     const s = userState.questions[pq.id];
     return s && s.attempts > 0 && s.nextReviewAt <= now;
   }).length;
-  appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
+  const { todayCount: todayCnt } = getTodayStats(appState.userState);
+  appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount, todayCnt, settings.dailyGoal);
   appState.questionStartTime = Date.now();
 
   // 初回ヒント: 一度も回答したことがない場合のみ表示

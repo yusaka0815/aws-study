@@ -136,7 +136,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   const resumeReviewEl = document.getElementById('select-resume-review');
   if (resumeEl) {
     if (currentExamCode && counts[currentExamCode] > 0) {
-      resumeEl.textContent = `▶ ${currentExamCode} の続きから`;
+      resumeEl.textContent = `▶ ${currentExamCode} の続きをやる`;
       resumeEl.dataset.exam = currentExamCode;
       resumeEl.classList.remove('hidden');
       // 復習待ちクイックスタートボタン
@@ -186,13 +186,16 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
  * @param {boolean} weakOnly
  * @param {object|null} qState - この問題の過去の回答履歴
  * @param {number} dueCount - 今すぐ復習が必要な問題数
+ * @param {number} todayCount - 今日の回答数
+ * @param {number} dailyGoal - 1日の目標問題数
  */
-export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false, qState = null, dueCount = 0) {
+export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false, qState = null, dueCount = 0, todayCount = 0, dailyGoal = 30) {
   // プログレスバー
   const pct = totalQuestions > 0 ? Math.round((questionIndex / totalQuestions) * 100) : 0;
   document.getElementById('progress-fill').style.width = `${pct}%`;
   const dueLabel = dueCount > 0 && !weakOnly ? ` (復習 ${dueCount})` : '';
-  document.getElementById('progress-text').textContent = `${questionIndex} / ${totalQuestions}${dueLabel}`;
+  const todayLabel = todayCount > 0 || dailyGoal > 0 ? `　今日 ${todayCount}/${dailyGoal}問` : '';
+  document.getElementById('progress-text').textContent = `${questionIndex} / ${totalQuestions}${dueLabel}${todayLabel}`;
 
   // 苦手問題モードバナー
   const weakBanner = document.getElementById('weak-only-banner');
@@ -332,9 +335,19 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
   answerIcon.textContent = isCorrect ? '○' : '×';
   answerLabel.textContent = isCorrect ? '正解！' : '不正解';
 
+  // スキップ時メッセージ（selectedIndices が空 = スキップ）
+  const isSkipped = selectedIndices.length === 0;
+  if (isSkipped) {
+    const skipMsgEl = document.getElementById('next-review');
+    if (skipMsgEl) {
+      skipMsgEl.textContent = 'このセッションの最後に再出題します（スコアには影響しません）';
+      skipMsgEl.classList.remove('hidden');
+    }
+  }
+
   // 次回復習時間（SRS可視化: 連続正解数付きで表示）
   const nextReviewEl = document.getElementById('next-review');
-  if (nextReviewEl && nextReviewAt != null) {
+  if (!isSkipped && nextReviewEl && nextReviewAt != null) {
     const ms = nextReviewAt - Date.now();
     let label;
     if (ms <= 0) {
@@ -383,14 +396,21 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
       const originalToDisplay = shuffleMap
         ? Object.fromEntries(shuffleMap.map((origIdx, dispPos) => [origIdx, dispPos]))
         : null;
-      const labelStr = question.answers
+      const labelParts = question.answers
         .map(origIdx => {
           const dispPos = originalToDisplay ? (originalToDisplay[origIdx] ?? origIdx) : origIdx;
-          return LABELS[dispPos] ?? (dispPos + 1);
+          const label = LABELS[dispPos] ?? (dispPos + 1);
+          return { label, text: question.choices[origIdx] ?? '' };
         })
-        .sort()
-        .join('・');
-      correctLabels.textContent = `正解: ${labelStr}`;
+        .sort((a, b) => String(a.label).localeCompare(String(b.label)));
+      if (labelParts.length === 1) {
+        const { label, text } = labelParts[0];
+        const truncated = text.length > 60 ? text.slice(0, 60) + '…' : text;
+        correctLabels.textContent = `正解: ${label} — ${truncated}`;
+      } else {
+        const labelStr = labelParts.map(p => p.label).join('・');
+        correctLabels.textContent = `正解: ${labelStr}`;
+      }
       correctLabels.classList.remove('hidden');
     } else {
       correctLabels.classList.add('hidden');

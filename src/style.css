@@ -2019,22 +2019,25 @@ button.settings-item {
    スキップボタン（わからない→答えを見る）
    ============================================================ */
 .skip-btn-wrap {
-  text-align: right;
-  margin: 2px 0 4px;
+  text-align: center;
+  margin: 8px 0 4px;
 }
 .btn-skip {
   background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
   cursor: pointer;
-  padding: 4px 2px;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.15s;
+  padding: 0 16px;
+  min-height: 44px;
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 .btn-skip:hover {
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  background: var(--surface-hover, color-mix(in srgb, var(--surface) 85%, var(--text-primary)));
+  border-color: var(--text-secondary);
 }
 
 /* ============================================================
