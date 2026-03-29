@@ -659,13 +659,17 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
           barStyle += ';background:#ef4444';
         }
       }
+      const correctPctVal = day.count > 0 ? Math.round((day.correct / day.count) * 100) : 0;
+      const colLabel = day.count > 0
+        ? `${day.label}: ${day.count}問（正答率${correctPctVal}%）`
+        : `${day.label}: 未学習`;
       return `
-        <div class="weekly-col">
+        <div class="weekly-col" aria-label="${colLabel}">
           <div class="weekly-bar-wrap">
-            <div class="weekly-bar ${isToday ? 'weekly-bar-today' : ''}" style="${barStyle}"></div>
+            <div class="weekly-bar ${isToday ? 'weekly-bar-today' : ''}" style="${barStyle}" aria-hidden="true"></div>
           </div>
-          <div class="weekly-count">${day.count > 0 ? day.count : ''}</div>
-          <div class="weekly-label ${isToday ? 'weekly-label-today' : ''}">${day.label}</div>
+          <div class="weekly-count" aria-hidden="true">${day.count > 0 ? day.count : ''}</div>
+          <div class="weekly-label ${isToday ? 'weekly-label-today' : ''}" aria-hidden="true">${day.label}</div>
         </div>
       `;
     }).join('');
