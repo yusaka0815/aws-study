@@ -562,7 +562,7 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
           : '学習を続けると実力がついてきます';
     readinessEl.innerHTML = `
       <div class="readiness-header">
-        <span class="readiness-title">予測スコア</span>
+        <span class="readiness-title">予測スコア <span class="stat-hint" tabindex="0" title="直近の回答が正解だった問題数 ÷ 全問題数 × 100。未回答・直近不正解は0点換算。">ⓘ</span></span>
         <span class="readiness-score ${levelClass}">${score}% ${passed ? '✓' : ''}</span>
       </div>
       <div class="readiness-bar-bg">
