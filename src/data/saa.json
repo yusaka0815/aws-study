@@ -448,7 +448,7 @@
     },
     {
       "id": "SAA-022",
-      "category": "SQS",
+      "category": "メッセージング",
       "difficulty": 2,
       "question": "Amazon SQSのデフォルトのメッセージ保持期間とその最大値の正しい組み合わせはどれですか？",
       "choices": [
@@ -468,7 +468,7 @@
     },
     {
       "id": "SAA-023",
-      "category": "SNS",
+      "category": "メッセージング",
       "difficulty": 2,
       "question": "複数のサブスクライバー（SQS、Lambda、HTTPエンドポイントなど）に同一メッセージを一度に配信するパターンとして最適なものはどれですか？",
       "choices": [
@@ -618,7 +618,7 @@
     },
     {
       "id": "SAA-030",
-      "category": "ElastiCache",
+      "category": "データベース",
       "difficulty": 3,
       "question": "Amazon ElastiCacheのMemcachedとRedisの使い分けとして正しいものはどれですか？",
       "choices": [
@@ -1037,7 +1037,7 @@
     },
     {
       "id": "SAA-049",
-      "category": "SQS",
+      "category": "メッセージング",
       "difficulty": 2,
       "question": "SQSの「可視性タイムアウト（Visibility Timeout）」の目的と適切な設定として正しいものはどれですか？",
       "choices": [

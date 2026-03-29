@@ -3009,7 +3009,7 @@
     },
     {
       "id": "DOP-160",
-      "category": "Well-Architected",
+      "category": "高可用性・信頼性",
       "question": "DevOps Engineer Professionalとして知るべきAWS運用のベストプラクティスとして正しいものをすべて選べ。",
       "choices": [
         "Operations as Code（運用のコード化）でRunbook・Playbook・構成管理・パイプラインを全てコードで管理する",
