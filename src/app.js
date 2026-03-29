@@ -394,7 +394,18 @@ function showNextQuestion() {
     return s && s.attempts > 0 && s.nextReviewAt <= now;
   }).length;
   const { todayCount: todayCnt } = getTodayStats(appState.userState);
-  appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount, todayCnt, settings.dailyGoal);
+
+  // 出題理由を計算
+  let reason = 'normal';
+  if (!qState || qState.attempts === 0) {
+    reason = 'new';
+  } else if (settings.weakOnly || (qState.attempts > 0 && (qState.correct / qState.attempts) < 0.4)) {
+    reason = 'weak';
+  } else if (qState.nextReviewAt <= now) {
+    reason = 'due';
+  }
+
+  appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount, reason, todayCnt, settings.dailyGoal);
   appState.questionStartTime = Date.now();
 
   // 初回ヒント: 一度も回答したことがない場合のみ表示
@@ -511,6 +522,15 @@ function handleAnswer(selectedIndices) {
   const MILESTONES = [10, 50, 100, 300, 500, 1000, 2000, 5000];
   if (MILESTONES.includes(totalEver)) {
     setTimeout(() => showToast(`🎊 通算 ${totalEver} 問達成！`, 'success'), 400);
+  }
+
+  // 累計50問達成時: バックアップ警告（1回だけ）
+  if (totalEver === 50 && !localStorage.getItem('aws-study-backup-nudge-shown')) {
+    localStorage.setItem('aws-study-backup-nudge-shown', '1');
+    setTimeout(() => showToast('💾 大切なデータを守るためバックアップをとりましょう！', 'info'), 800);
+    // 設定画面のバナーを表示状態にする
+    const nudgeEl = document.getElementById('backup-nudge');
+    if (nudgeEl) nudgeEl.classList.remove('hidden');
   }
 
   saveState(appState.userState);
@@ -998,6 +1018,11 @@ function setupNavigationListeners() {
   document.getElementById('btn-stats').addEventListener('click', showStatsScreen);
 
   document.getElementById('btn-settings').addEventListener('click', () => {
+    // バックアップ警告バナーの表示状態を反映
+    const nudgeEl = document.getElementById('backup-nudge');
+    if (nudgeEl && localStorage.getItem('aws-study-backup-nudge-shown')) {
+      nudgeEl.classList.remove('hidden');
+    }
     navigateTo('screen-settings');
   });
 
@@ -1041,6 +1066,11 @@ function setupNavigationListeners() {
   document.getElementById('settings-back-btn').addEventListener('click', () => history.back());
 
   document.getElementById('btn-settings-from-select').addEventListener('click', () => {
+    // バックアップ警告バナーの表示状態を反映
+    const nudgeEl = document.getElementById('backup-nudge');
+    if (nudgeEl && localStorage.getItem('aws-study-backup-nudge-shown')) {
+      nudgeEl.classList.remove('hidden');
+    }
     navigateTo('screen-settings');
   });
 

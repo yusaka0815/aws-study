@@ -407,6 +407,25 @@ body {
 .select-resume-review:active { transform: scale(0.97); }
 .select-resume-review.hidden { display: none; }
 
+/* 模擬試験モード促進バナー */
+.select-exam-promo {
+  margin: 8px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  text-align: center;
+  width: calc(100% - 32px);
+  max-width: 480px;
+}
+.select-exam-promo.hidden { display: none; }
+
 .today-goal-bar-bg {
   flex: 1;
   height: 6px;
@@ -823,6 +842,17 @@ body {
 .chip-bad     { color: var(--danger);  background: var(--danger-dim); }
 .chip-new     { color: var(--primary); background: var(--primary-dim); }
 .chip-nemesis { color: #ef4444; background: rgba(239,68,68,0.15); font-weight: 700; }
+
+/* 出題理由バッジ */
+.reason-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
+.reason-badge-due  { color: #38bdf8; background: rgba(56,189,248,0.15); }
+.reason-badge-weak { color: var(--danger); background: var(--danger-dim); }
 
 /* 直近回答履歴ドット（直近5問の正誤を視覚的に表示） */
 .result-dots {
@@ -1390,6 +1420,38 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   margin-top: 2px;
 }
 
+/* 統計ラベルのヒントアイコン（ⓘ）とツールチップ */
+.stat-hint {
+  display: inline-block;
+  cursor: default;
+  font-size: 11px;
+  color: var(--text-muted);
+  position: relative;
+  vertical-align: middle;
+}
+.stat-hint::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+.stat-hint:hover::after,
+.stat-hint:focus::after {
+  opacity: 1;
+}
+
 /* カテゴリ別 */
 #category-stats {
   display: flex;
@@ -1755,6 +1817,27 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 
 .settings-section-title + .settings-item {
   border-top: none;
+}
+
+/* バックアップ警告バナー */
+.backup-nudge {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.backup-nudge-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+}
+.backup-nudge-text {
+  line-height: 1.5;
 }
 
 .settings-item:hover, .settings-item:active {

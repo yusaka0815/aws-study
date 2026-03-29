@@ -172,6 +172,21 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       goalEl.classList.add('hidden');
     }
   }
+
+  // 模擬試験モード促進バナー（50問以上回答済みの試験がある場合）
+  const promoEl = document.getElementById('select-exam-promo');
+  if (promoEl && currentExamCode && (counts[currentExamCode] ?? 0) >= 50) {
+    const promoShownKey = `aws-study-exam-promo-shown-${new Date().toISOString().slice(0, 10)}`;
+    if (!localStorage.getItem(promoShownKey)) {
+      localStorage.setItem(promoShownKey, '1');
+      promoEl.innerHTML = `📝 実力を確認！<strong>模擬試験モード</strong>（65問・90分）`;
+      promoEl.classList.remove('hidden');
+    } else {
+      promoEl.classList.add('hidden');
+    }
+  } else if (promoEl) {
+    promoEl.classList.add('hidden');
+  }
 }
 
 // ============================================================
@@ -186,10 +201,11 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
  * @param {boolean} weakOnly
  * @param {object|null} qState - この問題の過去の回答履歴
  * @param {number} dueCount - 今すぐ復習が必要な問題数
+ * @param {'new'|'due'|'weak'|'normal'} reason - 出題理由
  * @param {number} todayCount - 今日の回答数
  * @param {number} dailyGoal - 1日の目標問題数
  */
-export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false, qState = null, dueCount = 0, todayCount = 0, dailyGoal = 30) {
+export function renderQuestion(question, questionIndex, totalQuestions, weakOnly = false, qState = null, dueCount = 0, reason = 'normal', todayCount = 0, dailyGoal = 30) {
   // プログレスバー
   const pct = totalQuestions > 0 ? Math.round((questionIndex / totalQuestions) * 100) : 0;
   document.getElementById('progress-fill').style.width = `${pct}%`;
@@ -226,8 +242,16 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
     historyChip = `<span class="history-chip chip-new">NEW</span>`;
   }
 
+  // 出題理由バッジ
+  let reasonBadge = '';
+  if (reason === 'due') {
+    reasonBadge = `<span class="reason-badge reason-badge-due">🔄 復習</span>`;
+  } else if (reason === 'weak') {
+    reasonBadge = `<span class="reason-badge reason-badge-weak">⚠️ 苦手</span>`;
+  }
+
   document.getElementById('question-meta').innerHTML =
-    `<span>${question.category}  ${diffStars}</span>${typeTag}<span class="question-id">${question.id}</span>${historyChip}`;
+    `<span>${question.category}  ${diffStars}</span>${typeTag}<span class="question-id">${question.id}</span>${reasonBadge}${historyChip}`;
 
   // ブックマークボタン
   const bookmarkBtn = document.getElementById('btn-bookmark');
@@ -554,7 +578,7 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
     </div>
     <div class="stat-card ${stats.weakCount > 0 ? 'stat-card-warn' : ''}">
       <div class="stat-value">${stats.weakCount}</div>
-      <div class="stat-label">苦手問題数</div>
+      <div class="stat-label">苦手問題数 <span class="stat-hint" tabindex="0" title="直近の正答率が40%未満の問題">ⓘ</span></div>
     </div>
     <div class="stat-card stat-card-master">
       <div class="stat-value">${stats.masteredCount}</div>
