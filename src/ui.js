@@ -741,20 +741,26 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
             ? '<span class="review-due-now">今すぐ復習</span>'
             : `<span class="review-eta">${fmtNextReview(reviewMs)}後</span>`)
           : '';
+        const drillAttrs = onDrillCategory
+          ? `role="button" tabindex="0" aria-label="${q.category}カテゴリを絞り込み（正答率${q.accuracy}%）"`
+          : '';
         return `
-        <div class="worst-item${onDrillCategory ? ' worst-item-drill' : ''}" data-cat="${q.category}">
+        <div class="worst-item${onDrillCategory ? ' worst-item-drill' : ''}" data-cat="${q.category}" ${drillAttrs}>
           <div class="worst-meta">
             <span class="worst-category">${q.category}</span>
             <span class="worst-accuracy acc-bad">${q.accuracy}% (${q.attempts}回)${reviewBadge}</span>
           </div>
           <div class="worst-text">${q.text}</div>
-          ${onDrillCategory ? '<div class="worst-drill-hint">タップしてカテゴリを絞り込み →</div>' : ''}
+          ${onDrillCategory ? '<div class="worst-drill-hint" aria-hidden="true">タップしてカテゴリを絞り込み →</div>' : ''}
         </div>
         `;
       }).join('');
       if (onDrillCategory) {
         worstEl.querySelectorAll('.worst-item-drill').forEach(item => {
           item.addEventListener('click', () => onDrillCategory(item.dataset.cat));
+          item.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDrillCategory(item.dataset.cat); }
+          });
         });
       }
       worstEl.previousElementSibling?.classList.remove('hidden');
@@ -799,20 +805,28 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
 
       const item = document.createElement('div');
       item.className = `category-item${allMastered ? ' cat-perfect' : ''}`;
+      if (onDrillCategory) {
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('aria-label', `${cat.name}カテゴリを絞り込み（正答率${accuracyText}）`);
+      }
 
       item.innerHTML = `
         <div class="cat-header">
           <span class="cat-name">${cat.name}${allMastered ? ' ⭐' : ''}</span>
-          <span class="cat-accuracy ${barClass.replace('bar-', 'acc-')}">${accuracyText}</span>
+          <span class="cat-accuracy ${barClass.replace('bar-', 'acc-')}" aria-hidden="true">${accuracyText}</span>
         </div>
-        <div class="cat-bar-bg">
+        <div class="cat-bar-bg" aria-hidden="true">
           <div class="cat-bar ${barClass}" style="width: ${barWidth}%"></div>
         </div>
-        <div class="cat-sub">${cat.answered} / ${cat.total} 問回答 (${coveragePct}%カバー)${cat.due > 0 ? `　<span class="due-badge">復習 ${cat.due}</span>` : ''}　<span class="cat-drill-hint">タップして絞り込み →</span></div>
+        <div class="cat-sub" aria-hidden="true">${cat.answered} / ${cat.total} 問回答 (${coveragePct}%カバー)${cat.due > 0 ? `　<span class="due-badge">復習 ${cat.due}</span>` : ''}　<span class="cat-drill-hint">タップして絞り込み →</span></div>
       `;
 
       if (onDrillCategory) {
         item.addEventListener('click', () => onDrillCategory(cat.name));
+        item.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDrillCategory(cat.name); }
+        });
       }
 
       catList.appendChild(item);
