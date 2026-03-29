@@ -839,6 +839,8 @@ export function showToast(message, type = 'info') {
   toast.id = 'toast';
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
+  toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
   document.body.appendChild(toast);
 
   requestAnimationFrame(() => toast.classList.add('toast-show'));
