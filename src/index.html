@@ -328,11 +328,6 @@
       <div class="settings-section">
         <div class="settings-section-title">バックアップ</div>
 
-        <div id="backup-nudge" class="backup-nudge hidden">
-          <span class="backup-nudge-icon">💾</span>
-          <span class="backup-nudge-text">学習データはこのブラウザにのみ保存されています。定期的にバックアップをとることをお勧めします。</span>
-        </div>
-
         <button class="settings-item" id="btn-export">
           <span class="settings-item-icon">📤</span>
           <span class="settings-item-text">
@@ -348,6 +343,11 @@
             <span class="settings-item-desc">JSONファイルを選択して読み込む</span>
           </span>
         </button>
+
+        <div id="backup-nudge" class="backup-nudge hidden">
+          <span class="backup-nudge-icon">💾</span>
+          <span class="backup-nudge-text">学習データはこのブラウザにのみ保存されています。定期的にバックアップをとることをお勧めします。</span>
+        </div>
 
         <!-- 非表示のファイル選択インプット -->
         <input type="file" id="import-file-input" accept=".json,application/json" style="display:none">
