@@ -13,7 +13,7 @@ const { Given, When, Then } = createBdd();
 // ヘルパー
 // ============================================================
 
-/** 問題が読み込まれるまで待機 */
+/** 問題が読み込まれ選択肢が描画されるまで待機 */
 async function waitForQuestion(page) {
   await page.waitForFunction(
     () => {
@@ -21,6 +21,7 @@ async function waitForQuestion(page) {
       return t && t !== '問題を読み込んでいます...' && t.length > 0;
     }
   );
+  await page.waitForSelector('.choice-btn');
 }
 
 /** 現在の問題に回答（単一選択・複数選択対応） */

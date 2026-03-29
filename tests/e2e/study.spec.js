@@ -16,11 +16,12 @@ async function selectExam(page, examCode = 'SAA') {
   // exam-card が描画されるまで待機（networkidle より信頼性が高い）
   await page.waitForSelector('.exam-card');
   await page.locator('.exam-card').filter({ hasText: examCode }).click();
-  // 問題が読み込まれるまで待機
+  // 問題が読み込まれ、選択肢ボタンが描画されるまで待機
   await page.waitForFunction(
     () => document.getElementById('question-text')?.textContent !== '問題を読み込んでいます...'
       && document.getElementById('question-text')?.textContent !== ''
   );
+  await page.waitForSelector('.choice-btn');
 }
 
 /**
