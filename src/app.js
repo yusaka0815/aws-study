@@ -396,6 +396,13 @@ function showNextQuestion() {
   appState.shuffleMap = renderQuestion(q, answeredCount, currentExam.questions.length, settings.weakOnly, qState, dueCount);
   appState.questionStartTime = Date.now();
 
+  // 初回ヒント: 一度も回答したことがない場合のみ表示
+  const hintEl = document.getElementById('study-first-hint');
+  if (hintEl) {
+    const hintSeen = localStorage.getItem('aws-study-hint-seen');
+    hintEl.classList.toggle('hidden', !!hintSeen);
+  }
+
   // 苦手モードバナーに問題数を追加表示（0件の場合は全問フォールバック中と表示）
   if (settings.weakOnly) {
     const wb = document.getElementById('weak-only-banner');
@@ -517,7 +524,20 @@ function handleAnswer(selectedIndices) {
     navigator.vibrate(isCorrect ? 40 : [60, 30, 60]);
   }
 
-  renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt, appState.shuffleMap, elapsedMs);
+  // 初回ヒントを非表示にしてフラグを記録（初回回答時のみ）
+  const hintEl = document.getElementById('study-first-hint');
+  if (hintEl && !hintEl.classList.contains('hidden')) {
+    hintEl.classList.add('hidden');
+    localStorage.setItem('aws-study-hint-seen', '1');
+  }
+
+  // 連続正解数を計算（SRS可視化のため renderResult に渡す）
+  let consecutiveCorrect = 0;
+  for (let i = updatedState.recentResults.length - 1; i >= 0; i--) {
+    if (updatedState.recentResults[i] === 1) consecutiveCorrect++;
+    else break;
+  }
+  renderResult(appState.currentQuestion, selectedIndices, isCorrect, updatedState.nextReviewAt, appState.shuffleMap, elapsedMs, consecutiveCorrect);
 
   // 回答エリアへスムーズスクロール（問題文が長い場合に結果が見えるように）
   setTimeout(() => {

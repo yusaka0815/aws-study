@@ -299,7 +299,7 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
  * @param {boolean} isCorrect
  * @param {number} [nextReviewAt] - 次回復習タイムスタンプ（ms）
  */
-export function renderResult(question, selectedIndices, isCorrect, nextReviewAt, shuffleMap = null, elapsedMs = null) {
+export function renderResult(question, selectedIndices, isCorrect, nextReviewAt, shuffleMap = null, elapsedMs = null, consecutiveCorrect = 0) {
   const choicesEl = document.getElementById('choices-list');
   const buttons = choicesEl.querySelectorAll('.choice-btn');
 
@@ -332,17 +332,24 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
   answerIcon.textContent = isCorrect ? '○' : '×';
   answerLabel.textContent = isCorrect ? '正解！' : '不正解';
 
-  // 次回復習時間
+  // 次回復習時間（SRS可視化: 連続正解数付きで表示）
   const nextReviewEl = document.getElementById('next-review');
   if (nextReviewEl && nextReviewAt != null) {
     const ms = nextReviewAt - Date.now();
-    const label = ms <= 0 ? 'すぐ再出題' : (() => {
-      const min = Math.round(ms / 60_000);
-      if (min < 60) return `${min}分後に復習`;
-      const hr = Math.round(ms / 3_600_000);
-      if (hr < 24) return `${hr}時間後に復習`;
-      return `${Math.round(ms / 86_400_000)}日後に復習`;
-    })();
+    let label;
+    if (ms <= 0) {
+      label = 'すぐ再出題';
+    } else {
+      const timeStr = (() => {
+        const min = Math.round(ms / 60_000);
+        if (min < 60) return `${min}分後`;
+        const hr = Math.round(ms / 3_600_000);
+        if (hr < 24) return `${hr}時間後`;
+        return `${Math.round(ms / 86_400_000)}日後`;
+      })();
+      const streakStr = consecutiveCorrect >= 2 ? ` (${consecutiveCorrect}連続正解)` : '';
+      label = `次回復習: ${timeStr}${streakStr}`;
+    }
     nextReviewEl.textContent = label;
     nextReviewEl.classList.remove('hidden');
   }
@@ -466,9 +473,11 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
   const nameEl = document.getElementById('stats-exam-name');
   nameEl.innerHTML = `<span class="exam-code" data-exam-badge="${examCode}">${examCode}</span> ${examName}`;
 
-  // 予測スコア（直近の回答ベースの合格確率バー）
+  const coverage = stats.total > 0 ? Math.round((stats.answered / stats.total) * 100) : 0;
+
+  // 予測スコア（カバー率20%以上になってから表示。初期段階は励ましメッセージに留める）
   const readinessEl = document.getElementById('stats-readiness');
-  if (readinessEl && stats.answered > 0 && stats.predictedScore != null) {
+  if (readinessEl && stats.answered > 0 && stats.predictedScore != null && coverage >= 20) {
     const score = stats.predictedScore;
     const passed = score >= 72;
     const levelClass = score >= 80 ? 'readiness-high' : score >= 72 ? 'readiness-mid' : score >= 50 ? 'readiness-low' : 'readiness-start';
@@ -491,11 +500,18 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       <div class="readiness-msg ${levelClass}">${msg}</div>
     `;
     readinessEl.className = 'stats-readiness';
+  } else if (readinessEl && stats.answered > 0 && coverage < 20) {
+    const remaining = Math.max(1, Math.ceil(stats.total * 0.2) - stats.answered);
+    readinessEl.innerHTML = `
+      <div class="readiness-msg readiness-start">
+        あと <strong>${remaining}問</strong>解くと予測スコアが表示されます
+        <span class="readiness-progress-hint">(現在 ${stats.answered}/${stats.total}問 — 全体の20%が目安)</span>
+      </div>
+    `;
+    readinessEl.className = 'stats-readiness';
   } else if (readinessEl) {
     readinessEl.innerHTML = '';
   }
-
-  const coverage = stats.total > 0 ? Math.round((stats.answered / stats.total) * 100) : 0;
 
   const overview = document.getElementById('stats-overview');
   overview.innerHTML = `
