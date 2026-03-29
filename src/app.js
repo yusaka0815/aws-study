@@ -742,6 +742,7 @@ function showExamModeModal() {
       </div>
     `;
     overlay.classList.remove('hidden');
+    setTimeout(() => document.getElementById('exam-modal-resume')?.focus(), 50);
     document.getElementById('exam-modal-resume').addEventListener('click', () => {
       overlay.classList.add('hidden');
     });
@@ -919,7 +920,7 @@ function endExamMode(timeUp = false) {
     : '';
 
   content.innerHTML = `
-    <h3>📝 試験結果</h3>
+    <h3 id="exam-modal-title">📝 試験結果</h3>
     ${timeUp ? '<p style="color:var(--danger);font-weight:700;">⏰ 時間切れ</p>' : ''}
     <div class="exam-modal-result">
       <div class="exam-result-score ${passed ? 'pass' : 'fail'}">${pct}%</div>
@@ -933,6 +934,11 @@ function endExamMode(timeUp = false) {
     </div>
   `;
   overlay.classList.remove('hidden');
+  // フォーカスをモーダル内の最初のボタンに移動
+  setTimeout(() => {
+    const firstBtn = content.querySelector('button');
+    if (firstBtn) firstBtn.focus();
+  }, 50);
   document.getElementById('exam-result-close').addEventListener('click', () => {
     overlay.classList.add('hidden');
     showNextQuestion(); // 通常学習に戻る
