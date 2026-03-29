@@ -732,4 +732,48 @@ test.describe('DOP試験', () => {
     await btn.click();
     await expect(page.locator('#next-btn')).toBeDisabled();
   });
+
+  test('複数選択問題: aria-pressed が選択状態を反映する', async ({ page }) => {
+    await selectDopWithMultiChoice(page);
+    const btn = page.locator('.choice-btn').first();
+    // 初期状態: aria-pressed="false"
+    await expect(btn).toHaveAttribute('aria-pressed', 'false');
+    // 選択後: aria-pressed="true"
+    await btn.click();
+    await expect(btn).toHaveAttribute('aria-pressed', 'true');
+    // 選択解除後: aria-pressed="false"
+    await btn.click();
+    await expect(btn).toHaveAttribute('aria-pressed', 'false');
+  });
+});
+
+// ============================================================
+// キーボードショートカット
+// ============================================================
+test.describe('キーボードショートカット', () => {
+  test('X でスキップ → Space で次問に進む', async ({ page }) => {
+    await selectExam(page);
+    // X でスキップ（答えを即表示）
+    await page.keyboard.press('x');
+    await page.waitForSelector('#answer-area:not(.hidden)');
+    const icon = await page.locator('#answer-icon').textContent();
+    expect(['○', '×']).toContain(icon);
+    // 次へボタンが有効化された状態で Space を押すと次問へ
+    await page.keyboard.press('Space');
+    await page.waitForFunction(
+      () => document.getElementById('answer-area')?.classList.contains('hidden')
+    );
+    const questionText = await page.locator('#question-text').textContent();
+    expect(questionText.length).toBeGreaterThan(5);
+  });
+
+  test('数字キー 1 で最初の選択肢を選択できる', async ({ page }) => {
+    await selectExam(page);
+    const isMulti = await page.locator('#multi-submit-area').isVisible();
+    if (isMulti) return; // 単一選択問題のみテスト
+    await page.keyboard.press('1');
+    await page.waitForSelector('#answer-area:not(.hidden)');
+    // 1番目のボタンに selected クラス
+    await expect(page.locator('.choice-btn').first()).toHaveClass(/selected/);
+  });
 });
