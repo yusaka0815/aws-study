@@ -2316,3 +2316,14 @@ button.settings-item {
     right: calc(50% - 320px + 20px);
   }
 }
+
+/* ============================================================
+   アクセシビリティ: 動きを減らす設定を優先
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
