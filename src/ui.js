@@ -44,6 +44,24 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
   const container = document.getElementById('exam-list');
   container.innerHTML = '';
 
+  // 初回オンボーディングバナー
+  const banner = document.getElementById('onboarding-banner');
+  if (banner) {
+    if (!localStorage.getItem('aws-study-onboarding-done')) {
+      banner.classList.remove('hidden');
+      const closeBtn = document.getElementById('onboarding-close');
+      if (closeBtn && !closeBtn.dataset.bound) {
+        closeBtn.dataset.bound = '1';
+        closeBtn.addEventListener('click', () => {
+          localStorage.setItem('aws-study-onboarding-done', '1');
+          banner.classList.add('hidden');
+        });
+      }
+    } else {
+      banner.classList.add('hidden');
+    }
+  }
+
   // progressMap は { counts, accuracyMap, dueMap, lastStudied, predictedMap } 形式を想定
   const counts = progressMap.counts ?? progressMap;
   const accuracyMap = progressMap.accuracyMap ?? {};
@@ -593,7 +611,7 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       <div class="stat-label">総回答数</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">${stats.activeDays ?? 0}<span class="stat-unit">/35日</span></div>
+      <div class="stat-value">${stats.activeDays ?? 0}<span class="stat-unit">日</span></div>
       <div class="stat-label">学習日数</div>
     </div>
   `;

@@ -2245,6 +2245,55 @@ button.settings-item {
 #choices-list.entering .choice-btn:nth-child(5) { animation-delay: 0.23s; }
 
 /* ============================================================
+   初回オンボーディングバナー
+   ============================================================ */
+.onboarding-banner {
+  margin: 12px 16px 0;
+  padding: 12px 14px;
+  border-left: 4px solid #f97316;
+  border-radius: 8px;
+  background: rgba(249, 115, 22, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboarding-banner-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.onboarding-banner-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.onboarding-banner-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.5;
+}
+.onboarding-banner-text strong {
+  color: var(--text-primary, #f1f5f9);
+  font-size: 0.88rem;
+}
+.onboarding-banner-close {
+  align-self: flex-end;
+  padding: 6px 14px;
+  border: 1px solid rgba(249, 115, 22, 0.5);
+  border-radius: 20px;
+  background: transparent;
+  color: #f97316;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.onboarding-banner-close:hover,
+.onboarding-banner-close:active {
+  background: rgba(249, 115, 22, 0.15);
+}
+
+/* ============================================================
    タブレット・デスクトップ対応（640px以上）
    ============================================================ */
 @media (min-width: 640px) {
