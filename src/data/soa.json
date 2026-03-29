@@ -49,7 +49,7 @@
     },
     {
       "id": "SOA-003",
-      "category": "IAM",
+      "category": "セキュリティ",
       "difficulty": 1,
       "question": "AWS IAM の Permission Boundary（アクセス許可の境界）の役割として正しいものはどれですか？",
       "choices": [
@@ -159,7 +159,7 @@
     },
     {
       "id": "SOA-008",
-      "category": "CloudTrail",
+      "category": "コンプライアンス・ガバナンス",
       "difficulty": 1,
       "question": "AWS CloudTrail の Management Events と Data Events の違いとして正しいものはどれですか？",
       "choices": [
@@ -203,7 +203,7 @@
     },
     {
       "id": "SOA-010",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon RDS の Multi-AZ と Read Replica の違いと用途として正しいものはどれですか？",
       "choices": [
@@ -225,7 +225,7 @@
     },
     {
       "id": "SOA-011",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC の NAT Gateway と NAT Instance の違いと選択基準として正しいものはどれですか？",
       "choices": [
@@ -335,7 +335,7 @@
     },
     {
       "id": "SOA-016",
-      "category": "AWS Config",
+      "category": "コンプライアンス・ガバナンス",
       "difficulty": 2,
       "question": "AWS Config Rules と Remediation（自動修復）の組み合わせによるコンプライアンス自動化として正しいものはどれですか？",
       "choices": [
@@ -379,7 +379,7 @@
     },
     {
       "id": "SOA-018",
-      "category": "Organizations",
+      "category": "コンプライアンス・ガバナンス",
       "difficulty": 2,
       "question": "AWS Organizations の Service Control Policy（SCP）の特徴として正しいものはどれですか？",
       "choices": [
@@ -401,7 +401,7 @@
     },
     {
       "id": "SOA-019",
-      "category": "EBS",
+      "category": "ストレージ",
       "difficulty": 2,
       "question": "Amazon EBS のボリュームタイプと性能特性の選択基準として正しいものはどれですか？",
       "choices": [
@@ -445,7 +445,7 @@
     },
     {
       "id": "SOA-021",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC Flow Logs の出力先と分析方法の組み合わせとして正しいものはどれですか？",
       "choices": [
@@ -467,7 +467,7 @@
     },
     {
       "id": "SOA-022",
-      "category": "Trusted Advisor",
+      "category": "コンプライアンス・ガバナンス",
       "difficulty": 1,
       "question": "AWS Trusted Advisor が提供するチェックのカテゴリとして正しいものはどれですか？",
       "choices": [
@@ -555,7 +555,7 @@
     },
     {
       "id": "SOA-026",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon RDS の 自動バックアップと手動スナップショットの違いとして正しいものはどれですか？",
       "choices": [
@@ -599,7 +599,7 @@
     },
     {
       "id": "SOA-028",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC Peering と Transit Gateway の使い分けとして正しいものはどれですか？",
       "choices": [
@@ -710,7 +710,7 @@
     },
     {
       "id": "SOA-033",
-      "category": "WAF",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "AWS WAF の Web ACL ルールの評価順序とデフォルトアクションとして正しいものはどれですか？",
       "choices": [
@@ -776,7 +776,7 @@
     },
     {
       "id": "SOA-036",
-      "category": "GuardDuty",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "Amazon GuardDuty が検出できる脅威の種類として正しいものはどれですか？",
       "choices": [
@@ -930,7 +930,7 @@
     },
     {
       "id": "SOA-043",
-      "category": "ECS",
+      "category": "コンテナ",
       "difficulty": 2,
       "question": "Amazon ECS の Fargate と EC2 起動タイプの選択基準として正しいものはどれですか？",
       "choices": [
@@ -974,7 +974,7 @@
     },
     {
       "id": "SOA-045",
-      "category": "Security Hub",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "AWS Security Hub の機能と他のセキュリティサービスとの統合として正しいものはどれですか？",
       "choices": [
@@ -996,7 +996,7 @@
     },
     {
       "id": "SOA-046",
-      "category": "Route53",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "Route 53 の Routing Policies（ルーティングポリシー）の種類と使い分けとして正しいものはどれですか？",
       "choices": [
@@ -1040,7 +1040,7 @@
     },
     {
       "id": "SOA-048",
-      "category": "EBS",
+      "category": "ストレージ",
       "difficulty": 2,
       "question": "Amazon EBS の スナップショット（Snapshot）の増分バックアップの仕組みと Fast Snapshot Restore（FSR）として正しいものはどれですか？",
       "choices": [
@@ -1062,7 +1062,7 @@
     },
     {
       "id": "SOA-049",
-      "category": "IAM",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "AWS IAM Identity Center（旧 AWS SSO）の機能とシングルサインオンの設定として正しいものはどれですか？",
       "choices": [
@@ -1084,7 +1084,7 @@
     },
     {
       "id": "SOA-050",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon RDS の Performance Insights を使用してデータベースパフォーマンスの問題を診断する方法として正しいものはどれですか？",
       "choices": [
@@ -1106,7 +1106,7 @@
     },
     {
       "id": "SOA-051",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC の Network ACL（NACL）とセキュリティグループ（SG）の違いとして正しいものはどれですか？",
       "choices": [
@@ -1172,7 +1172,7 @@
     },
     {
       "id": "SOA-054",
-      "category": "CloudTrail",
+      "category": "コンプライアンス・ガバナンス",
       "difficulty": 2,
       "question": "CloudTrail の Trail を組織全体（Organizations）に適用して集中管理する設定と利点として正しいものはどれですか？",
       "choices": [
@@ -1216,7 +1216,7 @@
     },
     {
       "id": "SOA-056",
-      "category": "EFS",
+      "category": "ストレージ",
       "difficulty": 2,
       "question": "Amazon EFS（Elastic File System）のパフォーマンスモードとスループットモードの選択として正しいものはどれですか？",
       "choices": [
@@ -1238,7 +1238,7 @@
     },
     {
       "id": "SOA-057",
-      "category": "Inspector",
+      "category": "セキュリティ",
       "difficulty": 1,
       "question": "Amazon Inspector v2 の機能とスキャン対象として正しいものはどれですか？",
       "choices": [
@@ -1283,7 +1283,7 @@
     },
     {
       "id": "SOA-059",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC Endpoint（VPCエンドポイント）の Gateway 型と Interface 型の違いとして正しいものはどれですか？",
       "choices": [
@@ -1327,7 +1327,7 @@
     },
     {
       "id": "SOA-061",
-      "category": "CloudFront",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "Amazon CloudFront の Cache Behavior（キャッシュ動作）の設定と TTL 管理として正しいものはどれですか？",
       "choices": [
@@ -1349,7 +1349,7 @@
     },
     {
       "id": "SOA-062",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon Aurora の クラスター構成と Read Endpoint の動作として正しいものはどれですか？",
       "choices": [
@@ -1459,7 +1459,7 @@
     },
     {
       "id": "SOA-067",
-      "category": "Elasticache",
+      "category": "データベース",
       "difficulty": 2,
       "question": "ElastiCache for Redis のバックアップ戦略（RDB スナップショットと AOF）の違いとして正しいものはどれですか？",
       "choices": [
@@ -1481,7 +1481,7 @@
     },
     {
       "id": "SOA-068",
-      "category": "WAF",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "AWS WAF の Rate-Based Rules（レートベースルール）の設定と DDoS 対策への応用として正しいものはどれですか？",
       "choices": [
@@ -1613,7 +1613,7 @@
     },
     {
       "id": "SOA-074",
-      "category": "Kinesis",
+      "category": "ストレージ",
       "difficulty": 2,
       "question": "Kinesis Data Streams の Shard 数の計算と Resharding（シャード再分割）の方法として正しいものはどれですか？",
       "choices": [
@@ -1635,7 +1635,7 @@
     },
     {
       "id": "SOA-075",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC の Direct Connect と Site-to-Site VPN の違いと選択基準として正しいものはどれですか？",
       "choices": [
@@ -1701,7 +1701,7 @@
     },
     {
       "id": "SOA-078",
-      "category": "DynamoDB",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon DynamoDB の オンデマンド容量モードとプロビジョニング済み容量モードの切り替えに関する考慮点として正しいものはどれですか？",
       "choices": [
@@ -1723,7 +1723,7 @@
     },
     {
       "id": "SOA-079",
-      "category": "EKS",
+      "category": "コンテナ",
       "difficulty": 2,
       "question": "Amazon EKS でワーカーノードを管理する3つの方法（Managed Node Group・Self-managed Nodes・AWS Fargate）の違いとして正しいものはどれですか？",
       "choices": [
@@ -1789,7 +1789,7 @@
     },
     {
       "id": "SOA-082",
-      "category": "IAM",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "AWS IAM の Conditions（条件キー）を使用したきめ細かいアクセス制御の実装として正しいものはどれですか？",
       "choices": [
@@ -1811,7 +1811,7 @@
     },
     {
       "id": "SOA-083",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon RDS Proxy の機能と使用すべきシナリオとして正しいものはどれですか？",
       "choices": [
@@ -1833,7 +1833,7 @@
     },
     {
       "id": "SOA-084",
-      "category": "CloudFront",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "CloudFront の Field-Level Encryption（フィールドレベル暗号化）の仕組みとして正しいものはどれですか？",
       "choices": [
@@ -1877,7 +1877,7 @@
     },
     {
       "id": "SOA-086",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC の Reachability Analyzer を使用してネットワーク接続の問題を診断する方法として正しいものはどれですか？",
       "choices": [
@@ -1899,7 +1899,7 @@
     },
     {
       "id": "SOA-087",
-      "category": "Route53",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "Route 53 の Health Check の種類と Failover ルーティングとの組み合わせとして正しいものはどれですか？",
       "choices": [
@@ -2053,7 +2053,7 @@
     },
     {
       "id": "SOA-094",
-      "category": "IAM",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "AWS IAM の Access Analyzer が検出するリソースとその活用方法として正しいものはどれですか？",
       "choices": [
@@ -2141,7 +2141,7 @@
     },
     {
       "id": "SOA-098",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon Aurora Serverless v2 の仕組みと適用ケースとして正しいものはどれですか？",
       "choices": [
@@ -2185,7 +2185,7 @@
     },
     {
       "id": "SOA-100",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC の Egress-Only Internet Gateway（エグレス専用インターネットゲートウェイ）の用途として正しいものはどれですか？",
       "choices": [
@@ -2295,7 +2295,7 @@
     },
     {
       "id": "SOA-105",
-      "category": "IAM",
+      "category": "セキュリティ",
       "difficulty": 2,
       "question": "AWS Organizations の Delegated Administrator（委任管理者）の仕組みとして正しいものはどれですか？",
       "choices": [
@@ -2339,7 +2339,7 @@
     },
     {
       "id": "SOA-107",
-      "category": "DynamoDB",
+      "category": "データベース",
       "difficulty": 2,
       "question": "DynamoDB の Global Tables（グローバルテーブル）の仕組みとアプリケーション設計上の考慮点として正しいものはどれですか？",
       "choices": [
@@ -2383,7 +2383,7 @@
     },
     {
       "id": "SOA-109",
-      "category": "ECS",
+      "category": "コンテナ",
       "difficulty": 2,
       "question": "Amazon ECS の Service Connect を使用してコンテナ間の通信を簡素化する設定として正しいものはどれですか？",
       "choices": [
@@ -2471,7 +2471,7 @@
     },
     {
       "id": "SOA-113",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "AWS Network Firewall を使用してVPCレベルのファイアウォール保護を実装する際の設定として正しいものはどれですか？",
       "choices": [
@@ -2537,7 +2537,7 @@
     },
     {
       "id": "SOA-116",
-      "category": "CloudTrail",
+      "category": "コンプライアンス・ガバナンス",
       "difficulty": 2,
       "question": "CloudTrail の Insights Events を使用して異常なAPIアクティビティを検出する仕組みとして正しいものはどれですか？",
       "choices": [
@@ -2691,7 +2691,7 @@
     },
     {
       "id": "SOA-123",
-      "category": "EBS",
+      "category": "ストレージ",
       "difficulty": 2,
       "question": "Amazon EBS の Multi-Attach 機能の制限と適用ケースとして正しいものはどれですか？",
       "choices": [
@@ -2735,7 +2735,7 @@
     },
     {
       "id": "SOA-125",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon RDS の Enhanced Monitoring（拡張モニタリング）とCloudWatch標準メトリクスの違いとして正しいものはどれですか？",
       "choices": [
@@ -2757,7 +2757,7 @@
     },
     {
       "id": "SOA-126",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "AWS Global Accelerator と CloudFront の使い分けとして正しいものはどれですか？",
       "choices": [
@@ -2911,7 +2911,7 @@
     },
     {
       "id": "SOA-133",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC の Shared VPC（共有VPC）を使用してOrganizations内の複数アカウントでVPCリソースを共有する設定として正しいものはどれですか？",
       "choices": [
@@ -3087,7 +3087,7 @@
     },
     {
       "id": "SOA-141",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon RDS の Parameter Group の設定とデータベースパフォーマンスチューニングとして正しいものはどれですか？",
       "choices": [
@@ -3109,7 +3109,7 @@
     },
     {
       "id": "SOA-142",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "AWS Private Link（インターフェイスVPCエンドポイント）を使用してカスタムサービスを安全に外部公開する設定として正しいものはどれですか？",
       "choices": [
@@ -3175,7 +3175,7 @@
     },
     {
       "id": "SOA-145",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "VPC の IPv6 アドレス設計と既存IPv4 VPCへのIPv6対応追加手順として正しいものはどれですか？",
       "choices": [
@@ -3307,7 +3307,7 @@
     },
     {
       "id": "SOA-151",
-      "category": "VPC",
+      "category": "ネットワーク",
       "difficulty": 2,
       "question": "Amazon VPC Lattice を使用してサービスメッシュを構築する設定として正しいものはどれですか？",
       "choices": [
@@ -3395,7 +3395,7 @@
     },
     {
       "id": "SOA-155",
-      "category": "RDS",
+      "category": "データベース",
       "difficulty": 2,
       "question": "Amazon RDS の Blue/Green Deployments を使用してデータベースをゼロダウンタイムでアップグレードする方法として正しいものはどれですか？",
       "choices": [
