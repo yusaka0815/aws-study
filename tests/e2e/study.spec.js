@@ -44,6 +44,24 @@ async function answerQuestion(page) {
   await page.waitForSelector('#answer-area:not(.hidden)');
 }
 
+/**
+ * DOP試験専用: 複数選択問題が表示されるまで単一選択問題をスキップして進む
+ * DOP-001 が唯一の単一選択問題だが SRS 候補プールに含まれるため稀にトップに来る
+ */
+async function selectDopWithMultiChoice(page) {
+  await selectExam(page, 'DOP');
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const isMulti = await page.locator('#multi-submit-area').isVisible();
+    if (isMulti) return;
+    // 単一選択問題を回答して次へ進む
+    await page.locator('.choice-btn').first().click();
+    await page.waitForSelector('#answer-area:not(.hidden)');
+    await page.locator('#next-btn').click();
+    await page.waitForSelector('#screen-study.active');
+    await page.waitForSelector('.choice-btn');
+  }
+}
+
 // ============================================================
 // 起動・画面表示
 // ============================================================
@@ -673,13 +691,13 @@ test.describe('DOP試験', () => {
   });
 
   test('複数選択問題: 未選択時は次へボタンがdisabled', async ({ page }) => {
-    await selectExam(page, 'DOP');
+    await selectDopWithMultiChoice(page);
     await expect(page.locator('#multi-submit-area')).toBeVisible();
     await expect(page.locator('#next-btn')).toBeDisabled();
   });
 
   test('複数選択問題: 1つ選択で次へボタンが有効化される', async ({ page }) => {
-    await selectExam(page, 'DOP');
+    await selectDopWithMultiChoice(page);
     await expect(page.locator('#multi-submit-area')).toBeVisible();
     await page.locator('.choice-btn').first().click();
     await expect(page.locator('#next-btn')).toBeEnabled();
@@ -705,7 +723,7 @@ test.describe('DOP試験', () => {
   });
 
   test('複数選択問題: 選択解除で次へボタンが再度disabledになる', async ({ page }) => {
-    await selectExam(page, 'DOP');
+    await selectDopWithMultiChoice(page);
     const btn = page.locator('.choice-btn').first();
     // 選択
     await btn.click();
