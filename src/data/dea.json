@@ -85,7 +85,7 @@
     },
     {
       "id": "DEA-006",
-      "category": "データカタログ",
+      "category": "クエリ・分析",
       "question": "S3に保存されたデータのスキーマを自動検出し、Athenaでクエリできるようにしたい。最も効率的なアプローチはどれか？",
       "choices": [
         "AWS Glue Crawlerを設定してS3パスをスキャンし、Glue Data Catalogにテーブルを自動登録する",
