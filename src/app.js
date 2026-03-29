@@ -27,54 +27,63 @@ export const EXAM_LIST = [
     examName: 'AWS Certified Cloud Practitioner',
     file: 'data/clf.json',
     questionCount: 160,
+    estimatedDays: 14,
   },
   {
     examCode: 'AIF',
     examName: 'AWS Certified AI Practitioner',
     file: 'data/aif.json',
     questionCount: 160,
+    estimatedDays: 21,
   },
   {
     examCode: 'SAA',
     examName: 'AWS Certified Solutions Architect - Associate',
     file: 'data/saa.json',
     questionCount: 160,
+    estimatedDays: 30,
   },
   {
     examCode: 'MLA',
     examName: 'AWS Certified Machine Learning Engineer - Associate',
     file: 'data/mla.json',
     questionCount: 160,
+    estimatedDays: 30,
   },
   {
     examCode: 'DVA',
     examName: 'AWS Certified Developer - Associate',
     file: 'data/dva.json',
     questionCount: 160,
+    estimatedDays: 30,
   },
   {
     examCode: 'SOA',
     examName: 'AWS Certified SysOps Administrator - Associate',
     file: 'data/soa.json',
     questionCount: 160,
+    estimatedDays: 30,
   },
   {
     examCode: 'DEA',
     examName: 'AWS Certified Data Engineer - Associate',
     file: 'data/dea.json',
     questionCount: 160,
+    estimatedDays: 30,
   },
   {
     examCode: 'SAP',
     examName: 'AWS Certified Solutions Architect - Professional',
     file: 'data/sap.json',
     questionCount: 160,
+    estimatedDays: 60,
   },
   {
     examCode: 'DOP',
     examName: 'AWS Certified DevOps Engineer - Professional',
     file: 'data/dop.json',
     questionCount: 160,
+    estimatedDays: 60,
   },
 ];
 
@@ -465,9 +474,13 @@ function handleAnswer(selectedIndices) {
   if (isCorrect) {
     appState.sessionCorrect++;
     appState.sessionStreak++;
-    const HOT_STREAKS = [5, 10, 15, 20];
-    if (HOT_STREAKS.includes(appState.sessionStreak)) {
-      setTimeout(() => showToast(`🔥 ${appState.sessionStreak}問連続正解！`, 'success'), 500);
+    const streak = appState.sessionStreak;
+    if (streak === 3) {
+      setTimeout(() => showToast('🔥 3連続正解！', 'success'), 500);
+    } else if (streak === 5) {
+      setTimeout(() => showToast('🔥🔥 5連続！ 調子いいですね', 'success'), 500);
+    } else if (streak === 10) {
+      setTimeout(() => showToast('🔥🔥🔥 10連続！ 完璧です', 'success'), 500);
     }
   } else {
     appState.sessionStreak = 0;

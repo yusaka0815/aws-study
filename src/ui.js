@@ -100,7 +100,7 @@ export function renderExamSelect(exams, onSelect, progressMap = {}, todayStats =
       <div class="exam-card-meta">
         ${answered > 0
           ? `<div class="exam-card-badges">${dueBadge}${masteredCount > 0 ? `<span class="exam-mastered-badge">⭐${masteredCount}</span>` : ''}<span class="exam-progress">${answered}/${total}問<span class="exam-accuracy ${scoreClass}"> 予測${displayScore}%</span></span></div>`
-          : `<div class="exam-card-badges">${dueBadge}<span class="exam-new-label">はじめる →</span></div>`}
+          : `<div class="exam-card-badges">${dueBadge}<span class="exam-new-label">はじめる →</span>${exam.estimatedDays ? `<span class="exam-estimated-days">📅 目安 ${exam.estimatedDays}日</span>` : ''}</div>`}
         ${answered > 0
           ? `<div class="exam-progress-bar"><div class="exam-progress-fill" style="width:${pct}%"></div></div>`
           : ''}

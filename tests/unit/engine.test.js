@@ -91,8 +91,20 @@ describe('getIntervalMs', () => {
     expect(getIntervalMs([1, 1, 1, 1, 1])).toBe(3 * DAY);
   });
 
-  it('6連続以上でも上限は3日', () => {
-    expect(getIntervalMs(Array(10).fill(1))).toBe(3 * DAY);
+  it('6連続正解 → 1週間', () => {
+    expect(getIntervalMs([1, 1, 1, 1, 1, 1])).toBe(7 * DAY);
+  });
+
+  it('7連続正解 → 2週間', () => {
+    expect(getIntervalMs([1, 1, 1, 1, 1, 1, 1])).toBe(14 * DAY);
+  });
+
+  it('8連続正解 → 1ヶ月', () => {
+    expect(getIntervalMs([1, 1, 1, 1, 1, 1, 1, 1])).toBe(30 * DAY);
+  });
+
+  it('9連続以上でも上限は1ヶ月', () => {
+    expect(getIntervalMs(Array(15).fill(1))).toBe(30 * DAY);
   });
 
   it('途中ミスがあっても末尾のみカウント（連続2 → 1時間）', () => {
