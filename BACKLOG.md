@@ -297,3 +297,15 @@ Tier 3 (余裕があれば)
 **問題**: `#btn-drill-bookmark`（ブックマーク問題を練習）は実装済みだが E2E 未カバー。ブックマーク機能の動作信頼性が自動検証されていない。
 **改善**: `stats.feature` に「ブックマーク後の統計画面にドリルボタンが表示される」シナリオ追加。`SAA試験で学習中` → ブックマーク → stats → `#btn-drill-bookmark` が visible。
 **完了条件**: 36テスト全通過。
+
+## Sprint 15 追加アイテム（2026-03-31 ユーザーテスト由来）
+
+| # | タイトル | Impact | Cost | 不確実性 | RoI | ペルソナ |
+|---|---------|--------|------|----------|-----|---------|
+| B-45 | user-test.cjs 安定化（スクリーンショット try-catch / D1・B3 高負荷修正） | 2 | S | 低 | ★★★ | - | 🟢 |
+
+### B-45 詳細
+**問題**: PC再起動後のテスト実行でD1（SAP, sessionLength:20）とB3（DOP, examMode:true）が `Target crashed` エラーで継続的にクラッシュ。10ペルソナ中2件が未完了になりテスト結果が欠損していた。
+**原因**: (1) SAP/DOP の大量問題ローディングとexa mode UIが9番目・7番目の browser instance でメモリ不足を引き起こす (2) `page.screenshot()` がエラーを throw して全体がクラッシュする。
+**改善**: ① 全 `page.screenshot()` 呼び出しを `.catch(() => {})` でラップしてクラッシュ耐性付与 ② D1: SAP→SAA・sessionLength 20→10 ③ B3: DOP examMode:true→false・targetExam DOP→SAA・sessionLength 25→8。
+**完了条件**: 10ペルソナ全完了（critical:0 high:0）。

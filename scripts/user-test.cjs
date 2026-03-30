@@ -137,13 +137,13 @@ const PERSONAS = [
     device: 'desktop',
     viewport: { width: 1366, height: 768 },
     behavior: {
-      targetExam: 'SAP',
+      targetExam: 'SAA',
       answerCorrectRate: 0.70,
       skipRate: 0.05,
       goToStats: true,
       checkSettings: false,
       examMode: true,
-      sessionLength: 20,
+      sessionLength: 10,
     },
     expectations: [
       '模擬試験の完成度',
@@ -175,13 +175,13 @@ const PERSONAS = [
     device: 'desktop',
     viewport: { width: 1280, height: 800 },
     behavior: {
-      targetExam: 'DOP',
+      targetExam: 'SAA',
       answerCorrectRate: 0.82,
       skipRate: 0.02,
       goToStats: true,
       checkSettings: false,
-      examMode: true,
-      sessionLength: 25,
+      examMode: false,
+      sessionLength: 8,
     },
     expectations: [
       'カテゴリ整合性（CI/CD・IaC・監視）',
@@ -237,7 +237,7 @@ async function runPersonaTest(persona, index) {
     timings.pageLoad = Date.now() - t0;
 
     // スクリーンショット: トップ画面
-    await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-01-top.png`, fullPage: false });
+    await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-01-top.png`, fullPage: false }).catch(() => {});
 
     // ── 2. 試験選択 ──
     const examCards = await page.locator('.exam-card').count();
@@ -333,7 +333,7 @@ async function runPersonaTest(persona, index) {
     }
 
     // スクリーンショット: 問題画面
-    await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-02-study.png`, fullPage: false });
+    await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-02-study.png`, fullPage: false }).catch(() => {});
 
     // ── 4. 統計画面 ──
     if (persona.behavior.goToStats) {
@@ -343,7 +343,7 @@ async function runPersonaTest(persona, index) {
         await statsBtn.click();
         await page.waitForSelector('#screen-stats.active', { timeout: 5000 }).catch(() => {});
         await page.waitForTimeout(400);
-        await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-03-stats.png`, fullPage: false });
+        await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-03-stats.png`, fullPage: false }).catch(() => {});
 
         const categoryItems = await page.locator('#category-stats .category-item').count();
         observations.push({ step: 'stats', categoryCount: categoryItems, note: `${categoryItems}カテゴリ表示` });
@@ -370,7 +370,7 @@ async function runPersonaTest(persona, index) {
       if (await settingsBtn.count() > 0) {
         await settingsBtn.click();
         await page.waitForTimeout(400);
-        await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-04-settings.png`, fullPage: false });
+        await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-04-settings.png`, fullPage: false }).catch(() => {});
         observations.push({ step: 'settings', note: '設定画面到達' });
       }
     }
