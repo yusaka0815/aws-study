@@ -445,3 +445,20 @@ Then('模擬試験ボタンが {string} ラベルで表示される', async ({ p
   await expect(labelEl).toBeVisible();
   await expect(labelEl).toHaveText(label);
 });
+
+Given('ヒント未表示状態でアプリを開く', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('load');
+  await page.evaluate(() => localStorage.removeItem('aws-study-hint-seen'));
+  await page.waitForSelector('.exam-card');
+});
+
+Then('初回ヒントが表示される', async ({ page }) => {
+  await expect(page.locator('#study-first-hint')).toBeVisible();
+});
+
+Then('連続学習日数が表示される', async ({ page }) => {
+  const el = page.locator('#weekly-streak');
+  await expect(el).toBeVisible();
+  await expect(el).toContainText('連続');
+});
