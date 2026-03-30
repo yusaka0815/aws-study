@@ -798,3 +798,39 @@ describe('isAnswerCorrect', () => {
     expect(isAnswerCorrect([], [])).toBe(true);
   });
 });
+
+// ============================================================
+// getStats: totalSkips
+// ============================================================
+describe('getStats / totalSkips', () => {
+  const questions = [makeQuestion('Q-001', 'S3')];
+
+  it('dailySkipLog がない場合は totalSkips=0', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.totalSkips).toBe(0);
+  });
+
+  it('dailySkipLog が空オブジェクトの場合は totalSkips=0', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {}, dailySkipLog: {} });
+    expect(stats.totalSkips).toBe(0);
+  });
+
+  it('dailySkipLog の値が totalSkips に集計される', () => {
+    const stats = getStats(questions, {
+      questions: {},
+      dailyLog: {},
+      dailySkipLog: { '2026-03-29': 2, '2026-03-30': 3 },
+    });
+    expect(stats.totalSkips).toBe(5);
+  });
+
+  it('dailySkipLog に1日分のみ: totalSkips=1', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const stats = getStats(questions, {
+      questions: {},
+      dailyLog: {},
+      dailySkipLog: { [today]: 1 },
+    });
+    expect(stats.totalSkips).toBe(1);
+  });
+});

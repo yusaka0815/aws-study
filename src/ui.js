@@ -630,7 +630,7 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       <div class="stat-value">${stats.totalAttempts}</div>
       <div class="stat-label">総回答数</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card ${(stats.totalSkips ?? 0) === 0 ? 'stat-card-muted' : ''}">
       <div class="stat-value" id="stat-skip-count">${stats.totalSkips ?? 0}</div>
       <div class="stat-label">スキップ数</div>
     </div>

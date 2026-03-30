@@ -1443,6 +1443,14 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   color: #f59e0b;
 }
 
+.stat-card-muted {
+  opacity: 0.45;
+}
+
+.stat-card-muted .stat-value {
+  color: var(--text-secondary);
+}
+
 .stat-value {
   font-size: 32px;
   font-weight: 800;
