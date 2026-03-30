@@ -300,6 +300,26 @@ When('デイリーゴールを20問に変更する', async ({ page }) => {
   await page.waitForTimeout(200);
 });
 
+When('テーマをライトに変更する', async ({ page }) => {
+  await page.locator('#seg-theme .seg-btn[data-val="light"]').click();
+  await page.waitForTimeout(200);
+});
+
+When('テーマをダークに変更する', async ({ page }) => {
+  await page.locator('#seg-theme .seg-btn[data-val="dark"]').click();
+  await page.waitForTimeout(200);
+});
+
+Then('画面の背景がライト色になる', async ({ page }) => {
+  const theme = await page.evaluate(() => document.documentElement.dataset.theme);
+  expect(theme).toBe('light');
+});
+
+Then('画面の背景がダーク色になる', async ({ page }) => {
+  const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? 'dark');
+  expect(theme).toBe('dark');
+});
+
 Then('デイリーゴールが20問に設定されている', async ({ page }) => {
   const activeBtn = page.locator('#seg-daily-goal .seg-btn.active, #seg-daily-goal .seg-btn[aria-pressed="true"]');
   // セグメントボタンのアクティブ状態確認

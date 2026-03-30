@@ -147,6 +147,7 @@ function saveSetting(key, value) {
 
 const VALID_FONT_SIZES = ['small', 'medium', 'large'];
 const VALID_DAILY_GOALS = [10, 20, 30, 50];
+const VALID_THEMES = ['system', 'light', 'dark'];
 
 const settings = {
   sound: loadSetting('sound', false),
@@ -155,10 +156,28 @@ const settings = {
   autoNext: loadSetting('auto-next', false),
   dailyGoal: (() => { const v = loadSetting('daily-goal', 30); return VALID_DAILY_GOALS.includes(v) ? v : 30; })(),
   fontSize: (() => { const v = loadSetting('font-size', 'medium'); return VALID_FONT_SIZES.includes(v) ? v : 'medium'; })(),
+  theme: (() => { const v = loadSetting('theme', 'system'); return VALID_THEMES.includes(v) ? v : 'system'; })(),
 };
 
 // 文字サイズを即時反映
 document.documentElement.dataset.fontSize = settings.fontSize;
+
+// テーマを即時反映（dark がデフォルト。light の場合のみ data-theme="light" を付与）
+function applyTheme(theme) {
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  const useLightTheme = theme === 'light' || (theme === 'system' && prefersLight);
+  if (useLightTheme) {
+    document.documentElement.dataset.theme = 'light';
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+}
+applyTheme(settings.theme);
+
+// システム設定の変化を検知（auto モード時のみ追従）
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+  if (settings.theme === 'system') applyTheme('system');
+});
 
 // ============================================================
 // Service Worker 登録・PWA自動更新
@@ -1249,6 +1268,14 @@ function setupSettingsListeners() {
     saveSetting('font-size', val);
     document.documentElement.dataset.fontSize = val;
     showToast('文字サイズを変更しました', 'info');
+  });
+
+  setupSeg('seg-theme', settings.theme, val => {
+    settings.theme = val;
+    saveSetting('theme', val);
+    applyTheme(val);
+    const label = val === 'light' ? 'ライトモード' : val === 'dark' ? 'ダークモード' : 'システム設定に従う';
+    showToast(label, 'info');
   });
 
   document.getElementById('btn-export').addEventListener('click', () => {
