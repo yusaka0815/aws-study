@@ -446,6 +446,22 @@ Then('模擬試験ボタンが {string} ラベルで表示される', async ({ p
   await expect(labelEl).toHaveText(label);
 });
 
+When('解説ボタンをタップする', async ({ page }) => {
+  const expEl = page.locator('#explanation-text');
+  const alreadyVisible = await expEl.isVisible();
+  if (!alreadyVisible) {
+    await page.locator('#explanation-toggle').click();
+  }
+  await expect(expEl).toBeVisible({ timeout: 3000 });
+});
+
+Then('解説テキストが表示される', async ({ page }) => {
+  const el = page.locator('#explanation-text');
+  await expect(el).toBeVisible();
+  const text = await el.textContent();
+  expect(text.trim().length).toBeGreaterThan(0);
+});
+
 Then('問題メタにNEWチップが表示される', async ({ page }) => {
   await expect(page.locator('.chip-new')).toBeVisible();
   await expect(page.locator('.chip-new')).toContainText('NEW');
