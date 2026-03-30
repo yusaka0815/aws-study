@@ -47,6 +47,17 @@ Given('アプリを開く', async ({ page }) => {
   await page.waitForSelector('.exam-card');
 });
 
+Given('DOP試験で学習中', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('load');
+  await page.waitForSelector('.exam-card');
+  await page.locator('.exam-card').filter({ hasText: 'DOP' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+  // DOP は全問複数選択 → multi-submit-area が表示されるまで待機
+  await page.waitForSelector('#multi-submit-area:not(.hidden)', { timeout: 5000 });
+});
+
 Given('SAA試験で学習中', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('load');
@@ -311,6 +322,25 @@ Then('問題画面に戻り絞り込みが有効になる', async ({ page }) => 
   const banner = page.locator('#weak-only-banner, #bookmark-only-banner, .category-drill-banner');
   // ドリル後は問題画面に遷移していればOK（バナー表示はカテゴリに依存）
   await expect(page.locator('.question-card')).toBeVisible();
+});
+
+When('複数選択で1つ選択する', async ({ page }) => {
+  await page.locator('.choice-btn').first().click();
+  await page.waitForTimeout(200);
+});
+
+When('複数選択で必要数だけ選択する', async ({ page }) => {
+  const required = parseInt(await page.locator('#multi-required').textContent());
+  const choices = page.locator('.choice-btn:not(:disabled)');
+  for (let i = 0; i < required; i++) {
+    await choices.nth(i).click();
+    await page.waitForTimeout(150);
+  }
+});
+
+Then('選択カウンターが増加する', async ({ page }) => {
+  const count = parseInt(await page.locator('#multi-count').textContent());
+  expect(count).toBeGreaterThanOrEqual(1);
 });
 
 Then('模擬試験ボタンが {string} ラベルで表示される', async ({ page }, label) => {
