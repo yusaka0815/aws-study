@@ -497,3 +497,10 @@ Then('連続学習日数が表示される', async ({ page }) => {
 Then('ブックマークドリルボタンが表示される', async ({ page }) => {
   await expect(page.locator('#btn-drill-bookmark')).toBeVisible();
 });
+
+Then('スキップ数が表示される', async ({ page }) => {
+  const el = page.locator('#stat-skip-count');
+  await expect(el).toBeVisible();
+  const text = await el.textContent();
+  expect(parseInt(text.trim())).toBeGreaterThan(0);
+});

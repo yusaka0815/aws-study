@@ -313,6 +313,8 @@ export function getStats(questions, userState) {
   // 過去7日間のうちアクティブだった日数（North Star Metric）
   const weeklyActiveDays = weeklyLog.filter(d => d.count > 0).length;
 
+  const totalSkips = Object.values(userState.dailySkipLog ?? {}).reduce((s, n) => s + n, 0);
+
   return {
     total,
     answered,
@@ -334,6 +336,7 @@ export function getStats(questions, userState) {
     worstQuestions,
     predictedScore,
     lastCorrectCount,
+    totalSkips,
   };
 }
 

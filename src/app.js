@@ -576,6 +576,10 @@ function handleAnswer(selectedIndices) {
     appState.userState.dailyCorrectLog = appState.userState.dailyCorrectLog ?? {};
     appState.userState.dailyCorrectLog[today] = (appState.userState.dailyCorrectLog[today] ?? 0) + 1;
   }
+  if (selectedIndices.length === 0) {
+    appState.userState.dailySkipLog = appState.userState.dailySkipLog ?? {};
+    appState.userState.dailySkipLog[today] = (appState.userState.dailySkipLog[today] ?? 0) + 1;
+  }
 
   // 今日の目標達成トースト（目標数に達したタイミングで表示）
   if (prevCount + 1 === settings.dailyGoal) {

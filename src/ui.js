@@ -631,6 +631,10 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
       <div class="stat-label">総回答数</div>
     </div>
     <div class="stat-card">
+      <div class="stat-value" id="stat-skip-count">${stats.totalSkips ?? 0}</div>
+      <div class="stat-label">スキップ数</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-value">${stats.activeDays ?? 0}<span class="stat-unit">日</span></div>
       <div class="stat-label">学習日数</div>
     </div>
