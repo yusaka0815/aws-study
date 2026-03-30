@@ -47,6 +47,21 @@ Given('アプリを開く', async ({ page }) => {
   await page.waitForSelector('.exam-card');
 });
 
+Then('試験カードが9枚表示される', async ({ page }) => {
+  const count = await page.locator('.exam-card').count();
+  expect(count).toBe(9);
+});
+
+When('DOP試験カードをタップする', async ({ page }) => {
+  await page.locator('.exam-card').filter({ hasText: 'DOP' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+});
+
+Then('複数選択エリアが表示される', async ({ page }) => {
+  await expect(page.locator('#multi-submit-area')).toBeVisible();
+});
+
 Given('DOP試験で学習中', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('load');

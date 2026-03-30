@@ -9,6 +9,14 @@ Feature: 試験選択
   Scenario: 試験一覧が表示される
     Then 試験一覧に SAA・CLF・AIF が含まれる
 
+  Scenario: 全9試験が選択可能
+    Then 試験カードが9枚表示される
+
+  Scenario: DOP試験を選択して複数選択問題が始まる
+    When DOP試験カードをタップする
+    Then 問題画面に遷移する
+    And 複数選択エリアが表示される
+
   Scenario: SAAを選択すると問題が始まる
     When SAA試験カードをタップする
     Then 問題画面に遷移する
