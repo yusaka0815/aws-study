@@ -118,6 +118,18 @@ When('最初の選択肢を選ぶ', async ({ page }) => {
   await answerCurrentQuestion(page);
 });
 
+When('キーボードで選択肢1を押す', async ({ page }) => {
+  // 単一選択問題のみ: キー「1」で最初の選択肢を選んで回答
+  const isMulti = await page.locator('#multi-submit-area').isVisible();
+  if (isMulti) {
+    await page.keyboard.press('1');
+    await page.keyboard.press('Enter');
+  } else {
+    await page.keyboard.press('1');
+  }
+  await page.waitForSelector('#answer-area:not(.hidden)');
+});
+
 When('別の選択肢をタップする', async ({ page }) => {
   // 回答後は disabled なので force: true で送信しても結果は変わらない
   await page.locator('.choice-btn').nth(1).click({ force: true });

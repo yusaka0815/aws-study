@@ -239,6 +239,18 @@ function navigateTo(screenId) {
     'screen-settings': '設定 — AWS Study',
   };
   document.title = titles[screenId] ?? 'AWS Certification Study';
+
+  // スクリーン遷移後のフォーカス管理（アクセシビリティ: スクリーンリーダーに画面変化を伝える）
+  setTimeout(() => {
+    const focusMap = {
+      'screen-study': '#question-text',        // tabindex="-1" 問題文
+      'screen-stats': '#stats-back-btn',        // 戻るボタン
+      'screen-settings': '#settings-back-btn',  // 戻るボタン
+      'screen-select': '#select-heading',       // 試験選択見出し
+    };
+    const sel = focusMap[screenId];
+    if (sel) document.querySelector(sel)?.focus({ preventScroll: true });
+  }, 100);
 }
 
 // ============================================================
