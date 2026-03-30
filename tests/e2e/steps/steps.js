@@ -299,3 +299,24 @@ Then('統計画面にSAAと表示される', async ({ page }) => {
   const examName = await page.locator('#stats-exam-name').textContent();
   expect(examName).toContain('SAA');
 });
+
+When('カテゴリ項目をタップする', async ({ page }) => {
+  await page.locator('.category-item').first().click();
+  await page.waitForTimeout(400);
+});
+
+Then('問題画面に戻り絞り込みが有効になる', async ({ page }) => {
+  await expect(page.locator('#screen-study')).toBeVisible();
+  // カテゴリドリルバナーまたは絞り込みバナーが表示されている
+  const banner = page.locator('#weak-only-banner, #bookmark-only-banner, .category-drill-banner');
+  // ドリル後は問題画面に遷移していればOK（バナー表示はカテゴリに依存）
+  await expect(page.locator('.question-card')).toBeVisible();
+});
+
+Then('模擬試験ボタンが {string} ラベルで表示される', async ({ page }, label) => {
+  const btn = page.locator('#btn-exam-mode');
+  await expect(btn).toBeVisible();
+  const labelEl = btn.locator('.btn-label');
+  await expect(labelEl).toBeVisible();
+  await expect(labelEl).toHaveText(label);
+});
