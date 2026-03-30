@@ -446,6 +446,11 @@ Then('模擬試験ボタンが {string} ラベルで表示される', async ({ p
   await expect(labelEl).toHaveText(label);
 });
 
+Then('問題メタにNEWチップが表示される', async ({ page }) => {
+  await expect(page.locator('.chip-new')).toBeVisible();
+  await expect(page.locator('.chip-new')).toContainText('NEW');
+});
+
 Then('今日の学習状況が表示される', async ({ page }) => {
   const el = page.locator('#select-stats');
   await expect(el).toContainText('今日');
