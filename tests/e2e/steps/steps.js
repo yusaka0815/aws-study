@@ -392,6 +392,29 @@ Then('選択カウンターが増加する', async ({ page }) => {
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
+When('模擬試験ボタンをタップする', async ({ page }) => {
+  await page.locator('#btn-exam-mode').click();
+  await page.waitForSelector('#exam-modal-overlay:not(.hidden)', { timeout: 5000 });
+});
+
+Then('模擬試験モーダルが表示される', async ({ page }) => {
+  await expect(page.locator('#exam-modal-overlay')).not.toHaveClass(/hidden/);
+  await expect(page.locator('#exam-modal-content')).toBeVisible();
+});
+
+Then('開始ボタンが表示される', async ({ page }) => {
+  await expect(page.locator('#exam-modal-start')).toBeVisible();
+});
+
+When('模擬試験を開始する', async ({ page }) => {
+  await page.locator('#exam-modal-start').click();
+  await page.waitForSelector('#exam-mode-timer:not(.hidden)', { timeout: 5000 });
+});
+
+Then('模擬試験タイマーが表示される', async ({ page }) => {
+  await expect(page.locator('#exam-mode-timer')).toBeVisible();
+});
+
 Then('模擬試験ボタンが {string} ラベルで表示される', async ({ page }, label) => {
   const btn = page.locator('#btn-exam-mode');
   await expect(btn).toBeVisible();

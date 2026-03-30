@@ -678,6 +678,7 @@ export function renderStats(examCode, examName, stats, onDrillCategory = null) {
             <div class="weekly-bar ${isToday ? 'weekly-bar-today' : ''}" style="${barStyle}" aria-hidden="true"></div>
           </div>
           <div class="weekly-count" aria-hidden="true">${day.count > 0 ? day.count : ''}</div>
+          <div class="weekly-acc" aria-hidden="true">${day.count > 0 ? correctPctVal + '%' : ''}</div>
           <div class="weekly-label ${isToday ? 'weekly-label-today' : ''}" aria-hidden="true">${day.label}</div>
         </div>
       `;

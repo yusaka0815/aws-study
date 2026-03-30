@@ -1757,6 +1757,13 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   line-height: 14px;
 }
 
+.weekly-acc {
+  font-size: 9px;
+  color: var(--text-muted);
+  min-height: 12px;
+  line-height: 12px;
+}
+
 .weekly-label {
   font-size: 9px;
   color: var(--text-muted);
