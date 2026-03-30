@@ -355,6 +355,17 @@ Then('カテゴリ別の統計が表示される', async ({ page }) => {
   await expect(page.locator('#category-stats')).toBeVisible();
 });
 
+Then('週間チャートが表示される', async ({ page }) => {
+  await expect(page.locator('#weekly-chart')).toBeVisible();
+  const cols = await page.locator('#weekly-chart .weekly-col').count();
+  expect(cols).toBe(7);
+});
+
+Then('カテゴリリストに項目が存在する', async ({ page }) => {
+  const items = await page.locator('#category-stats .category-item').count();
+  expect(items).toBeGreaterThan(0);
+});
+
 Then('統計画面にSAAと表示される', async ({ page }) => {
   const examName = await page.locator('#stats-exam-name').textContent();
   expect(examName).toContain('SAA');

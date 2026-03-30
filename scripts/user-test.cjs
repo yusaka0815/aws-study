@@ -337,20 +337,29 @@ async function runPersonaTest(persona, index) {
 
     // ── 4. 統計画面 ──
     if (persona.behavior.goToStats) {
-      const statsBtn = page.locator('[data-screen="stats"], #nav-stats, button').filter({ hasText: /統計|Stats/ }).first();
-      if (await statsBtn.count() > 0) {
+      // #btn-stats は aria-label="統計" の📊ボタン（直接IDで指定）
+      const statsBtn = page.locator('#btn-stats');
+      if (await statsBtn.count() > 0 && await statsBtn.isVisible().catch(() => false)) {
         await statsBtn.click();
-        await page.waitForTimeout(600);
+        await page.waitForSelector('#screen-stats.active', { timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
         await page.screenshot({ path: `scripts/screenshots/persona-${persona.id}-03-stats.png`, fullPage: false });
 
-        const categoryItems = await page.locator('.category-item, .cat-item, .cat-row').count();
+        const categoryItems = await page.locator('#category-stats .category-item').count();
         observations.push({ step: 'stats', categoryCount: categoryItems, note: `${categoryItems}カテゴリ表示` });
 
-        // カテゴリドリル
+        // カテゴリドリル（カテゴリが表示されている場合のみ実施）
         if (persona.behavior.drillCategory && categoryItems > 0) {
-          await page.locator('.category-item, .cat-item, .cat-row').first().click().catch(() => {});
+          await page.locator('#category-stats .category-item').first().click().catch(() => {});
           await page.waitForTimeout(400);
           observations.push({ step: 'category-drill', action: 'clicked' });
+        }
+
+        // 統計画面から問題画面に戻る
+        const backBtn = page.locator('#stats-back-btn, #btn-resume-study');
+        if (await backBtn.first().isVisible().catch(() => false)) {
+          await backBtn.first().click();
+          await page.waitForTimeout(300);
         }
       }
     }
