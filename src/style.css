@@ -1170,6 +1170,10 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 
 #explanation-text.hidden { display: none; }
 
+#explanation-text:not(.hidden) {
+  animation: fadeSlideIn 0.15s ease;
+}
+
 /* 次へボタン（FAB：右下固定、回答前disabled・回答後enabled） */
 .next-btn-wrap {
   position: fixed;
