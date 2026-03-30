@@ -446,6 +446,11 @@ Then('模擬試験ボタンが {string} ラベルで表示される', async ({ p
   await expect(labelEl).toHaveText(label);
 });
 
+Then('スキップ後にカテゴリが表示される', async ({ page }) => {
+  const label = await page.locator('#answer-label').textContent();
+  expect(label).toMatch(/スキップ — /);
+});
+
 Given('ヒント未表示状態でアプリを開く', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('load');

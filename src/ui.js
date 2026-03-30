@@ -399,6 +399,7 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
   // スキップ時メッセージ（selectedIndices が空 = スキップ）
   const isSkipped = selectedIndices.length === 0;
   if (isSkipped) {
+    answerLabel.textContent = `スキップ — ${question.category}`;
     const skipMsgEl = document.getElementById('next-review');
     if (skipMsgEl) {
       skipMsgEl.textContent = 'このセッションの最後に再出題します（スコアには影響しません）';
