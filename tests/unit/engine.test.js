@@ -366,6 +366,47 @@ describe('getStats', () => {
     expect(stats.answered).toBe(0); // NaN attempts はゼロ扱いで未回答
     expect(stats.accuracy).not.toBeNaN();
   });
+
+  it('categoryList はカテゴリ正確度の昇順にソートされる', () => {
+    const userState = {
+      questions: {
+        'Q-001': { attempts: 2, correct: 0, wrong: 2, recentResults: [0, 0], lastAnsweredAt: 0, nextReviewAt: 0 }, // S3: 0%
+        'Q-003': { attempts: 2, correct: 2, wrong: 0, recentResults: [1, 1], lastAnsweredAt: 0, nextReviewAt: 0 }, // EC2: 100%
+      },
+    };
+    const stats = getStats(questions, userState);
+    const accuracies = stats.categoryList.map(c => c.accuracy ?? 101);
+    for (let i = 1; i < accuracies.length; i++) {
+      expect(accuracies[i]).toBeGreaterThanOrEqual(accuracies[i - 1]);
+    }
+  });
+
+  it('カテゴリの answered カウントが正しい', () => {
+    const userState = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: 0, nextReviewAt: 0 },
+      },
+    };
+    const stats = getStats(questions, userState);
+    const s3 = stats.categoryList.find(c => c.name === 'S3');
+    expect(s3.answered).toBe(1);
+    const ec2 = stats.categoryList.find(c => c.name === 'EC2');
+    expect(ec2.answered).toBe(0);
+  });
+
+  it('カテゴリの due カウントが正しい（期限切れ復習）', () => {
+    const past = Date.now() - 1000;
+    const future = Date.now() + 100_000;
+    const userState = {
+      questions: {
+        'Q-001': { attempts: 2, correct: 1, wrong: 1, recentResults: [0], lastAnsweredAt: past, nextReviewAt: past }, // due
+        'Q-002': { attempts: 2, correct: 2, wrong: 0, recentResults: [1], lastAnsweredAt: past, nextReviewAt: future }, // not due
+      },
+    };
+    const stats = getStats(questions, userState);
+    const s3 = stats.categoryList.find(c => c.name === 'S3');
+    expect(s3.due).toBe(1);
+  });
 });
 
 // ============================================================

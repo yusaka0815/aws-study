@@ -295,6 +295,20 @@ Then('コンテンツがスクロール可能である', async ({ page }) => {
   expect(overflowY).toBe('auto');
 });
 
+When('デイリーゴールを20問に変更する', async ({ page }) => {
+  await page.locator('#seg-daily-goal .seg-btn[data-val="20"]').click();
+  await page.waitForTimeout(200);
+});
+
+Then('デイリーゴールが20問に設定されている', async ({ page }) => {
+  const activeBtn = page.locator('#seg-daily-goal .seg-btn.active, #seg-daily-goal .seg-btn[aria-pressed="true"]');
+  // セグメントボタンのアクティブ状態確認
+  const activeVal = await page.locator('#seg-daily-goal .seg-btn').evaluateAll(
+    btns => btns.find(b => b.classList.contains('active') || b.getAttribute('aria-pressed') === 'true')?.dataset.val
+  );
+  expect(activeVal).toBe('20');
+});
+
 Then('問題文のフォントサイズが大きくなる', async ({ page }) => {
   const fontSize = await page.evaluate(() =>
     parseFloat(getComputedStyle(document.getElementById('question-text')).fontSize)
