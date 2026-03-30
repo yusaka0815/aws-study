@@ -472,3 +472,7 @@ Then('連続学習日数が表示される', async ({ page }) => {
   await expect(el).toBeVisible();
   await expect(el).toContainText('連続');
 });
+
+Then('ブックマークドリルボタンが表示される', async ({ page }) => {
+  await expect(page.locator('#btn-drill-bookmark')).toBeVisible();
+});
