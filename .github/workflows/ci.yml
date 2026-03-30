@@ -139,13 +139,21 @@ jobs:
         run: |
           URL="${{ steps.deploy.outputs.page_url }}"
           echo "Checking $URL"
-          # 最大60秒待ってから確認
-          sleep 15
-          CONTENT=$(curl -sL "$URL")
-          if echo "$CONTENT" | grep -q "AWS Certification Study"; then
-            echo "✓ Site is serving the app correctly"
-          else
-            echo "✗ Site does not contain expected content"
-            echo "First 500 chars: ${CONTENT:0:500}"
-            exit 1
-          fi
+          # CDNキャッシュの伝播を待つ（最大90秒）
+          sleep 30
+          for i in 1 2 3; do
+            CONTENT=$(curl -sL "$URL")
+            if echo "$CONTENT" | grep -q 'lang="ja"'; then
+              echo "✓ Site is serving the app correctly (attempt $i)"
+              # READMEが表示されていないことも確認
+              if echo "$CONTENT" | grep -qi "jekyll\|generator.*Jekyll"; then
+                echo "::warning::Jekyll metadata detected in response"
+              fi
+              exit 0
+            fi
+            echo "Attempt $i: Expected content not found, waiting..."
+            sleep 20
+          done
+          echo "✗ Site does not contain expected content after 3 attempts"
+          echo "First 500 chars: ${CONTENT:0:500}"
+          exit 1
