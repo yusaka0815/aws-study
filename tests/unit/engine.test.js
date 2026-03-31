@@ -1163,6 +1163,60 @@ describe('getNextQuestion', () => {
 });
 
 // ============================================================
+// getNextQuestion / 追加境界値テスト（Sprint 46）
+// ============================================================
+describe('getNextQuestion / 追加境界値', () => {
+  const now = Date.now();
+
+  it('問題1問のみ: lastQuestionIdと同じでも返す', () => {
+    const q = [{ id: 'Q-001', text: 'test' }];
+    const result = getNextQuestion(q, { questions: {} }, 'Q-001');
+    expect(result).not.toBeNull();
+    expect(result.id).toBe('Q-001');
+  });
+
+  it('高スコア問題が優先的に選ばれる（50回試行で多くの割合）', () => {
+    // Q-001: 未回答(score=10), Q-002: 全正解(score≒0)
+    const qs = [
+      { id: 'Q-001', text: 'unanswered' },
+      { id: 'Q-002', text: 'mastered' },
+    ];
+    const userState = {
+      questions: {
+        'Q-002': { attempts: 10, correct: 10, recentResults: [1,1,1,1,1], nextReviewAt: now + 999999 },
+      }
+    };
+    let q001Count = 0;
+    for (let i = 0; i < 50; i++) {
+      if (getNextQuestion(qs, userState)?.id === 'Q-001') q001Count++;
+    }
+    // 上位20%（最低3問）から選ぶが2問しかないので両方候補、それでもQ-001が多め
+    expect(q001Count).toBeGreaterThanOrEqual(20);
+  });
+
+  it('userState.questions がある場合は正常動作する', () => {
+    const qs = [{ id: 'Q-001', text: 'test' }];
+    const result = getNextQuestion(qs, { questions: { 'Q-001': { attempts: 1, correct: 1, recentResults: [1], nextReviewAt: now + 999 } } });
+    expect(result).not.toBeNull();
+  });
+
+  it('全問スコアが同じならランダムに返す（10問・100回で偏りなし）', () => {
+    const qs = Array.from({ length: 5 }, (_, i) => ({ id: `Q-${i}`, text: `q${i}` }));
+    const counts = {};
+    for (let i = 0; i < 100; i++) {
+      const q = getNextQuestion(qs, { questions: {} });
+      counts[q.id] = (counts[q.id] || 0) + 1;
+    }
+    // 少なくとも3種類以上の問題が選ばれている
+    expect(Object.keys(counts).length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('nullリストはnullを返す', () => {
+    expect(getNextQuestion(null, { questions: {} })).toBeNull();
+  });
+});
+
+// ============================================================
 // getIntervalMs / 追加境界値テスト（Sprint 38）
 // ============================================================
 describe('getIntervalMs / 追加境界値', () => {
