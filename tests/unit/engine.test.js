@@ -1082,6 +1082,33 @@ describe('isAnswerCorrect 追加境界値', () => {
 });
 
 // ============================================================
+// isAnswerCorrect / 追加境界値テスト（Sprint 53）
+// ============================================================
+describe('isAnswerCorrect / Sprint53追加境界値', () => {
+  it('正解が3択の場合: 完全一致 → true', () => {
+    expect(isAnswerCorrect([0, 2, 3], [0, 2, 3])).toBe(true);
+  });
+
+  it('正解が3択の場合: 1つ違う → false', () => {
+    expect(isAnswerCorrect([0, 1, 3], [0, 2, 3])).toBe(false);
+  });
+
+  it('重複した選択インデックスは不正解扱い（Set化で1件扱い）', () => {
+    // selectedIndices=[0,0] → length=2, correctAnswers=[0] → length=1 → false
+    expect(isAnswerCorrect([0, 0], [0])).toBe(false);
+  });
+
+  it('大きいインデックスでも正しく判定', () => {
+    expect(isAnswerCorrect([9], [9])).toBe(true);
+    expect(isAnswerCorrect([9], [8])).toBe(false);
+  });
+
+  it('順序が異なっても一致なら true', () => {
+    expect(isAnswerCorrect([3, 1, 2], [1, 2, 3])).toBe(true);
+  });
+});
+
+// ============================================================
 // updateQuestionState: 初回回答（qState=null）
 // ============================================================
 describe('updateQuestionState / 初回回答', () => {

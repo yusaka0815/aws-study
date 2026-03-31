@@ -199,6 +199,17 @@ When('キーボードで選択肢1を押す', async ({ page }) => {
   await page.waitForSelector('#answer-area:not(.hidden)');
 });
 
+When('キーボードで選択肢2を押す', async ({ page }) => {
+  const isMulti = await page.locator('#multi-submit-area').isVisible();
+  if (isMulti) {
+    await page.keyboard.press('2');
+    await page.keyboard.press('Enter');
+  } else {
+    await page.keyboard.press('2');
+  }
+  await page.waitForSelector('#answer-area:not(.hidden)');
+});
+
 When('別の選択肢をタップする', async ({ page }) => {
   // 回答後は disabled なので force: true で送信しても結果は変わらない
   await page.locator('.choice-btn').nth(1).click({ force: true });
