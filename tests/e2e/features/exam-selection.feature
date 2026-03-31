@@ -52,3 +52,13 @@ Feature: 試験選択
     When SAP試験カードをタップする
     Then 問題画面に遷移する
     And 問題文が表示される
+
+  Scenario: DVA試験を選択して問題を解ける
+    When DVA試験カードをタップする
+    Then 問題画面に遷移する
+    And 問題文が表示される
+
+  Scenario: AIF試験を選択して問題を解ける
+    When AIF試験カードをタップする
+    Then 問題画面に遷移する
+    And 問題文が表示される

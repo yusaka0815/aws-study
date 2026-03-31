@@ -121,6 +121,18 @@ When('SAP試験カードをタップする', async ({ page }) => {
   await waitForQuestion(page);
 });
 
+When('DVA試験カードをタップする', async ({ page }) => {
+  await page.locator('.exam-card').filter({ hasText: 'DVA' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+});
+
+When('AIF試験カードをタップする', async ({ page }) => {
+  await page.locator('.exam-card').filter({ hasText: 'AIF' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+});
+
 When('試験変更ボタンをタップする', async ({ page }) => {
   await page.locator('#btn-change-exam').click();
   await page.waitForSelector('#screen-select.active');
