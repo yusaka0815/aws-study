@@ -1284,6 +1284,58 @@ describe('getNextQuestion', () => {
 });
 
 // ============================================================
+// getTodayStats / prevStreak 追加テスト（Sprint 55）
+// ============================================================
+describe('getTodayStats / prevStreak追加境界値', () => {
+  it('今日回答済みなら prevStreak=0', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const result = getTodayStats({ dailyLog: { [today]: 5 }, questions: {} });
+    expect(result.prevStreak).toBe(0);
+  });
+
+  it('昨日・一昨日連続で prevStreak=2', () => {
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const dayBefore = new Date(); dayBefore.setDate(dayBefore.getDate() - 2);
+    const state = {
+      dailyLog: {
+        [yesterday.toISOString().slice(0, 10)]: 3,
+        [dayBefore.toISOString().slice(0, 10)]: 3,
+      },
+      questions: {},
+    };
+    const result = getTodayStats(state);
+    expect(result.prevStreak).toBe(2);
+  });
+
+  it('昨日未回答なら prevStreak=0', () => {
+    const twoDaysAgo = new Date(); twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    const state = { dailyLog: { [twoDaysAgo.toISOString().slice(0, 10)]: 3 }, questions: {} };
+    const result = getTodayStats(state);
+    expect(result.prevStreak).toBe(0);
+  });
+
+  it('todayAccuracy: 今日10問回答・5問正解で50', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const state = {
+      dailyLog: { [today]: 10 },
+      dailyCorrectLog: { [today]: 5 },
+      questions: {},
+    };
+    expect(getTodayStats(state).todayAccuracy).toBe(50);
+  });
+
+  it('todayCorrect: 今日の正解数が正しく返る', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const state = {
+      dailyLog: { [today]: 8 },
+      dailyCorrectLog: { [today]: 7 },
+      questions: {},
+    };
+    expect(getTodayStats(state).todayCorrect).toBe(7);
+  });
+});
+
+// ============================================================
 // getStats / worstQuestions テスト（Sprint 52）
 // ============================================================
 describe('getStats / worstQuestions', () => {
