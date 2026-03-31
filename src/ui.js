@@ -327,6 +327,7 @@ export function renderQuestion(question, questionIndex, totalQuestions, weakOnly
   document.getElementById('explanation-text').classList.add('hidden');
   document.getElementById('multi-submit-area').classList.add('hidden');
   document.getElementById('skip-btn-wrap')?.classList.remove('hidden');
+  document.getElementById('skip-nudge')?.classList.add('hidden');
   const nextReviewEl = document.getElementById('next-review');
   if (nextReviewEl) nextReviewEl.classList.add('hidden');
   const correctLabelsEl = document.getElementById('correct-labels');

@@ -467,6 +467,25 @@ Then('問題メタにNEWチップが表示される', async ({ page }) => {
   await expect(page.locator('.chip-new')).toContainText('NEW');
 });
 
+When('3回連続スキップする', async ({ page }) => {
+  for (let i = 0; i < 3; i++) {
+    await page.waitForSelector('#btn-skip:not([disabled])');
+    await page.locator('#btn-skip').click();
+    await page.waitForSelector('#answer-area:not(.hidden)');
+    if (i < 2) {
+      await page.locator('#next-btn').click();
+      await page.waitForFunction(
+        () => document.getElementById('answer-area')?.classList.contains('hidden')
+      );
+      await page.waitForSelector('.choice-btn');
+    }
+  }
+});
+
+Then('スキップ誘導バナーが表示される', async ({ page }) => {
+  await expect(page.locator('#skip-nudge')).toBeVisible();
+});
+
 Then('今日の学習状況が表示される', async ({ page }) => {
   const el = page.locator('#select-stats');
   await expect(el).toContainText('今日');

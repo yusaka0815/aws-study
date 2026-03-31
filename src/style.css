@@ -1189,6 +1189,20 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
   animation: fadeSlideIn 0.15s ease;
 }
 
+.skip-nudge {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fadeSlideIn 0.2s ease;
+}
+
+.skip-nudge.hidden { display: none; }
+
 /* 次へボタン（FAB：右下固定、回答前disabled・回答後enabled） */
 .next-btn-wrap {
   position: fixed;

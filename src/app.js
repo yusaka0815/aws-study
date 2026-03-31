@@ -101,6 +101,7 @@ const appState = {
   sessionAnswered: 0,       // 今セッションで回答した問題数
   sessionCorrect: 0,        // 今セッションで正解した問題数
   sessionStreak: 0,         // 今セッションで連続正解した問題数
+  sessionSkipped: 0,        // 今セッションでスキップした問題数
   sessionStartTime: null,   // セッション開始タイムスタンプ
   questionStartTime: null,  // 問題表示開始タイムスタンプ（回答時間計測用）
   categoryFilter: null,     // string | null: カテゴリ絞り込みフィルター
@@ -278,6 +279,7 @@ async function selectExam(examCode) {
   appState.sessionAnswered = 0;
   appState.sessionCorrect = 0;
   appState.sessionStreak = 0;
+  appState.sessionSkipped = 0;
   appState.sessionStartTime = Date.now();
   appState.categoryFilter = null;
   appState.bookmarkMode = false;
@@ -579,6 +581,11 @@ function handleAnswer(selectedIndices) {
   if (selectedIndices.length === 0) {
     appState.userState.dailySkipLog = appState.userState.dailySkipLog ?? {};
     appState.userState.dailySkipLog[today] = (appState.userState.dailySkipLog[today] ?? 0) + 1;
+    appState.sessionSkipped++;
+    if (appState.sessionSkipped === 3) {
+      const nudgeEl = document.getElementById('skip-nudge');
+      if (nudgeEl) nudgeEl.classList.remove('hidden');
+    }
   }
 
   // 今日の目標達成トースト（目標数に達したタイミングで表示）
