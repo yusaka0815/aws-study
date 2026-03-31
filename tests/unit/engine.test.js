@@ -1012,3 +1012,45 @@ describe('getTodayStats', () => {
     expect(result.todayAccuracy).toBeNull();
   });
 });
+
+// ============================================================
+// isAnswerCorrect 追加境界値
+// ============================================================
+describe('isAnswerCorrect 追加境界値', () => {
+  it('選択なし（空配列）は不正解', () => {
+    expect(isAnswerCorrect([], [0])).toBe(false);
+  });
+
+  it('正解が空で選択なし → true', () => {
+    expect(isAnswerCorrect([], [])).toBe(true);
+  });
+
+  it('単一正解に複数選択 → false', () => {
+    expect(isAnswerCorrect([0, 1], [0])).toBe(false);
+  });
+});
+
+// ============================================================
+// updateQuestionState: 初回回答（qState=null）
+// ============================================================
+describe('updateQuestionState / 初回回答', () => {
+  it('正解時 attempts=1 correct=1', () => {
+    const s = updateQuestionState(null, true, Date.now());
+    expect(s.attempts).toBe(1);
+    expect(s.correct).toBe(1);
+    expect(s.wrong).toBe(0);
+  });
+
+  it('不正解時 attempts=1 wrong=1', () => {
+    const s = updateQuestionState(null, false, Date.now());
+    expect(s.attempts).toBe(1);
+    expect(s.correct).toBe(0);
+    expect(s.wrong).toBe(1);
+  });
+
+  it('nextReviewAt は現在より未来', () => {
+    const now = Date.now();
+    const s = updateQuestionState(null, true, now);
+    expect(s.nextReviewAt).toBeGreaterThan(now);
+  });
+});
