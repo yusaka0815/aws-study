@@ -338,6 +338,21 @@ Then('ブックマークが解除される', async ({ page }) => {
   await expect(page.locator('#btn-bookmark')).toContainText('☆');
 });
 
+Then('プログレスバーが表示される', async ({ page }) => {
+  await expect(page.locator('#progress-bar')).toBeVisible();
+  await expect(page.locator('#progress-text')).toBeVisible();
+});
+
+Then('プログレステキストが更新されている', async ({ page }) => {
+  // 次の問題が読み込まれるまで待機してからプログレスを確認
+  await waitForQuestion(page);
+  const progressText = await page.locator('#progress-text').textContent();
+  // "X / Y" 形式でX >= 1（少なくともプログレスが存在する）
+  const match = progressText.match(/(\d+)/);
+  expect(match).not.toBeNull();
+  expect(Number(match[1])).toBeGreaterThanOrEqual(1);
+});
+
 Then('プログレスが更新されている', async ({ page }) => {
   const progressText = await page.locator('#progress-text').textContent();
   // "X / Y" 形式で X が 1 以上
