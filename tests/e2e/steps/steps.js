@@ -185,6 +185,22 @@ When('文字サイズを大に変更する', async ({ page }) => {
   await page.locator('#seg-font-size .seg-btn[data-val="large"]').click();
 });
 
+When('文字サイズを小に変更する', async ({ page }) => {
+  await page.locator('#seg-font-size .seg-btn[data-val="small"]').click();
+});
+
+When('文字サイズを標準に変更する', async ({ page }) => {
+  await page.locator('#seg-font-size .seg-btn[data-val="medium"]').click();
+});
+
+Then('フォントサイズ属性が小になる', async ({ page }) => {
+  await expect(page.locator('html')).toHaveAttribute('data-font-size', 'small');
+});
+
+Then('フォントサイズ属性が標準になる', async ({ page }) => {
+  await expect(page.locator('html')).toHaveAttribute('data-font-size', 'medium');
+});
+
 When('戻るボタンをタップする', async ({ page }) => {
   // アクティブな画面の戻るボタンをクリック
   await page.locator('.screen.active .back-btn').click();
