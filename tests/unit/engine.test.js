@@ -561,6 +561,49 @@ describe('getStats / weeklyLog', () => {
 });
 
 // ============================================================
+// getStats / weeklyActiveDays テスト（Sprint 54）
+// ============================================================
+describe('getStats / weeklyActiveDays', () => {
+  const questions = [makeQuestion('Q-001', 'S3')];
+
+  it('dailyLog が空なら weeklyActiveDays=0', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.weeklyActiveDays).toBe(0);
+  });
+
+  it('今日だけ回答なら weeklyActiveDays=1', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const stats = getStats(questions, { questions: {}, dailyLog: { [today]: 5 } });
+    expect(stats.weeklyActiveDays).toBe(1);
+  });
+
+  it('7日すべて回答なら weeklyActiveDays=7', () => {
+    const dailyLog = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      dailyLog[d.toISOString().slice(0, 10)] = 3;
+    }
+    const stats = getStats(questions, { questions: {}, dailyLog });
+    expect(stats.weeklyActiveDays).toBe(7);
+  });
+
+  it('8日以上前のログは weeklyActiveDays にカウントされない', () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 8);
+    const stats = getStats(questions, { questions: {}, dailyLog: { [d.toISOString().slice(0, 10)]: 5 } });
+    expect(stats.weeklyActiveDays).toBe(0);
+  });
+
+  it('weeklyActiveDays は 0〜7 の範囲', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const stats = getStats(questions, { questions: {}, dailyLog: { [today]: 1 } });
+    expect(stats.weeklyActiveDays).toBeGreaterThanOrEqual(0);
+    expect(stats.weeklyActiveDays).toBeLessThanOrEqual(7);
+  });
+});
+
+// ============================================================
 // getStats: masteredCount
 // ============================================================
 describe('getStats / masteredCount', () => {
