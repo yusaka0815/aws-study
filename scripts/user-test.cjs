@@ -482,7 +482,25 @@ function generateFeedback(persona, observations, errors, timings, uiChecks) {
   return feedback;
 }
 
+async function checkServer(url = 'http://localhost:3000') {
+  return new Promise(resolve => {
+    const http = require('http');
+    const req = http.get(url, res => { res.destroy(); resolve(true); });
+    req.on('error', () => resolve(false));
+    req.setTimeout(2000, () => { req.destroy(); resolve(false); });
+  });
+}
+
 async function main() {
+  // サーバー疎通確認
+  const serverReady = await checkServer();
+  if (!serverReady) {
+    console.error('\n⚠️  localhost:3000 に接続できません。');
+    console.error('   先に静的サーバーを起動してください:');
+    console.error('   npx serve src -p 3000 --no-clipboard\n');
+    process.exit(1);
+  }
+
   // screenshotディレクトリ確保
   const ssDir = path.join(__dirname, 'screenshots');
   if (!fs.existsSync(ssDir)) fs.mkdirSync(ssDir, { recursive: true });

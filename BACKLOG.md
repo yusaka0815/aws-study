@@ -419,3 +419,14 @@ Tier 3 (余裕があれば)
 **問題**: `getStats` の `bookmarkCount` 集計ロジックが Vitest で未検証。ブックマーク機能はコア機能のひとつ。
 **改善**: `engine.test.js` に `getStats / bookmarkCount` describe ブロック（4テスト: ブックマークなし/1問/全問/false除外）を追加。
 **完了条件**: Vitest 131テスト・E2E 45テスト全通過。
+
+## Sprint 26 追加アイテム（2026-03-31 ユーザーテスト由来）
+
+| # | タイトル | Impact | Cost | 不確実性 | RoI | ペルソナ |
+|---|---------|--------|------|----------|-----|---------|
+| B-56 | user-test.cjs サーバー疎通チェック追加（localhost:3000 未起動時にわかりやすいエラーで終了） | 3 | S | 低 | ★★★★ | - | 🟢 |
+
+### B-56 詳細
+**問題**: localhost:3000 が起動していない状態で `node scripts/user-test.cjs` を実行すると全ペルソナが `ERR_CONNECTION_REFUSED` で失敗し、結果ファイルに critical:10 が記録される。原因の診断が遅れる。
+**改善**: `main()` 冒頭に `checkServer()` で HTTP GET 疎通確認を追加。失敗時は「npx serve src -p 3000」の起動方法を案内して process.exit(1) する。
+**完了条件**: サーバーなしで実行するとエラーメッセージが表示されて終了する。サーバーありでは正常動作。
