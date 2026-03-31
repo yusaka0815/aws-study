@@ -408,3 +408,14 @@ Tier 3 (余裕があれば)
 **問題**: `exam-selection.feature` に CLF 試験の選択シナリオがなく、初学者向け試験の動作が自動検証されていなかった。
 **改善**: `exam-selection.feature` に「CLF試験を選択して問題を解ける」シナリオを追加。CLF カードタップ → 問題画面遷移 → 問題文表示を確認。
 **完了条件**: 45 E2Eテスト全通過。
+
+## Sprint 25 追加アイテム（2026-03-31 ユーザーテスト由来）
+
+| # | タイトル | Impact | Cost | 不確実性 | RoI | ペルソナ |
+|---|---------|--------|------|----------|-----|---------|
+| B-55 | getStats / bookmarkCount Vitest ユニットテスト4件追加 | 2 | S | 低 | ★★★ | - | 🟢 |
+
+### B-55 詳細
+**問題**: `getStats` の `bookmarkCount` 集計ロジックが Vitest で未検証。ブックマーク機能はコア機能のひとつ。
+**改善**: `engine.test.js` に `getStats / bookmarkCount` describe ブロック（4テスト: ブックマークなし/1問/全問/false除外）を追加。
+**完了条件**: Vitest 131テスト・E2E 45テスト全通過。

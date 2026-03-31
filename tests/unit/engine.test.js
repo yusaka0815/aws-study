@@ -834,3 +834,48 @@ describe('getStats / totalSkips', () => {
     expect(stats.totalSkips).toBe(1);
   });
 });
+
+// ============================================================
+// getStats: bookmarkCount
+// ============================================================
+describe('getStats / bookmarkCount', () => {
+  const questions = [
+    makeQuestion('Q-001', 'S3'),
+    makeQuestion('Q-002', 'EC2'),
+    makeQuestion('Q-003', 'VPC'),
+  ];
+
+  it('ブックマークなしで bookmarkCount=0', () => {
+    const stats = getStats(questions, { questions: {}, dailyLog: {} });
+    expect(stats.bookmarkCount).toBe(0);
+  });
+
+  it('1問ブックマークで bookmarkCount=1', () => {
+    const state = {
+      questions: { 'Q-001': { bookmarked: true, attempts: 0, correct: 0, wrong: 0, recentResults: [], lastAnsweredAt: 0, nextReviewAt: 0 } },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).bookmarkCount).toBe(1);
+  });
+
+  it('全問ブックマークで bookmarkCount=3', () => {
+    const state = {
+      questions: Object.fromEntries(
+        questions.map(q => [q.id, { bookmarked: true, attempts: 0, correct: 0, wrong: 0, recentResults: [], lastAnsweredAt: 0, nextReviewAt: 0 }])
+      ),
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).bookmarkCount).toBe(3);
+  });
+
+  it('bookmarked: false の問題は含まれない', () => {
+    const state = {
+      questions: {
+        'Q-001': { bookmarked: false, attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: 0, nextReviewAt: 0 },
+        'Q-002': { bookmarked: true, attempts: 1, correct: 1, wrong: 0, recentResults: [1], lastAnsweredAt: 0, nextReviewAt: 0 },
+      },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).bookmarkCount).toBe(1);
+  });
+});
