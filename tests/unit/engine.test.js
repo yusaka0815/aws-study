@@ -950,3 +950,28 @@ describe('getStats / masteredCount 境界値', () => {
     expect(getStats(questions, state).masteredCount).toBe(0);
   });
 });
+
+// ============================================================
+// formatInterval
+// ============================================================
+describe('formatInterval', () => {
+  it('過去または現在は「すぐ」', () => {
+    expect(formatInterval(Date.now() - 1000)).toBe('すぐ');
+  });
+
+  it('30分後は「30分後」', () => {
+    expect(formatInterval(Date.now() + 30 * 60_000)).toBe('30分後');
+  });
+
+  it('1時間後は「1時間後」', () => {
+    expect(formatInterval(Date.now() + 60 * 60_000)).toBe('1時間後');
+  });
+
+  it('24時間後は「1日後」', () => {
+    expect(formatInterval(Date.now() + 24 * 3_600_000)).toBe('1日後');
+  });
+
+  it('59分後は「59分後」（60分未満は分表示）', () => {
+    expect(formatInterval(Date.now() + 59 * 60_000)).toBe('59分後');
+  });
+});
