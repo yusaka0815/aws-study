@@ -1098,6 +1098,40 @@ describe('calculateScore / recentResults空', () => {
 });
 
 // ============================================================
+// calculateScore / accuracy 境界値テスト（Sprint 44）
+// ============================================================
+describe('calculateScore / accuracy境界値', () => {
+  const now = Date.now();
+  const future = now + 3_600_000;
+
+  it('正答率50%: A=2.5', () => {
+    const s = { attempts: 4, correct: 2, recentResults: [], nextReviewAt: future };
+    expect(calculateScore(s, now)).toBeCloseTo(2.5, 5);
+  });
+
+  it('正答率25%: A=3.75', () => {
+    const s = { attempts: 4, correct: 1, recentResults: [], nextReviewAt: future };
+    expect(calculateScore(s, now)).toBeCloseTo(3.75, 5);
+  });
+
+  it('正答率75%: A=1.25', () => {
+    const s = { attempts: 4, correct: 3, recentResults: [], nextReviewAt: future };
+    expect(calculateScore(s, now)).toBeCloseTo(1.25, 5);
+  });
+
+  it('attempts=1 correct=1: A=0 score=0（B=0,C=0）', () => {
+    const s = { attempts: 1, correct: 1, recentResults: [1], nextReviewAt: future };
+    expect(calculateScore(s, now)).toBe(0);
+  });
+
+  it('recentResults全誤答: C=4', () => {
+    const s = { attempts: 3, correct: 3, recentResults: [0, 0, 0], nextReviewAt: future };
+    // A=0, B=0, C=4
+    expect(calculateScore(s, now)).toBe(4);
+  });
+});
+
+// ============================================================
 // getNextQuestion 基本動作
 // ============================================================
 describe('getNextQuestion', () => {
