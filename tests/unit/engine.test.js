@@ -268,6 +268,57 @@ describe('updateQuestionState', () => {
 });
 
 // ============================================================
+// updateQuestionState / 追加境界値テスト（Sprint 48）
+// ============================================================
+describe('updateQuestionState / 追加境界値', () => {
+  const now = Date.now();
+
+  it('recentResults が undefined の場合は [result] で初期化される', () => {
+    const prev = { attempts: 1, correct: 1, wrong: 0, recentResults: undefined, lastAnsweredAt: 0, nextReviewAt: 0 };
+    const result = updateQuestionState(prev, true, now);
+    expect(result.recentResults).toEqual([1]);
+  });
+
+  it('recentResults が9件のとき追加後10件になる', () => {
+    const prev = {
+      attempts: 9, correct: 9, wrong: 0,
+      recentResults: Array(9).fill(1),
+      lastAnsweredAt: 0, nextReviewAt: 0,
+    };
+    const result = updateQuestionState(prev, false, now);
+    expect(result.recentResults.length).toBe(10);
+  });
+
+  it('recentResults が10件のとき追加→shift後10件のまま', () => {
+    const prev = {
+      attempts: 10, correct: 10, wrong: 0,
+      recentResults: Array(10).fill(1),
+      lastAnsweredAt: 0, nextReviewAt: 0,
+    };
+    const result = updateQuestionState(prev, true, now);
+    expect(result.recentResults.length).toBe(10);
+  });
+
+  it('連続8回正解後の nextReviewAt は now + 30日以上', () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    const prev = {
+      attempts: 8, correct: 8, wrong: 0,
+      recentResults: Array(8).fill(1),
+      lastAnsweredAt: 0, nextReviewAt: 0,
+    };
+    const result = updateQuestionState(prev, true, now);
+    expect(result.nextReviewAt).toBeGreaterThanOrEqual(now + 30 * DAY);
+  });
+
+  it('wrong カウントが正しく加算される', () => {
+    const prev = { attempts: 3, correct: 2, wrong: 1, recentResults: [], lastAnsweredAt: 0, nextReviewAt: 0 };
+    const result = updateQuestionState(prev, false, now);
+    expect(result.wrong).toBe(2);
+    expect(result.correct).toBe(2);
+  });
+});
+
+// ============================================================
 // getStats: 統計計算
 // ============================================================
 describe('getStats', () => {
