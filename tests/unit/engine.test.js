@@ -917,3 +917,36 @@ describe('getStats / weakCount', () => {
     expect(getStats(questions, state).weakCount).toBe(2);
   });
 });
+
+// ============================================================
+// getStats: masteredCount 境界値
+// ============================================================
+describe('getStats / masteredCount 境界値', () => {
+  const questions = [makeQuestion('Q-001', 'S3')];
+  const now = Date.now();
+
+  it('直近5回中4回正解はマスター外', () => {
+    const state = {
+      questions: { 'Q-001': { attempts: 5, correct: 4, wrong: 1, recentResults: [1, 1, 1, 1, 0], lastAnsweredAt: now, nextReviewAt: now } },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).masteredCount).toBe(0);
+  });
+
+  it('直近5回全正解はマスター済み', () => {
+    const state = {
+      questions: { 'Q-001': { attempts: 6, correct: 5, wrong: 1, recentResults: [0, 1, 1, 1, 1, 1], lastAnsweredAt: now, nextReviewAt: now } },
+      dailyLog: {},
+    };
+    // 直近5回（最後5件）が全て1 → マスター
+    expect(getStats(questions, state).masteredCount).toBe(1);
+  });
+
+  it('recentResults が 4 件はマスター外', () => {
+    const state = {
+      questions: { 'Q-001': { attempts: 4, correct: 4, wrong: 0, recentResults: [1, 1, 1, 1], lastAnsweredAt: now, nextReviewAt: now } },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).masteredCount).toBe(0);
+  });
+});
