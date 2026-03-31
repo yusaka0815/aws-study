@@ -1127,3 +1127,33 @@ describe('getNextQuestion', () => {
     expect(results.some(id => id !== 'Q-001')).toBe(true);
   });
 });
+
+// ============================================================
+// getIntervalMs / 追加境界値テスト（Sprint 38）
+// ============================================================
+describe('getIntervalMs / 追加境界値', () => {
+  const MINUTE = 60 * 1000;
+  const HOUR   = 60 * MINUTE;
+  const DAY    = 24 * HOUR;
+
+  it('undefined は即出題（0ms）', () => {
+    expect(getIntervalMs(undefined)).toBe(0);
+  });
+
+  it('要素1つ・正解 [1] → 1連続 → 10分', () => {
+    expect(getIntervalMs([1])).toBe(10 * MINUTE);
+  });
+
+  it('要素1つ・不正解 [0] → 即出題（0ms）', () => {
+    expect(getIntervalMs([0])).toBe(0);
+  });
+
+  it('長い履歴末尾に8連続正解 → 1ヶ月', () => {
+    // 最初に2回不正解、続いて8回正解
+    expect(getIntervalMs([0, 0, 1, 1, 1, 1, 1, 1, 1, 1])).toBe(30 * DAY);
+  });
+
+  it('不正解でリセット後1連続 [1, 0, 1] → 10分', () => {
+    expect(getIntervalMs([1, 0, 1])).toBe(10 * MINUTE);
+  });
+});
