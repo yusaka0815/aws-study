@@ -486,6 +486,13 @@ Then('スキップ誘導バナーが表示される', async ({ page }) => {
   await expect(page.locator('#skip-nudge')).toBeVisible();
 });
 
+Then('回答時間が表示される', async ({ page }) => {
+  const el = page.locator('#answer-time');
+  await expect(el).toBeVisible();
+  const text = await el.textContent();
+  expect(text.trim().length).toBeGreaterThan(0);
+});
+
 Then('今日の学習状況が表示される', async ({ page }) => {
   const el = page.locator('#select-stats');
   await expect(el).toContainText('今日');
