@@ -879,3 +879,41 @@ describe('getStats / bookmarkCount', () => {
     expect(getStats(questions, state).bookmarkCount).toBe(1);
   });
 });
+
+// ============================================================
+// getStats: weakCount
+// ============================================================
+describe('getStats / weakCount', () => {
+  const questions = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2')];
+  const now = Date.now();
+
+  it('未回答問題は weakCount に含まれない', () => {
+    expect(getStats(questions, { questions: {}, dailyLog: {} }).weakCount).toBe(0);
+  });
+
+  it('正答率60%未満で weakCount=1', () => {
+    const state = {
+      questions: { 'Q-001': { attempts: 5, correct: 2, wrong: 3, recentResults: [0], lastAnsweredAt: now, nextReviewAt: now } },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).weakCount).toBe(1);
+  });
+
+  it('正答率ちょうど60%は弱点に含まれない（< 0.6）', () => {
+    const state = {
+      questions: { 'Q-001': { attempts: 5, correct: 3, wrong: 2, recentResults: [1], lastAnsweredAt: now, nextReviewAt: now } },
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).weakCount).toBe(0);
+  });
+
+  it('全問正答率0%で weakCount=2', () => {
+    const state = {
+      questions: Object.fromEntries(
+        questions.map(q => [q.id, { attempts: 3, correct: 0, wrong: 3, recentResults: [0], lastAnsweredAt: now, nextReviewAt: now }])
+      ),
+      dailyLog: {},
+    };
+    expect(getStats(questions, state).weakCount).toBe(2);
+  });
+});
