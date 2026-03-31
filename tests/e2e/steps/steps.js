@@ -292,6 +292,17 @@ Then('自動次へがオンになっている', async ({ page }) => {
   await expect(page.locator('#toggle-auto-next')).toBeChecked();
 });
 
+When('未習得問題のみ学習をオンにする', async ({ page }) => {
+  const isChecked = await page.locator('#toggle-skip-mastered').isChecked();
+  if (!isChecked) {
+    await page.locator('label[aria-label="未習得問題のみ学習"]').click();
+  }
+});
+
+Then('未習得問題のみ学習がオンになっている', async ({ page }) => {
+  await expect(page.locator('#toggle-skip-mastered')).toBeChecked();
+});
+
 When('戻るボタンをタップする', async ({ page }) => {
   // アクティブな画面の戻るボタンをクリック
   await page.locator('.screen.active .back-btn').click();

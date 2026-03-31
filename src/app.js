@@ -154,6 +154,7 @@ const settings = {
   sound: loadSetting('sound', false),
   wakeLock: loadSetting('wake-lock', false),
   weakOnly: loadSetting('weak-only', false),
+  skipMastered: loadSetting('skip-mastered', false),
   autoNext: loadSetting('auto-next', false),
   dailyGoal: (() => { const v = loadSetting('daily-goal', 30); return VALID_DAILY_GOALS.includes(v) ? v : 30; })(),
   fontSize: (() => { const v = loadSetting('font-size', 'medium'); return VALID_FONT_SIZES.includes(v) ? v : 'medium'; })(),
@@ -378,6 +379,17 @@ function showNextQuestion() {
     });
     weakPoolCount = weak.length;
     pool = weak.length > 0 ? weak : pool; // 苦手問題ゼロなら現在のプールを維持
+  }
+
+  // マスター済み除外モード: 直近5回全正解の問題を除外
+  if (settings.skipMastered) {
+    const unmastered = pool.filter(q => {
+      const s = userState.questions[q.id];
+      if (!s || s.attempts === 0) return true;
+      const r = s.recentResults ?? [];
+      return !(r.length >= 5 && r.slice(-5).every(v => v === 1));
+    });
+    pool = unmastered.length > 0 ? unmastered : pool;
   }
 
   // ブックマークモード: ブックマーク済み問題のみ
@@ -1257,6 +1269,15 @@ function setupSettingsListeners() {
     saveSetting('weak-only', settings.weakOnly);
     const msg = settings.weakOnly ? '苦手問題モード ON' : '苦手問題モード OFF';
     showToast(msg, 'info');
+  });
+
+  // マスター済み除外モードトグル
+  const toggleSkipMastered = document.getElementById('toggle-skip-mastered');
+  toggleSkipMastered.checked = settings.skipMastered;
+  toggleSkipMastered.addEventListener('change', () => {
+    settings.skipMastered = toggleSkipMastered.checked;
+    saveSetting('skip-mastered', settings.skipMastered);
+    showToast(settings.skipMastered ? 'マスター済み除外 ON' : 'マスター済み除外 OFF', 'info');
   });
 
   // 自動次へトグル
