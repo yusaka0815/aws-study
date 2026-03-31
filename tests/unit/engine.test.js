@@ -1214,6 +1214,48 @@ describe('getNextQuestion', () => {
 });
 
 // ============================================================
+// getStats / worstQuestions テスト（Sprint 52）
+// ============================================================
+describe('getStats / worstQuestions', () => {
+  const now = Date.now();
+
+  it('未回答問題は worstQuestions に含まれない', () => {
+    const qs = [makeQuestion('Q-001', 'S3')];
+    const stats = getStats(qs, { questions: {} });
+    expect(stats.worstQuestions.length).toBe(0);
+  });
+
+  it('attempts < 3 の問題は worstQuestions に含まれない', () => {
+    const qs = [makeQuestion('Q-001', 'S3')];
+    const state = { questions: { 'Q-001': { attempts: 2, correct: 0, wrong: 2, recentResults: [0, 0], lastAnsweredAt: now, nextReviewAt: now } } };
+    expect(getStats(qs, state).worstQuestions.length).toBe(0);
+  });
+
+  it('accuracy < 60% かつ attempts >= 3 なら worstQuestions に含まれる', () => {
+    const qs = [makeQuestion('Q-001', 'S3')];
+    const state = { questions: { 'Q-001': { attempts: 3, correct: 0, wrong: 3, recentResults: [0, 0, 0], lastAnsweredAt: now, nextReviewAt: now } } };
+    expect(getStats(qs, state).worstQuestions.length).toBe(1);
+    expect(getStats(qs, state).worstQuestions[0].accuracy).toBe(0);
+  });
+
+  it('accuracy >= 60% の問題は worstQuestions に含まれない', () => {
+    const qs = [makeQuestion('Q-001', 'S3')];
+    const state = { questions: { 'Q-001': { attempts: 5, correct: 3, wrong: 2, recentResults: [1, 0, 1, 0, 1], lastAnsweredAt: now, nextReviewAt: now } } };
+    // accuracy = 3/5 = 60% → < 60% でないため含まれない
+    expect(getStats(qs, state).worstQuestions.length).toBe(0);
+  });
+
+  it('worstQuestions は最大5件', () => {
+    const qs = Array.from({ length: 8 }, (_, i) => makeQuestion(`Q-${i}`, 'S3'));
+    const state = { questions: {} };
+    qs.forEach(q => {
+      state.questions[q.id] = { attempts: 3, correct: 0, wrong: 3, recentResults: [0, 0, 0], lastAnsweredAt: now, nextReviewAt: now };
+    });
+    expect(getStats(qs, state).worstQuestions.length).toBeLessThanOrEqual(5);
+  });
+});
+
+// ============================================================
 // getStats / predictedScore・answered テスト（Sprint 49）
 // ============================================================
 describe('getStats / predictedScore', () => {
