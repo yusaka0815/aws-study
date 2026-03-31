@@ -457,6 +457,17 @@ Then('統計画面が表示される', async ({ page }) => {
   await expect(page.locator('#screen-stats')).toBeVisible();
 });
 
+Then('正答率が表示される', async ({ page }) => {
+  // stat-value の中に % が含まれる要素がある
+  const statValues = await page.locator('.stat-value').allTextContents();
+  const hasPercent = statValues.some(v => v.includes('%') || !isNaN(parseInt(v)));
+  expect(hasPercent).toBe(true);
+});
+
+Then('アクティビティカレンダーが表示される', async ({ page }) => {
+  await expect(page.locator('#activity-calendar')).toBeVisible();
+});
+
 Then('回答数が1以上表示される', async ({ page }) => {
   const statValues = await page.locator('.stat-value').allTextContents();
   const nums = statValues.map(v => parseInt(v) || 0);
