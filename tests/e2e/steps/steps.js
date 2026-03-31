@@ -115,6 +115,12 @@ When('CLF試験カードをタップする', async ({ page }) => {
   await waitForQuestion(page);
 });
 
+When('SAP試験カードをタップする', async ({ page }) => {
+  await page.locator('.exam-card').filter({ hasText: 'SAP' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+});
+
 When('試験変更ボタンをタップする', async ({ page }) => {
   await page.locator('#btn-change-exam').click();
   await page.waitForSelector('#screen-select.active');
@@ -205,6 +211,17 @@ Then('フォントサイズ属性が小になる', async ({ page }) => {
 
 Then('フォントサイズ属性が標準になる', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-font-size', 'medium');
+});
+
+When('自動次へをオンにする', async ({ page }) => {
+  const isChecked = await page.locator('#toggle-auto-next').isChecked();
+  if (!isChecked) {
+    await page.locator('label[aria-label="正解時に自動で次へ"]').click();
+  }
+});
+
+Then('自動次へがオンになっている', async ({ page }) => {
+  await expect(page.locator('#toggle-auto-next')).toBeChecked();
 });
 
 When('戻るボタンをタップする', async ({ page }) => {

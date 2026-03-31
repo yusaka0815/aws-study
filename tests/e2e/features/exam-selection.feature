@@ -47,3 +47,8 @@ Feature: 試験選択
     When CLF試験カードをタップする
     Then 問題画面に遷移する
     And 問題文が表示される
+
+  Scenario: SAP試験を選択して問題を解ける
+    When SAP試験カードをタップする
+    Then 問題画面に遷移する
+    And 問題文が表示される

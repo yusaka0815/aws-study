@@ -1054,3 +1054,76 @@ describe('updateQuestionState / 初回回答', () => {
     expect(s.nextReviewAt).toBeGreaterThan(now);
   });
 });
+
+// ============================================================
+// calculateScore
+// ============================================================
+describe('calculateScore', () => {
+  const now = Date.now();
+
+  it('未回答問題は最優先スコア=10', () => {
+    expect(calculateScore(null, now)).toBe(10);
+    expect(calculateScore({ attempts: 0 }, now)).toBe(10);
+  });
+
+  it('全問正解・復習前: スコア低い（A=0, B=0, C=0）', () => {
+    const s = { attempts: 5, correct: 5, recentResults: [1, 1, 1], nextReviewAt: now + 3_600_000 };
+    expect(calculateScore(s, now)).toBe(0);
+  });
+
+  it('全問不正解・復習過ぎ: スコア高い（A=5, B=3, C=4）', () => {
+    const s = { attempts: 5, correct: 0, recentResults: [0, 0, 0], nextReviewAt: now - 1 };
+    expect(calculateScore(s, now)).toBe(12);
+  });
+
+  it('復習期限過ぎると B=3 加算', () => {
+    const past = { attempts: 2, correct: 2, recentResults: [1], nextReviewAt: now - 1 };
+    const future = { attempts: 2, correct: 2, recentResults: [1], nextReviewAt: now + 3_600_000 };
+    expect(calculateScore(past, now) - calculateScore(future, now)).toBe(3);
+  });
+});
+
+// ============================================================
+// calculateScore 追加
+// ============================================================
+describe('calculateScore / recentResults空', () => {
+  const now = Date.now();
+
+  it('recentResults空で C=0', () => {
+    const s = { attempts: 3, correct: 1, recentResults: [], nextReviewAt: now + 3_600_000 };
+    const score = calculateScore(s, now);
+    // A = (1-1/3)*5 ≈ 3.33, B=0, C=0
+    expect(score).toBeCloseTo(10 / 3, 1);
+  });
+});
+
+// ============================================================
+// getNextQuestion 基本動作
+// ============================================================
+describe('getNextQuestion', () => {
+  const questions = [
+    makeQuestion('Q-001', 'S3'),
+    makeQuestion('Q-002', 'EC2'),
+    makeQuestion('Q-003', 'VPC'),
+  ];
+
+  it('問題がある場合は null を返さない', () => {
+    const q = getNextQuestion(questions, { questions: {} });
+    expect(q).not.toBeNull();
+    expect(q.id).toBeDefined();
+  });
+
+  it('問題リストが空なら null を返す', () => {
+    expect(getNextQuestion([], { questions: {} })).toBeNull();
+  });
+
+  it('直前と同じ問題は避ける（代替が存在する場合）', () => {
+    const results = [];
+    for (let i = 0; i < 20; i++) {
+      const q = getNextQuestion(questions, { questions: {} }, 'Q-001');
+      results.push(q.id);
+    }
+    // 20回中少なくとも1回は Q-001 以外が来る
+    expect(results.some(id => id !== 'Q-001')).toBe(true);
+  });
+});
