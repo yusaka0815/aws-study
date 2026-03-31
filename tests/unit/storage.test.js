@@ -201,6 +201,46 @@ describe('importBackup', () => {
 });
 
 // ============================================================
+// importBackup / dailyLog・dailyCorrectLog 追加テスト（Sprint 39）
+// ============================================================
+describe('importBackup / dailyLog・dailyCorrectLog', () => {
+  it('dailyLog を正しく復元する', () => {
+    const backup = { ...VALID_BACKUP, dailyLog: { '2024-01-01': 5, '2024-01-02': 3 } };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.dailyLog['2024-01-01']).toBe(5);
+    expect(result.dailyLog['2024-01-02']).toBe(3);
+  });
+
+  it('dailyLog の不正な日付キーは除外される', () => {
+    const backup = { ...VALID_BACKUP, dailyLog: { '2024-01-01': 5, 'bad-date': 3, '20240101': 10 } };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.dailyLog['2024-01-01']).toBe(5);
+    expect(result.dailyLog['bad-date']).toBeUndefined();
+    expect(result.dailyLog['20240101']).toBeUndefined();
+  });
+
+  it('dailyLog の値が数値でない場合は除外される', () => {
+    const backup = { ...VALID_BACKUP, dailyLog: { '2024-01-01': 5, '2024-01-02': 'evil' } };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.dailyLog['2024-01-01']).toBe(5);
+    expect(result.dailyLog['2024-01-02']).toBeUndefined();
+  });
+
+  it('dailyCorrectLog を正しく復元する', () => {
+    const backup = { ...VALID_BACKUP, dailyCorrectLog: { '2024-01-01': 4 } };
+    const result = importBackup(JSON.stringify(backup));
+    expect(result.dailyCorrectLog['2024-01-01']).toBe(4);
+  });
+
+  it('questions が空オブジェクトでもエラーなく成功する', () => {
+    const backup = { ...VALID_BACKUP, questions: {} };
+    expect(() => importBackup(JSON.stringify(backup))).not.toThrow();
+    const result = importBackup(JSON.stringify(backup));
+    expect(Object.keys(result.questions).length).toBe(0);
+  });
+});
+
+// ============================================================
 // resetState
 // ============================================================
 describe('resetState', () => {
