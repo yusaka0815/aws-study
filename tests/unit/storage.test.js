@@ -84,6 +84,44 @@ describe('saveState / loadState', () => {
 });
 
 // ============================================================
+// loadState / 追加境界値テスト（Sprint 42）
+// ============================================================
+describe('loadState / 追加境界値', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('dailyLog が文字列の場合は空オブジェクトに置換', () => {
+    localStorage.setItem('aws-study-state-v1', JSON.stringify({ version: 1, questions: {}, dailyLog: 'bad' }));
+    const state = loadState();
+    expect(state.dailyLog).toEqual({});
+  });
+
+  it('examHistory が null の場合は空配列に置換', () => {
+    localStorage.setItem('aws-study-state-v1', JSON.stringify({ version: 1, questions: {}, examHistory: null }));
+    const state = loadState();
+    expect(Array.isArray(state.examHistory)).toBe(true);
+    expect(state.examHistory.length).toBe(0);
+  });
+
+  it('questions が undefined の場合は空オブジェクトに置換', () => {
+    localStorage.setItem('aws-study-state-v1', JSON.stringify({ version: 1 }));
+    const state = loadState();
+    expect(state.questions).toEqual({});
+  });
+
+  it('currentExam が undefined の場合は null に置換', () => {
+    localStorage.setItem('aws-study-state-v1', JSON.stringify({ version: 1, questions: {} }));
+    const state = loadState();
+    expect(state.currentExam).toBeNull();
+  });
+
+  it('dailyCorrectLog が undefined の場合は空オブジェクトに置換', () => {
+    localStorage.setItem('aws-study-state-v1', JSON.stringify({ version: 1, questions: {} }));
+    const state = loadState();
+    expect(state.dailyCorrectLog).toEqual({});
+  });
+});
+
+// ============================================================
 // importBackup: バックアップ検証とサニタイズ
 // ============================================================
 describe('importBackup', () => {
