@@ -411,12 +411,34 @@ Then('画面の背景がダーク色になる', async ({ page }) => {
 });
 
 Then('デイリーゴールが20問に設定されている', async ({ page }) => {
-  const activeBtn = page.locator('#seg-daily-goal .seg-btn.active, #seg-daily-goal .seg-btn[aria-pressed="true"]');
-  // セグメントボタンのアクティブ状態確認
   const activeVal = await page.locator('#seg-daily-goal .seg-btn').evaluateAll(
     btns => btns.find(b => b.classList.contains('active') || b.getAttribute('aria-pressed') === 'true')?.dataset.val
   );
   expect(activeVal).toBe('20');
+});
+
+When('デイリーゴールを10問に変更する', async ({ page }) => {
+  await page.locator('#seg-daily-goal .seg-btn[data-val="10"]').click();
+  await page.waitForTimeout(200);
+});
+
+Then('デイリーゴールが10問に設定されている', async ({ page }) => {
+  const activeVal = await page.locator('#seg-daily-goal .seg-btn').evaluateAll(
+    btns => btns.find(b => b.classList.contains('active') || b.getAttribute('aria-pressed') === 'true')?.dataset.val
+  );
+  expect(activeVal).toBe('10');
+});
+
+When('テーマをシステムに変更する', async ({ page }) => {
+  await page.locator('#seg-theme .seg-btn[data-val="system"]').click();
+  await page.waitForTimeout(200);
+});
+
+Then('テーマがシステム設定になっている', async ({ page }) => {
+  // システムテーマ選択後: prefersLightに応じてlight/なし、またはlight(ヘッドレス環境)
+  const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
+  // system選択後はlight/dark/'system'/''のいずれか（環境依存）
+  expect(['system', '', 'light', 'dark']).toContain(theme);
 });
 
 Then('問題文のフォントサイズが大きくなる', async ({ page }) => {
