@@ -588,9 +588,11 @@ function handleAnswer(selectedIndices) {
     }
   }
 
-  // 今日の目標達成トースト（目標数に達したタイミングで表示）
+  // 今日の目標達成トースト＆バナー（目標数に達したタイミングで表示）
   if (prevCount + 1 === settings.dailyGoal) {
     setTimeout(() => showToast(`🎉 今日の目標 ${settings.dailyGoal}問 達成！`, 'success'), 300);
+    const bannerEl = document.getElementById('daily-goal-banner');
+    if (bannerEl) bannerEl.classList.remove('hidden');
   }
 
   // 通算マイルストーン（全日合計）

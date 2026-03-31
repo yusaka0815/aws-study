@@ -93,6 +93,29 @@ Given('SAA試験で学習中', async ({ page }) => {
   await waitForQuestion(page);
 });
 
+Given('デイリーゴール1問で学習中', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('load');
+  await page.waitForSelector('.exam-card');
+  // dailyGoalを10問に、dailyLogに9問記録（次の1問で達成）
+  await page.evaluate(() => {
+    localStorage.setItem('aws-study-daily-goal', '10');
+    const today = new Date().toISOString().slice(0, 10);
+    const raw = localStorage.getItem('aws-study-state-v1');
+    const state = raw ? JSON.parse(raw) : { version: 1, questions: {}, dailyLog: {}, dailyCorrectLog: {}, examHistory: [] };
+    if (!state.dailyLog) state.dailyLog = {};
+    state.dailyLog[today] = 9;
+    localStorage.setItem('aws-study-state-v1', JSON.stringify(state));
+  });
+  // ページリロードして設定を反映させ、SAA試験を選択
+  await page.reload();
+  await page.waitForLoadState('load');
+  await page.waitForSelector('.exam-card');
+  await page.locator('.exam-card').filter({ hasText: 'SAA' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+});
+
 Given('SAA試験で1問回答済み', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('load');
@@ -346,6 +369,10 @@ Then('ブックマークが有効になる', async ({ page }) => {
 
 Then('ブックマークが解除される', async ({ page }) => {
   await expect(page.locator('#btn-bookmark')).toContainText('☆');
+});
+
+Then('目標達成バナーが表示される', async ({ page }) => {
+  await expect(page.locator('#daily-goal-banner')).toBeVisible({ timeout: 3000 });
 });
 
 Then('プログレスバーが表示される', async ({ page }) => {
