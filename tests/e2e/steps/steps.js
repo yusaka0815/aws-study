@@ -133,6 +133,18 @@ When('AIF試験カードをタップする', async ({ page }) => {
   await waitForQuestion(page);
 });
 
+When('SOA試験カードをタップする', async ({ page }) => {
+  await page.locator('.exam-card').filter({ hasText: 'SOA' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+});
+
+When('DEA試験カードをタップする', async ({ page }) => {
+  await page.locator('.exam-card').filter({ hasText: 'DEA' }).click();
+  await page.waitForSelector('#screen-study.active', { timeout: 10000 });
+  await waitForQuestion(page);
+});
+
 When('試験変更ボタンをタップする', async ({ page }) => {
   await page.locator('#btn-change-exam').click();
   await page.waitForSelector('#screen-select.active');

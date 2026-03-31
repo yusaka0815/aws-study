@@ -62,3 +62,13 @@ Feature: 試験選択
     When AIF試験カードをタップする
     Then 問題画面に遷移する
     And 問題文が表示される
+
+  Scenario: SOA試験を選択して問題を解ける
+    When SOA試験カードをタップする
+    Then 問題画面に遷移する
+    And 問題文が表示される
+
+  Scenario: DEA試験を選択して問題を解ける
+    When DEA試験カードをタップする
+    Then 問題画面に遷移する
+    And 問題文が表示される
