@@ -1214,6 +1214,55 @@ describe('getNextQuestion', () => {
 });
 
 // ============================================================
+// getStats / predictedScore・answered テスト（Sprint 49）
+// ============================================================
+describe('getStats / predictedScore', () => {
+  it('全問未回答の predictedScore=0', () => {
+    const qs = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2')];
+    const stats = getStats(qs, { questions: {} });
+    expect(stats.predictedScore).toBe(0);
+  });
+
+  it('全問最終正解なら predictedScore=100', () => {
+    const qs = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2')];
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, recentResults: [1], lastAnsweredAt: 0, nextReviewAt: 0 },
+        'Q-002': { attempts: 1, correct: 1, recentResults: [1], lastAnsweredAt: 0, nextReviewAt: 0 },
+      }
+    };
+    expect(getStats(qs, state).predictedScore).toBe(100);
+  });
+
+  it('半数最終正解なら predictedScore=50', () => {
+    const qs = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2')];
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, recentResults: [1], lastAnsweredAt: 0, nextReviewAt: 0 },
+        'Q-002': { attempts: 1, correct: 0, recentResults: [0], lastAnsweredAt: 0, nextReviewAt: 0 },
+      }
+    };
+    expect(getStats(qs, state).predictedScore).toBe(50);
+  });
+
+  it('answered が回答済み問題数と一致する', () => {
+    const qs = [makeQuestion('Q-001', 'S3'), makeQuestion('Q-002', 'EC2'), makeQuestion('Q-003', 'IAM')];
+    const state = {
+      questions: {
+        'Q-001': { attempts: 1, correct: 1, recentResults: [1], lastAnsweredAt: 0, nextReviewAt: 0 },
+      }
+    };
+    expect(getStats(qs, state).answered).toBe(1);
+    expect(getStats(qs, state).unanswered).toBe(2);
+  });
+
+  it('問題なしでも predictedScore=0 でクラッシュしない', () => {
+    expect(() => getStats([], { questions: {} })).not.toThrow();
+    expect(getStats([], { questions: {} }).predictedScore).toBe(0);
+  });
+});
+
+// ============================================================
 // getNextQuestion / 追加境界値テスト（Sprint 46）
 // ============================================================
 describe('getNextQuestion / 追加境界値', () => {

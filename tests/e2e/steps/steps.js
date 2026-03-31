@@ -47,6 +47,16 @@ Given('アプリを開く', async ({ page }) => {
   await page.waitForSelector('.exam-card');
 });
 
+Then('各試験カードにメタ情報エリアが存在する', async ({ page }) => {
+  const cards = page.locator('.exam-card');
+  const count = await cards.count();
+  expect(count).toBeGreaterThanOrEqual(9);
+  // 各カードに .exam-card-meta が存在する
+  for (let i = 0; i < count; i++) {
+    await expect(cards.nth(i).locator('.exam-card-meta')).toBeAttached();
+  }
+});
+
 Then('試験カードが9枚表示される', async ({ page }) => {
   const count = await page.locator('.exam-card').count();
   expect(count).toBe(9);
