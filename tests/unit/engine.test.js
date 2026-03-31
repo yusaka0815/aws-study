@@ -975,3 +975,40 @@ describe('formatInterval', () => {
     expect(formatInterval(Date.now() + 59 * 60_000)).toBe('59分後');
   });
 });
+
+// ============================================================
+// getTodayStats
+// ============================================================
+describe('getTodayStats', () => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  it('dailyLog なしで todayCount=0 streak=0', () => {
+    const result = getTodayStats({ questions: {} });
+    expect(result.todayCount).toBe(0);
+    expect(result.streak).toBe(0);
+  });
+
+  it('今日10問回答で todayCount=10', () => {
+    const result = getTodayStats({ dailyLog: { [today]: 10 }, questions: {} });
+    expect(result.todayCount).toBe(10);
+  });
+
+  it('今日回答で streak=1', () => {
+    const result = getTodayStats({ dailyLog: { [today]: 5 }, questions: {} });
+    expect(result.streak).toBe(1);
+  });
+
+  it('今日正解5問・総回答10問で todayAccuracy=50', () => {
+    const result = getTodayStats({
+      dailyLog: { [today]: 10 },
+      dailyCorrectLog: { [today]: 5 },
+      questions: {},
+    });
+    expect(result.todayAccuracy).toBe(50);
+  });
+
+  it('今日未回答なら todayAccuracy=null', () => {
+    const result = getTodayStats({ dailyLog: {}, questions: {} });
+    expect(result.todayAccuracy).toBeNull();
+  });
+});
