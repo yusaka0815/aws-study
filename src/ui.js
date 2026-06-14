@@ -399,11 +399,14 @@ export function renderResult(question, selectedIndices, isCorrect, nextReviewAt,
 
   // スキップ時メッセージ（selectedIndices が空 = スキップ）
   const isSkipped = selectedIndices.length === 0;
+  // next-review 要素は問題間で再利用するためスキップ用クラスを毎回リセット
+  document.getElementById('next-review')?.classList.remove('next-review-skip');
   if (isSkipped) {
     answerLabel.textContent = `スキップ — ${question.category}`;
     const skipMsgEl = document.getElementById('next-review');
     if (skipMsgEl) {
       skipMsgEl.textContent = 'このセッションの最後に再出題します（スコアには影響しません）';
+      skipMsgEl.classList.add('next-review-skip');
       skipMsgEl.classList.remove('hidden');
     }
   }

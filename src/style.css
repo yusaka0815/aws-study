@@ -1047,6 +1047,7 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 .answer-verdict {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -1078,6 +1079,15 @@ html[data-font-size="large"]  #explanation-text { font-size: 15px; }
 }
 
 .next-review.hidden { display: none; }
+
+/* スキップ時の案内文は長文のため、verdict 行で折り返さず独立行に表示する */
+.next-review.next-review-skip {
+  margin-left: 0;
+  flex-basis: 100%;
+  white-space: normal;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
 
 /* 初回ヒントバナー */
 .study-first-hint {
